@@ -15,7 +15,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <style>
 /* ==============================
@@ -1879,91 +1878,9 @@ span > .fai, div > .fai { vertical-align: middle; }
    FIREBASE AUTH & ADMIN STYLES
 ============================== */
 
-/* ── Login Screen ── */
-#loginScreen {
-  position: fixed; inset: 0; z-index: 9999;
-  background: linear-gradient(160deg, #0c4a2a 0%, #145c35 60%, #1a7040 100%);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 32px 24px;
-}
-.login-logo { font-size: 4rem; margin-bottom: 12px; }
-.login-title { font-size: 1.5rem; font-weight: 900; color: #fff; margin-bottom: 4px; text-align: center; }
-.login-sub { font-size: .85rem; color: rgba(255,255,255,.7); margin-bottom: 40px; text-align: center; }
-.login-card {
-  background: #fff; border-radius: 20px; padding: 24px 20px;
-  width: 100%; max-width: 360px;
-  box-shadow: 0 8px 40px rgba(0,0,0,.3);
-}
-.btn-google {
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  width: 100%; padding: 13px; border: 1.5px solid #ddd; border-radius: 12px;
-  background: #fff; font-size: .9rem; font-weight: 700; cursor: pointer;
-  color: #3c4043; transition: all .2s;
-}
-.btn-google:active { background: #f5f5f5; }
-.btn-google svg { width: 20px; height: 20px; flex-shrink: 0; }
 
-/* Login Username/Password */
-.login-input-group { margin-bottom: 14px; }
-.login-input-group label { display: block; font-size: .78rem; font-weight: 700; color: var(--mut); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .3px; }
-.login-input {
-  width: 100%; padding: 12px 14px; border: 1.5px solid var(--brd); border-radius: 10px;
-  font-size: .95rem; color: var(--txt); outline: none; transition: border-color .2s;
-  background: var(--surf2);
-}
-.login-input:focus { border-color: var(--g5); }
-.btn-login {
-  width: 100%; padding: 13px; border: none; border-radius: 12px;
-  background: linear-gradient(135deg, var(--g8), var(--g6));
-  color: #fff; font-size: .95rem; font-weight: 800; cursor: pointer;
-  margin-top: 4px; transition: opacity .2s; letter-spacing: .3px;
-}
-.btn-login:active { opacity: .85; }
-.login-error { color: var(--red); font-size: .8rem; font-weight: 600; text-align: center; margin-top: 10px; display: none; }
-.login-version { font-size: .72rem; color: rgba(255,255,255,.45); margin-top: 20px; text-align: center; }
 
-/* ── Invite Code Screen ── */
-#inviteScreen {
-  position: fixed; inset: 0; z-index: 9998;
-  background: linear-gradient(160deg, #0c4a2a 0%, #145c35 100%);
-  display: none; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 32px 24px;
-}
-#inviteScreen.show { display: flex; }
-.invite-card {
-  background: #fff; border-radius: 20px; padding: 28px 24px;
-  width: 100%; max-width: 360px;
-  box-shadow: 0 8px 40px rgba(0,0,0,.3);
-}
-.invite-card h2 { font-size: 1.15rem; font-weight: 800; color: var(--g8); margin-bottom: 6px; }
-.invite-card p { font-size: .82rem; color: var(--mut); margin-bottom: 20px; line-height: 1.5; }
-.invite-input {
-  width: 100%; padding: 13px; border: 2px solid var(--brd); border-radius: 10px;
-  font-size: 1rem; font-weight: 700; letter-spacing: 2px; text-align: center;
-  text-transform: uppercase; color: var(--g8); outline: none; margin-bottom: 14px;
-  transition: border-color .2s;
-}
-.invite-input:focus { border-color: var(--g5); }
-.invite-input::placeholder { font-weight: 400; letter-spacing: 0; color: #bbb; text-transform: none; }
-.invite-user-info {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px; background: var(--bg); border-radius: 10px; margin-bottom: 16px;
-}
-.invite-avatar {
-  width: 36px; height: 36px; border-radius: 50%; object-fit: cover;
-  background: var(--g4); display: flex; align-items: center; justify-content: center;
-  font-size: 1rem; font-weight: 700; color: #fff; flex-shrink: 0;
-}
-.invite-user-info span { font-size: .82rem; color: var(--mut); }
-.invite-user-info strong { display: block; font-size: .88rem; color: var(--txt); }
-.btn-logout-small {
-  margin-left: auto; padding: 5px 10px; border: none;
-  background: none; color: var(--mut); font-size: .78rem; cursor: pointer;
-  border-radius: 6px;
-}
-.btn-logout-small:active { background: var(--brd); }
+
 
 /* ── Sync indicator ── */
 #syncStatus {
@@ -2824,8 +2741,7 @@ const firebaseConfig = {
 const BOOTSTRAP_ADMIN_EMAIL = null; // set ke email admin jika perlu
 
 firebase.initializeApp(firebaseConfig);
-const fbAuth = firebase.auth();
-const fbDb   = firebase.firestore();
+const fbDb = firebase.firestore();
 
 // Enable offline persistence
 fbDb.enablePersistence({ synchronizeTabs: true }).catch(err => {
@@ -2833,369 +2749,54 @@ fbDb.enablePersistence({ synchronizeTabs: true }).catch(err => {
   else if(err.code === 'unimplemented') console.warn('[FB] Browser tidak support persistence');
 });
 
-let currentUser   = null;  // Firebase Auth user
-let currentGuru   = null;  // Firestore guru document data
-let isAdmin       = false;
+// Mode tanpa autentikasi — langsung masuk sebagai Admin
+let currentUser   = { uid: 'local-user', email: 'admin@tamma.app', isAnonymous: false };
+let currentGuru   = { nama: 'Admin', username: 'admin', role: 'admin', status: 'aktif', kelasDiajar: [] };
+let isAdmin       = true;
 let tahunAjaranAktif = '';
-let fbListeners   = [];    // unsubscribe functions for onSnapshot
+let fbListeners   = [];
 
-// ─── Auth state observer ───────────────────────────────────────
-fbAuth.onAuthStateChanged(async user => {
-  currentUser = user;
-  if(!user){
-    showLoginScreen();
-    return;
-  }
-  // User is logged in — check guru document
+// ─── Auto-start app tanpa login ────────────────────────────────
+(async function initApp(){
   try {
-    const guruRef = fbDb.collection('guru').doc(user.uid);
-    const snap = await guruRef.get();
-    if(!snap.exists){
-      // First time — check if they can be auto-admin
-      // (bootstrap: first person to create the app)
-      const allGuru = await fbDb.collection('guru').get();
-      if(allGuru.empty){
-        // No guru yet — this person is the first admin
-        const guruData = {
-          nama: user.displayName || user.email.split('@tamma.app')[0],
-          username: user.email.split('@tamma.app')[0],
-          email: user.email,
-          photoURL: user.photoURL || '',
-          role: 'admin',
-          kelasDiajar: [],
-          status: 'aktif',
-          joinedAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
-        await guruRef.set(guruData);
-        currentGuru = guruData;
-        isAdmin = true;
-        hideLoginScreens();
-        await loadConfig();
-        setupRealtimeListeners();
-        initAppUI();
-      } else {
-        // Not first — need invite code
-        showInviteScreen(user);
-      }
-    } else {
-      currentGuru = snap.data();
-      if(currentGuru.status === 'nonaktif'){
-        showBlockedScreen();
-        return;
-      }
-      isAdmin = currentGuru.role === 'admin';
-      hideLoginScreens();
-      await loadConfig();
-      setupRealtimeListeners();
-      initAppUI();
-      // Cek apakah ada permintaan reset password dari admin
-      checkPasswordReset(user.uid);
-    }
-  } catch(err) {
-    console.error('[FB] Auth error:', err);
-    // Offline — try to use cached data
-    if(currentGuru){
-      hideLoginScreens();
-      initAppUI();
-    } else {
-      showToastSafe('Periksa koneksi internet untuk login pertama kali', 'warning', 5000);
-    }
-  }
-});
+    await loadConfig();
+    setupRealtimeListeners();
+  } catch(e) { console.warn('[FB] Init error:', e); }
+  initAppUI();
+})();
 
-function showLoginScreen(){
-  document.getElementById('loginScreen').style.display = 'flex';
-  document.getElementById('inviteScreen').classList.remove('show');
-  const main = document.getElementById('pgwrap');
-  if(main) main.style.display = 'none';
-  const nav = document.querySelector('.bnav');
-  if(nav) nav.style.display = 'none';
-  const hdr = document.querySelector('.hdr');
-  if(hdr) hdr.style.display = 'none';
-}
 
-function hideLoginScreens(){
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('inviteScreen').classList.remove('show');
-  const main = document.getElementById('pgwrap');
-  if(main) main.style.display = '';
-  const nav = document.querySelector('.bnav');
-  if(nav) nav.style.display = '';
-  const hdr = document.querySelector('.hdr');
-  if(hdr) hdr.style.display = '';
-}
 
-function showInviteScreen(user){
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('inviteScreen').classList.add('show');
-  const main = document.getElementById('pgwrap');
-  if(main) main.style.display = 'none';
-  const nav = document.querySelector('.bnav');
-  if(nav) nav.style.display = 'none';
-  // Fill user info
-  const name = user.displayName || user.email;
-  document.getElementById('inviteUserName').textContent = name;
-  document.getElementById('inviteUserEmail').textContent = user.email;
-  const av = document.getElementById('inviteAvatar');
-  if(user.photoURL){
-    av.innerHTML = `<img src="${user.photoURL}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">`;
-  } else {
-    av.textContent = name.charAt(0).toUpperCase();
-  }
-}
 
-function showBlockedScreen(){
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('inviteScreen').classList.remove('show');
-  document.body.innerHTML = `
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;
-      background:#0c4a2a;color:#fff;padding:32px;text-align:center;">
-      <div style="font-size:3rem;margin-bottom:16px;">🚫</div>
-      <h2 style="margin-bottom:8px;">Akses Dinonaktifkan</h2>
-      <p style="opacity:.7;font-size:.88rem;margin-bottom:24px;">
-        Akun Anda telah dinonaktifkan oleh admin. Hubungi admin untuk informasi lebih lanjut.
-      </p>
-      <button onclick="signOutApp()" style="padding:12px 28px;border-radius:12px;border:none;
-        background:#fff;color:#0c4a2a;font-weight:700;font-size:.9rem;cursor:pointer;">
-        Keluar
-      </button>
-    </div>`;
-}
+
+
+
+
 
 /* ══════════════════════════════
    UBAH PROFIL (Username & Password)
 ══════════════════════════════ */
-function openProfilModal(){
-  const el = document.getElementById('profilOverlay');
-  // Isi username saat ini
-  const usernameEl = document.getElementById('profilUsername');
-  usernameEl.value = currentGuru?.username || '';
-  document.getElementById('profilUsernameInfo').textContent =
-    'Username saat ini: ' + (currentGuru?.username || '—');
-  // Reset semua field & pesan
-  document.getElementById('profilPwLama').value = '';
-  document.getElementById('profilPwBaru').value = '';
-  document.getElementById('profilPwKonfirmasi').value = '';
-  document.getElementById('profilError').style.display = 'none';
-  document.getElementById('profilSukses').style.display = 'none';
-  el.classList.add('show');
-}
 
-function closeProfilModal(e){
-  if(!e || e.target === document.getElementById('profilOverlay'))
-    document.getElementById('profilOverlay').classList.remove('show');
-}
 
-function showProfilMsg(msg, isError){
-  const errEl = document.getElementById('profilError');
-  const okEl = document.getElementById('profilSukses');
-  if(isError){
-    errEl.textContent = msg; errEl.style.display = 'block';
-    okEl.style.display = 'none';
-  } else {
-    okEl.textContent = msg; okEl.style.display = 'block';
-    errEl.style.display = 'none';
-  }
-}
 
-async function simpanUsername(){
-  const newUsername = document.getElementById('profilUsername').value.trim().toLowerCase().replace(/[^a-z0-9]/g,'');
-  if(newUsername.length < 3){
-    showProfilMsg('Username minimal 3 karakter huruf/angka', true); return;
-  }
-  if(newUsername === currentGuru?.username){
-    showProfilMsg('Username sama dengan sebelumnya', true); return;
-  }
-  showSyncing();
-  try {
-    // Cek apakah username sudah dipakai guru lain
-    const snap = await fbDb.collection('guru').where('username','==',newUsername).get();
-    if(!snap.empty){
-      showProfilMsg('Username sudah dipakai guru lain, coba yang lain', true); return;
-    }
-    const newEmail = newUsername + '@tamma.app';
-    // Update email di Firebase Auth
-    await fbAuth.currentUser.updateEmail(newEmail);
-    // Update di Firestore
-    await fbDb.collection('guru').doc(currentUser.uid).update({
-      username: newUsername, email: newEmail
-    });
-    currentGuru.username = newUsername;
-    currentGuru.email = newEmail;
-    // Update tampilan
-    document.getElementById('profilUsernameInfo').textContent = 'Username saat ini: ' + newUsername;
-    const displayEmail = '@' + newUsername;
-    document.getElementById('umEmail').textContent = displayEmail;
-    showProfilMsg('✅ Username berhasil diubah menjadi: ' + newUsername, false);
-    showToast('Username berhasil diubah!', 'success');
-  } catch(err){
-    console.error('[FB] simpanUsername:', err);
-    let msg = err.message;
-    if(err.code === 'auth/requires-recent-login') msg = 'Sesi terlalu lama. Logout lalu login ulang, kemudian coba lagi.';
-    if(err.code === 'auth/email-already-in-use') msg = 'Username sudah dipakai, coba username lain';
-    showProfilMsg(msg, true);
-  }
-}
 
-async function simpanPassword(){
-  const pwLama = document.getElementById('profilPwLama').value;
-  const pwBaru = document.getElementById('profilPwBaru').value;
-  const pwKonfirm = document.getElementById('profilPwKonfirmasi').value;
-  if(!pwLama){ showProfilMsg('Masukkan password lama', true); return; }
-  if(pwBaru.length < 6){ showProfilMsg('Password baru minimal 6 karakter', true); return; }
-  if(pwBaru !== pwKonfirm){ showProfilMsg('Konfirmasi password tidak cocok', true); return; }
-  showSyncing();
-  try {
-    // Re-authenticate dulu dengan password lama
-    const credential = firebase.auth.EmailAuthProvider.credential(
-      currentUser.email, pwLama
-    );
-    await fbAuth.currentUser.reauthenticateWithCredential(credential);
-    // Update password baru
-    await fbAuth.currentUser.updatePassword(pwBaru);
-    // Hapus reset request jika ada
-    await fbDb.collection('passwordResets').doc(currentUser.uid).delete().catch(()=>{});
-    // Bersihkan field
-    document.getElementById('profilPwLama').value = '';
-    document.getElementById('profilPwBaru').value = '';
-    document.getElementById('profilPwKonfirmasi').value = '';
-    showProfilMsg('✅ Password berhasil diubah!', false);
-    showToast('Password berhasil diubah!', 'success');
-  } catch(err){
-    console.error('[FB] simpanPassword:', err);
-    let msg = err.message;
-    if(err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential')
-      msg = 'Password lama salah';
-    if(err.code === 'auth/too-many-requests')
-      msg = 'Terlalu banyak percobaan, coba beberapa menit lagi';
-    showProfilMsg(msg, true);
-  }
-}
 
-async function checkPasswordReset(uid){
-  try {
-    const doc = await fbDb.collection('passwordResets').doc(uid).get();
-    if(!doc.exists || doc.data().done) return;
-    const newPw = doc.data().newPassword;
-    if(!newPw) return;
-    // Update password user
-    await fbAuth.currentUser.updatePassword(newPw);
-    await fbDb.collection('passwordResets').doc(uid).update({ done: true });
-    showToast('Password Anda telah direset oleh admin. Gunakan password baru untuk login berikutnya.', 'info', 7000);
-  } catch(err){
-    console.warn('[FB] checkPasswordReset:', err);
-  }
-}
 
-function doLogin(){
-  const email = document.getElementById('loginEmail').value.trim();
-  const pass  = document.getElementById('loginPassword').value;
-  const btn   = document.getElementById('btnLogin');
-  const errEl = document.getElementById('loginError');
-  const debugEl = document.getElementById('loginDebug');
 
-  errEl.style.display = 'none';
-  if(!email || !pass){ 
-    errEl.textContent = 'Email dan password wajib diisi!'; 
-    errEl.style.display = 'block'; 
-    return; 
-  }
 
-  btn.disabled = true;
-  btn.textContent = 'Memuat...';
-  if(debugEl) debugEl.textContent = 'Menghubungi server...';
 
-  fbAuth.signInWithEmailAndPassword(email, pass)
-    .then(cred => {
-      if(debugEl) debugEl.textContent = 'Berhasil!';
-      btn.textContent = 'Masuk';
-      btn.disabled = false;
-      // onAuthStateChanged akan handle selanjutnya
-    })
-    .catch(e => {
-      btn.textContent = 'Masuk';
-      btn.disabled = false;
-      if(debugEl) debugEl.textContent = 'Error: ' + e.code;
-      const msg = {
-        'auth/user-not-found':   'Email tidak terdaftar.',
-        'auth/wrong-password':   'Password salah.',
-        'auth/invalid-credential': 'Email atau password salah.',
-        'auth/invalid-email':    'Format email tidak valid.',
-        'auth/user-disabled':    'Akun dinonaktifkan. Hubungi admin.',
-        'auth/too-many-requests':'Terlalu banyak percobaan. Coba lagi nanti.',
-        'auth/network-request-failed': 'Tidak ada koneksi internet.',
-      }[e.code] || 'Login gagal: ' + e.code;
-      errEl.textContent = msg;
-      errEl.style.display = 'block';
-    });
-}
 
-function signOutApp(){
-  // Cleanup listeners
-  fbListeners.forEach(unsub => unsub());
-  fbListeners = [];
-  currentUser = null; currentGuru = null; isAdmin = false;
-  fbAuth.signOut().then(() => showLoginScreen());
-}
 
-async function submitInviteCode(){
-  const code = document.getElementById('inviteCodeInput').value.trim().toUpperCase();
-  const errEl = document.getElementById('inviteError');
-  errEl.style.display = 'none';
-  if(!code){ errEl.textContent = 'Masukkan kode undangan'; errEl.style.display = 'block'; return; }
-  const btn = document.querySelector('#inviteScreen .btn');
-  if(btn){ btn.disabled = true; btn.textContent = 'Memeriksa...'; }
-  try {
-    const codeRef = fbDb.collection('inviteCodes').doc(code);
-    const codeSnap = await codeRef.get();
-    if(!codeSnap.exists || !codeSnap.data().active){
-      throw new Error('Kode tidak valid atau sudah tidak aktif');
-    }
-    const codeData = codeSnap.data();
-    // Check expiry
-    if(codeData.expiresAt && codeData.expiresAt.toDate() < new Date()){
-      throw new Error('Kode sudah expired');
-    }
-    // Check single use
-    if(codeData.type === 'single' && codeData.usedCount >= 1){
-      throw new Error('Kode ini sudah dipakai');
-    }
-    // Check limited
-    if(codeData.type === 'limited' && codeData.usedCount >= codeData.maxUse){
-      throw new Error(`Kode sudah mencapai batas ${codeData.maxUse} pemakai`);
-    }
-    // All good — create guru document
-    const user = currentUser;
-    const batch = fbDb.batch();
-    const guruRef = fbDb.collection('guru').doc(user.uid);
-    batch.set(guruRef, {
-      nama: user.displayName || user.email.split('@')[0],
-      email: user.email,
-      photoURL: user.photoURL || '',
-      role: 'guru',
-      kelasDiajar: [],
-      status: 'aktif',
-      inviteCode: code,
-      joinedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    // Update code usage
-    batch.update(codeRef, {
-      usedCount: firebase.firestore.FieldValue.increment(1),
-      usedBy: firebase.firestore.FieldValue.arrayUnion(user.uid),
-      ...(codeData.type === 'single' ? { active: false } : {}),
-      ...(codeData.type === 'limited' && (codeData.usedCount + 1) >= codeData.maxUse ? { active: false } : {})
-    });
-    await batch.commit();
-    showToastSafe('Berhasil bergabung! Selamat datang 🎉', 'success');
-    // Re-trigger auth state
-    fbAuth.currentUser.reload();
-  } catch(err) {
-    errEl.textContent = err.message;
-    errEl.style.display = 'block';
-  } finally {
-    if(btn){ btn.disabled = false; btn.textContent = 'Masuk dengan Kode'; }
-  }
-}
+
+
+
+function signOutApp(){ showToast("Tidak ada sesi untuk diakhiri", "info"); }
+function simpanUsername(){ showToast('Fitur ini tidak tersedia dalam mode tanpa login', 'info'); }
+function simpanPassword(){ showToast('Fitur ini tidak tersedia dalam mode tanpa login', 'info'); }
+function submitInviteCode(){ showToast('Tidak diperlukan kode undangan', 'info'); }
+
+
+
 
 // ─── Load config (tahun ajaran) ────────────────────────────────
 async function loadConfig(){
@@ -3300,38 +2901,27 @@ function showSyncing(){
 
 // ─── Init app UI after auth ────────────────────────────────────
 function initAppUI(){
-  // Update header user info
+  // Tampilkan nama Admin di header
   const btn = document.getElementById('hdrUserBtn');
-  const av  = document.getElementById('hdrAvatar');
   if(btn){ btn.style.display = 'flex'; }
-  if(currentUser){
-    if(currentUser.photoURL){
-      av.innerHTML = `<img src="${currentUser.photoURL}" style="width:26px;height:26px;border-radius:50%;object-fit:cover;">`;
-    } else {
-      av.textContent = (currentGuru?.nama || currentUser.email).charAt(0).toUpperCase();
-    }
-    document.getElementById('hdrUserName').textContent = currentGuru?.nama || currentUser.email.split('@')[0];
-  }
+  const av = document.getElementById('hdrAvatar');
+  if(av){ av.textContent = (currentGuru?.nama || 'A').charAt(0).toUpperCase(); }
+  const nameEl = document.getElementById('hdrUserName');
+  if(nameEl){ nameEl.textContent = currentGuru?.nama || 'Admin'; }
   // User menu
-  document.getElementById('umAvatar').textContent = (currentGuru?.nama || '?').charAt(0).toUpperCase();
-  document.getElementById('umNama').textContent = currentGuru?.nama || '—';
-  // Tampilkan username saja, bukan email internal @tamma.app
-  const displayEmail = currentGuru?.username ? '@' + currentGuru.username : (currentUser?.email || '—').replace('@tamma.app','');
-  document.getElementById('umEmail').textContent = displayEmail;
-  document.getElementById('umRole').innerHTML = isAdmin
-    ? '<span class="guru-role-badge grb-admin">👑 Admin</span>'
-    : '<span class="guru-role-badge grb-guru">👨‍🏫 Guru</span>';
-  // Admin-only elements
-  if(isAdmin){
-    document.getElementById('adminFab').classList.add('show');
-    document.getElementById('btnAdminMenu').style.display = 'block';
-  }
-  // Default kelas filter based on guru's kelasDiajar
-  const kelasDiajar = currentGuru?.kelasDiajar || [];
-  if(kelasDiajar.length > 0 && !isAdmin){
-    activeKelasTahfidh = kelasDiajar[0];
-    activeKelasAbsen = kelasDiajar[0];
-  }
+  const umAv = document.getElementById('umAvatar');
+  if(umAv) umAv.textContent = (currentGuru?.nama || 'A').charAt(0).toUpperCase();
+  const umNama = document.getElementById('umNama');
+  if(umNama) umNama.textContent = currentGuru?.nama || 'Admin';
+  const umEmail = document.getElementById('umEmail');
+  if(umEmail) umEmail.textContent = '@' + (currentGuru?.username || 'admin');
+  const umRole = document.getElementById('umRole');
+  if(umRole) umRole.innerHTML = '<span class="guru-role-badge grb-admin">👑 Admin</span>';
+  // Selalu tampilkan admin controls
+  const adminFabEl = document.getElementById('adminFab');
+  if(adminFabEl) adminFabEl.classList.add('show');
+  const adminMenuBtn = document.getElementById('btnAdminMenu');
+  if(adminMenuBtn) adminMenuBtn.style.display = 'block';
   // Trigger init
   document.dispatchEvent(new Event('firebase-ready'));
 }
@@ -3610,15 +3200,9 @@ function generatePassword(){
 let _massalHasil = [];
 function salinSemuaAkun(){
   if(!_massalHasil.length) return;
-  const text = '=== AKUN GURU TAMMA ===
-' +
-    _massalHasil.map((g,i) => `${i+1}. ${g.nama}
-   Username: ${g.username}
-   Password: ${g.password}`).join('
-') +
-    '
-
-Login di: https://tahfidh-dan-absensi.web.app';
+  const text = '=== AKUN GURU TAMMA ===\n' +
+    _massalHasil.map((g,i) => `${i+1}. ${g.nama}\n   Username: ${g.username}\n   Password: ${g.password}`).join('\n') +
+    '\n\nLogin di: https://tahfidh-dan-absensi.web.app';
   navigator.clipboard?.writeText(text).then(()=>showToast('Semua akun berhasil disalin!','success'))
     .catch(()=>showToast('Gagal salin otomatis, screenshot halaman ini','warning'));
 }
@@ -3629,8 +3213,7 @@ async function importMassalGuru(){
   const errEl = document.getElementById('massalGuruError');
   errEl.style.display = 'none';
 
-  const namaList = raw.split('
-').map(n => n.trim()).filter(n => n.length > 1);
+  const namaList = raw.split('\n').map(n => n.trim()).filter(n => n.length > 1);
   if(!namaList.length){
     errEl.textContent = 'Belum ada nama yang dimasukkan';
     errEl.style.display = 'block';
@@ -3658,12 +3241,7 @@ async function importMassalGuru(){
 
     try {
       const email = username + '@tamma.app';
-      const tempApp = firebase.initializeApp(firebase.app().options, 'tmp_' + Date.now() + '_' + i);
-      const tempAuth = tempApp.auth();
-      const cred = await tempAuth.createUserWithEmailAndPassword(email, password);
-      const uid = cred.user.uid;
-      await tempAuth.signOut();
-      tempApp.delete();
+      const uid = 'guru_' + username + '_' + Date.now() + '_' + i;
 
       await fbDb.collection('guru').doc(uid).set({
         nama, username, email,
@@ -3674,9 +3252,7 @@ async function importMassalGuru(){
       results.push({ nama, username, password });
     } catch(err) {
       console.error('[FB] importMassalGuru:', nama, err);
-      let msg = err.message;
-      if(err.code === 'auth/email-already-in-use') msg = 'Username sudah dipakai';
-      errors.push({ nama, msg });
+      errors.push({ nama, msg: err.message });
     }
   }
 
@@ -3730,14 +3306,11 @@ async function tambahGuruBaru(){
   showSyncing();
   try {
     const email = username + '@tamma.app';
-    // Buat akun Firebase Auth pakai secondary app agar tidak logout admin
-    const secondaryApp = firebase.initializeApp(firebase.app().options, 'tempCreateUser_' + Date.now());
-    const secondaryAuth = secondaryApp.auth();
-    const cred = await secondaryAuth.createUserWithEmailAndPassword(email, password);
-    const uid = cred.user.uid;
-    await secondaryAuth.signOut();
-    secondaryApp.delete();
-    // Simpan data guru ke Firestore
+    // Cek username sudah ada
+    const existing = await fbDb.collection('guru').where('username','==',username).get();
+    if(!existing.empty){ errEl.textContent = 'Username sudah dipakai, gunakan username lain'; errEl.style.display = 'block'; return; }
+    // Simpan data guru ke Firestore (tanpa Firebase Auth)
+    const uid = 'guru_' + username + '_' + Date.now();
     await fbDb.collection('guru').doc(uid).set({
       nama, username, email,
       role: 'guru', status: 'aktif',
@@ -3750,10 +3323,7 @@ async function tambahGuruBaru(){
     showToast(`Akun guru "${nama}" berhasil dibuat! Username: ${username}`, 'success', 5000);
     renderAdminGuruList();
   } catch(err) {
-    console.error('[FB] tambahGuruBaru:', err);
-    let msg = err.message;
-    if(err.code === 'auth/email-already-in-use') msg = 'Username sudah dipakai, gunakan username lain';
-    errEl.textContent = msg;
+    errEl.textContent = err.message;
     errEl.style.display = 'block';
   }
 }
@@ -6206,51 +5776,6 @@ function showToastSafe(msg, type, duration){
 </div>
 
 
-<!-- ════════ LOGIN SCREEN ════════ -->
-<div id="loginScreen">
-  <div class="login-logo">📖</div>
-  <div class="login-title">Tamma</div>
-  <div class="login-sub">Tahfidh Juz Amma & Absensi</div>
-  <div class="login-card">
-    <div class="login-input-group">
-      <label>Email</label>
-      <input class="login-input" id="loginEmail" type="email" placeholder="Contoh: admin@tamma.app" autocomplete="email" autocapitalize="none" autocorrect="off">
-    </div>
-    <div class="login-input-group">
-      <label>Password</label>
-      <input class="login-input" id="loginPassword" type="password" placeholder="Masukkan password" autocomplete="current-password"
-        onkeydown="if(event.key==='Enter') doLogin()">
-    </div>
-    <div class="login-error" id="loginError"></div>
-    <button class="btn-login" onclick="doLogin()" id="btnLogin">Masuk</button>
-    <div id="loginDebug" style="font-size:.72rem; color:#888; text-align:center; margin-top:8px; min-height:16px;"></div>
-    <p style="font-size:.73rem; color:#bbb; text-align:center; margin-top:6px;">
-      Hubungi admin untuk mendapatkan email & password
-    </p>
-  </div>
-  <div class="login-version">Tamma v2.3.4</div>
-</div>
-
-<!-- ════════ INVITE CODE SCREEN ════════ -->
-<div id="inviteScreen">
-  <div class="login-logo">🔑</div>
-  <div class="invite-card">
-    <h2>Masukkan Kode Undangan</h2>
-    <p>Akun Anda belum terdaftar. Minta kode undangan dari admin untuk bergabung.</p>
-    <div class="invite-user-info" id="inviteUserInfo">
-      <div class="invite-avatar" id="inviteAvatar">?</div>
-      <div>
-        <strong id="inviteUserName">—</strong>
-        <span id="inviteUserEmail">—</span>
-      </div>
-      <button class="btn-logout-small" onclick="signOutApp()">Keluar</button>
-    </div>
-    <input class="invite-input" id="inviteCodeInput" type="text" placeholder="Contoh: NGAJI2025" maxlength="20">
-    <div id="inviteError" style="color:var(--red); font-size:.78rem; margin-bottom:10px; display:none;"></div>
-    <button class="btn bp bfull" onclick="submitInviteCode()">Masuk dengan Kode</button>
-  </div>
-</div>
-
 <!-- ════════ USER MENU ════════ -->
 <div id="userMenuOverlay" onclick="closeUserMenu()" style="display:none; position:fixed; inset:0; z-index:7000; background:rgba(0,0,0,.3);">
   <div onclick="event.stopPropagation()" style="position:absolute; top:58px; right:10px; background:#fff; border-radius:14px; padding:12px; min-width:200px; box-shadow:0 4px 20px rgba(0,0,0,.2);">
@@ -6270,56 +5795,11 @@ function showToastSafe(msg, type, duration){
       style="display:none; width:100%; text-align:left; padding:8px 10px; border:none; background:var(--bg); border-radius:8px; font-size:.82rem; font-weight:700; color:var(--g7); cursor:pointer; margin-bottom:6px;">
       👑 Panel Admin
     </button>
-    <button onclick="closeUserMenu(); openProfilModal()"
-      style="width:100%; text-align:left; padding:8px 10px; border:none; background:var(--bg); border-radius:8px; font-size:.82rem; font-weight:700; color:var(--g7); cursor:pointer; margin-bottom:6px;">
-      ✏️ Ubah Username & Password
-    </button>
+
     <button onclick="signOutApp()"
       style="width:100%; text-align:left; padding:8px 10px; border:none; background:#ffebee; border-radius:8px; font-size:.82rem; font-weight:700; color:var(--red); cursor:pointer;">
       🚪 Keluar
     </button>
-  </div>
-</div>
-
-<!-- ════════ MODAL UBAH PROFIL ════════ -->
-<div class="edit-overlay" id="profilOverlay" onclick="closeProfilModal(event)">
-  <div class="edit-card" onclick="event.stopPropagation()">
-    <h3>✏️ Ubah Profil</h3>
-
-    <!-- Ubah Username -->
-    <div style="margin-bottom:16px;">
-      <div style="font-size:.78rem; font-weight:700; color:var(--mut); text-transform:uppercase; letter-spacing:.3px; margin-bottom:8px;">Username</div>
-      <div class="form-row">
-        <label>Username Baru <span style="font-weight:400;color:var(--mut)">(huruf kecil & angka saja)</span></label>
-        <input type="text" id="profilUsername" autocapitalize="none" placeholder="Contoh: ahmad2">
-      </div>
-      <div id="profilUsernameInfo" style="font-size:.75rem; color:var(--mut); margin-top:-6px; margin-bottom:8px;"></div>
-      <button class="btn bp bfull" onclick="simpanUsername()">Simpan Username</button>
-    </div>
-
-    <div style="border-top:1.5px dashed var(--brd); padding-top:14px; margin-bottom:4px;">
-      <div style="font-size:.78rem; font-weight:700; color:var(--mut); text-transform:uppercase; letter-spacing:.3px; margin-bottom:8px;">Password</div>
-      <div class="form-row">
-        <label>Password Lama</label>
-        <input type="password" id="profilPwLama" placeholder="Masukkan password saat ini" autocomplete="current-password">
-      </div>
-      <div class="form-row">
-        <label>Password Baru</label>
-        <input type="password" id="profilPwBaru" placeholder="Min. 6 karakter" autocomplete="new-password">
-      </div>
-      <div class="form-row">
-        <label>Konfirmasi Password Baru</label>
-        <input type="password" id="profilPwKonfirmasi" placeholder="Ulangi password baru" autocomplete="new-password">
-      </div>
-      <button class="btn bp bfull" onclick="simpanPassword()">Simpan Password</button>
-    </div>
-
-    <div id="profilError" style="color:var(--red); font-size:.8rem; font-weight:600; text-align:center; margin-top:10px; display:none;"></div>
-    <div id="profilSukses" style="color:var(--g7); font-size:.8rem; font-weight:600; text-align:center; margin-top:10px; display:none;"></div>
-
-    <div class="edit-actions" style="margin-top:12px;">
-      <button class="btn bo bfull" onclick="closeProfilModal()">Tutup</button>
-    </div>
   </div>
 </div>
 
