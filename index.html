@@ -3093,12 +3093,18 @@ async function doLogin(){
   const errEl = document.getElementById('loginError');
   const btn = document.getElementById('btnLogin');
   errEl.style.display = 'none';
+  // Debug info
+  const debugEl = document.getElementById('loginDebug');
+  if(debugEl) debugEl.textContent = 'Mencoba login: ' + email;
   if(!email){ errEl.textContent = 'Email tidak boleh kosong'; errEl.style.display = 'block'; return; }
   if(!password){ errEl.textContent = 'Password tidak boleh kosong'; errEl.style.display = 'block'; return; }
   btn.disabled = true; btn.textContent = 'Memuat...';
   try {
+    if(debugEl) debugEl.textContent = 'Menghubungi Firebase...';
     await fbAuth.signInWithEmailAndPassword(email, password);
+    if(debugEl) debugEl.textContent = 'Login berhasil!';
   } catch(err) {
+    if(debugEl) debugEl.textContent = 'Error: ' + err.code;
     console.error('[FB] Login error:', err.code, err.message);
     let msg = '';
     switch(err.code){
@@ -3951,7 +3957,24 @@ async function gantiTahunAjaran(){
    CDN libs (XLSX, Chart) di-cache via SW.
    HTML page juga di-cache via SW (cache-first).
 ============================== */
+// ⚠️ SERVICE WORKER DINONAKTIFKAN SEMENTARA UNTUK DEBUGGING
+// Unregister semua SW lama & hapus semua cache agar selalu ambil versi terbaru
 if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(reg => {
+      reg.unregister();
+      console.log('[SW] Unregistered:', reg.scope);
+    });
+  });
+  caches.keys().then(keys => {
+    keys.forEach(k => {
+      caches.delete(k);
+      console.log('[Cache] Deleted:', k);
+    });
+  });
+}
+
+if (false && 'serviceWorker' in navigator) {
   const CACHE_NAME = 'tamma-v4';
   const CDN_URLS = [
     'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
@@ -6201,7 +6224,8 @@ function showToastSafe(msg, type, duration){
     </div>
     <div class="login-error" id="loginError"></div>
     <button class="btn-login" onclick="doLogin()" id="btnLogin">Masuk</button>
-    <p style="font-size:.73rem; color:#bbb; text-align:center; margin-top:14px;">
+    <div id="loginDebug" style="font-size:.72rem; color:#888; text-align:center; margin-top:8px; min-height:16px;"></div>
+    <p style="font-size:.73rem; color:#bbb; text-align:center; margin-top:6px;">
       Hubungi admin untuk mendapatkan email & password
     </p>
   </div>
