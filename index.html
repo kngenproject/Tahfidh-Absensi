@@ -3087,48 +3087,47 @@ async function checkPasswordReset(uid){
   }
 }
 
-async function doLogin(){
-  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-  const password = document.getElementById('loginPassword').value;
+function doLogin(){
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPassword').value;
+  const btn   = document.getElementById('btnLogin');
   const errEl = document.getElementById('loginError');
-  const btn = document.getElementById('btnLogin');
-  errEl.style.display = 'none';
-  // Debug info
   const debugEl = document.getElementById('loginDebug');
-  if(debugEl) debugEl.textContent = 'Mencoba login: ' + email;
-  if(!email){ errEl.textContent = 'Email tidak boleh kosong'; errEl.style.display = 'block'; return; }
-  if(!password){ errEl.textContent = 'Password tidak boleh kosong'; errEl.style.display = 'block'; return; }
-  btn.disabled = true; btn.textContent = 'Memuat...';
-  try {
-    if(debugEl) debugEl.textContent = 'Menghubungi Firebase...';
-    await fbAuth.signInWithEmailAndPassword(email, password);
-    if(debugEl) debugEl.textContent = 'Login berhasil!';
-  } catch(err) {
-    if(debugEl) debugEl.textContent = 'Error: ' + err.code;
-    console.error('[FB] Login error:', err.code, err.message);
-    let msg = '';
-    switch(err.code){
-      case 'auth/user-not-found':
-        msg = 'Email tidak ditemukan. Hubungi admin.'; break;
-      case 'auth/wrong-password':
-      case 'auth/invalid-credential':
-        msg = 'Password salah. Coba lagi atau hubungi admin.'; break;
-      case 'auth/invalid-email':
-        msg = 'Format email tidak valid.'; break;
-      case 'auth/user-disabled':
-        msg = 'Akun dinonaktifkan. Hubungi admin.'; break;
-      case 'auth/too-many-requests':
-        msg = 'Terlalu banyak percobaan. Tunggu beberapa menit.'; break;
-      case 'auth/network-request-failed':
-        msg = 'Tidak ada koneksi internet.'; break;
-      default:
-        msg = 'Gagal login: ' + err.code;
-    }
-    errEl.textContent = msg;
-    errEl.style.display = 'block';
-  } finally {
-    btn.disabled = false; btn.textContent = 'Masuk';
+
+  errEl.style.display = 'none';
+  if(!email || !pass){ 
+    errEl.textContent = 'Email dan password wajib diisi!'; 
+    errEl.style.display = 'block'; 
+    return; 
   }
+
+  btn.disabled = true;
+  btn.textContent = 'Memuat...';
+  if(debugEl) debugEl.textContent = 'Menghubungi server...';
+
+  fbAuth.signInWithEmailAndPassword(email, pass)
+    .then(cred => {
+      if(debugEl) debugEl.textContent = 'Berhasil!';
+      btn.textContent = 'Masuk';
+      btn.disabled = false;
+      // onAuthStateChanged akan handle selanjutnya
+    })
+    .catch(e => {
+      btn.textContent = 'Masuk';
+      btn.disabled = false;
+      if(debugEl) debugEl.textContent = 'Error: ' + e.code;
+      const msg = {
+        'auth/user-not-found':   'Email tidak terdaftar.',
+        'auth/wrong-password':   'Password salah.',
+        'auth/invalid-credential': 'Email atau password salah.',
+        'auth/invalid-email':    'Format email tidak valid.',
+        'auth/user-disabled':    'Akun dinonaktifkan. Hubungi admin.',
+        'auth/too-many-requests':'Terlalu banyak percobaan. Coba lagi nanti.',
+        'auth/network-request-failed': 'Tidak ada koneksi internet.',
+      }[e.code] || 'Login gagal: ' + e.code;
+      errEl.textContent = msg;
+      errEl.style.display = 'block';
+    });
 }
 
 function signOutApp(){
