@@ -1904,6 +1904,25 @@ span > .fai, div > .fai { vertical-align: middle; }
 .btn-google:active { background: #f5f5f5; }
 .btn-google svg { width: 20px; height: 20px; flex-shrink: 0; }
 
+/* Login Username/Password */
+.login-input-group { margin-bottom: 14px; }
+.login-input-group label { display: block; font-size: .78rem; font-weight: 700; color: var(--mut); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .3px; }
+.login-input {
+  width: 100%; padding: 12px 14px; border: 1.5px solid var(--brd); border-radius: 10px;
+  font-size: .95rem; color: var(--txt); outline: none; transition: border-color .2s;
+  background: var(--surf2);
+}
+.login-input:focus { border-color: var(--g5); }
+.btn-login {
+  width: 100%; padding: 13px; border: none; border-radius: 12px;
+  background: linear-gradient(135deg, var(--g8), var(--g6));
+  color: #fff; font-size: .95rem; font-weight: 800; cursor: pointer;
+  margin-top: 4px; transition: opacity .2s; letter-spacing: .3px;
+}
+.btn-login:active { opacity: .85; }
+.login-error { color: var(--red); font-size: .8rem; font-weight: 600; text-align: center; margin-top: 10px; display: none; }
+.login-version { font-size: .72rem; color: rgba(255,255,255,.45); margin-top: 20px; text-align: center; }
+
 /* ── Invite Code Screen ── */
 #inviteScreen {
   position: fixed; inset: 0; z-index: 9998;
@@ -2838,7 +2857,8 @@ fbAuth.onAuthStateChanged(async user => {
       if(allGuru.empty){
         // No guru yet — this person is the first admin
         const guruData = {
-          nama: user.displayName || user.email.split('@')[0],
+          nama: user.displayName || user.email.split('@tamma.app')[0],
+          username: user.email.split('@tamma.app')[0],
           email: user.email,
           photoURL: user.photoURL || '',
           role: 'admin',
@@ -2868,6 +2888,8 @@ fbAuth.onAuthStateChanged(async user => {
       await loadConfig();
       setupRealtimeListeners();
       initAppUI();
+      // Cek apakah ada permintaan reset password dari admin
+      checkPasswordReset(user.uid);
     }
   } catch(err) {
     console.error('[FB] Auth error:', err);
@@ -2940,25 +2962,155 @@ function showBlockedScreen(){
     </div>`;
 }
 
-function signInWithGoogle(){
-  const provider = new firebase.auth.GoogleAuthProvider();
-  fbAuth.signInWithRedirect(provider).catch(err => {
-    console.error('[FB] Sign-in error:', err);
-    showToastSafe('Gagal masuk: ' + err.message, 'error');
-  });
+/* ══════════════════════════════
+   UBAH PROFIL (Username & Password)
+══════════════════════════════ */
+function openProfilModal(){
+  const el = document.getElementById('profilOverlay');
+  // Isi username saat ini
+  const usernameEl = document.getElementById('profilUsername');
+  usernameEl.value = currentGuru?.username || '';
+  document.getElementById('profilUsernameInfo').textContent =
+    'Username saat ini: ' + (currentGuru?.username || '—');
+  // Reset semua field & pesan
+  document.getElementById('profilPwLama').value = '';
+  document.getElementById('profilPwBaru').value = '';
+  document.getElementById('profilPwKonfirmasi').value = '';
+  document.getElementById('profilError').style.display = 'none';
+  document.getElementById('profilSukses').style.display = 'none';
+  el.classList.add('show');
 }
 
-// Handle redirect result setelah kembali dari halaman Google
-fbAuth.getRedirectResult().then(result => {
-  if(result && result.user){
-    console.log('[FB] Redirect login berhasil:', result.user.email);
+function closeProfilModal(e){
+  if(!e || e.target === document.getElementById('profilOverlay'))
+    document.getElementById('profilOverlay').classList.remove('show');
+}
+
+function showProfilMsg(msg, isError){
+  const errEl = document.getElementById('profilError');
+  const okEl = document.getElementById('profilSukses');
+  if(isError){
+    errEl.textContent = msg; errEl.style.display = 'block';
+    okEl.style.display = 'none';
+  } else {
+    okEl.textContent = msg; okEl.style.display = 'block';
+    errEl.style.display = 'none';
   }
-}).catch(err => {
-  console.error('[FB] Redirect result error:', err);
-  if(err.code !== 'auth/popup-closed-by-user'){
-    showToastSafe('Gagal masuk: ' + err.message, 'error');
+}
+
+async function simpanUsername(){
+  const newUsername = document.getElementById('profilUsername').value.trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+  if(newUsername.length < 3){
+    showProfilMsg('Username minimal 3 karakter huruf/angka', true); return;
   }
-});
+  if(newUsername === currentGuru?.username){
+    showProfilMsg('Username sama dengan sebelumnya', true); return;
+  }
+  showSyncing();
+  try {
+    // Cek apakah username sudah dipakai guru lain
+    const snap = await fbDb.collection('guru').where('username','==',newUsername).get();
+    if(!snap.empty){
+      showProfilMsg('Username sudah dipakai guru lain, coba yang lain', true); return;
+    }
+    const newEmail = newUsername + '@tamma.app';
+    // Update email di Firebase Auth
+    await fbAuth.currentUser.updateEmail(newEmail);
+    // Update di Firestore
+    await fbDb.collection('guru').doc(currentUser.uid).update({
+      username: newUsername, email: newEmail
+    });
+    currentGuru.username = newUsername;
+    currentGuru.email = newEmail;
+    // Update tampilan
+    document.getElementById('profilUsernameInfo').textContent = 'Username saat ini: ' + newUsername;
+    const displayEmail = '@' + newUsername;
+    document.getElementById('umEmail').textContent = displayEmail;
+    showProfilMsg('✅ Username berhasil diubah menjadi: ' + newUsername, false);
+    showToast('Username berhasil diubah!', 'success');
+  } catch(err){
+    console.error('[FB] simpanUsername:', err);
+    let msg = err.message;
+    if(err.code === 'auth/requires-recent-login') msg = 'Sesi terlalu lama. Logout lalu login ulang, kemudian coba lagi.';
+    if(err.code === 'auth/email-already-in-use') msg = 'Username sudah dipakai, coba username lain';
+    showProfilMsg(msg, true);
+  }
+}
+
+async function simpanPassword(){
+  const pwLama = document.getElementById('profilPwLama').value;
+  const pwBaru = document.getElementById('profilPwBaru').value;
+  const pwKonfirm = document.getElementById('profilPwKonfirmasi').value;
+  if(!pwLama){ showProfilMsg('Masukkan password lama', true); return; }
+  if(pwBaru.length < 6){ showProfilMsg('Password baru minimal 6 karakter', true); return; }
+  if(pwBaru !== pwKonfirm){ showProfilMsg('Konfirmasi password tidak cocok', true); return; }
+  showSyncing();
+  try {
+    // Re-authenticate dulu dengan password lama
+    const credential = firebase.auth.EmailAuthProvider.credential(
+      currentUser.email, pwLama
+    );
+    await fbAuth.currentUser.reauthenticateWithCredential(credential);
+    // Update password baru
+    await fbAuth.currentUser.updatePassword(pwBaru);
+    // Hapus reset request jika ada
+    await fbDb.collection('passwordResets').doc(currentUser.uid).delete().catch(()=>{});
+    // Bersihkan field
+    document.getElementById('profilPwLama').value = '';
+    document.getElementById('profilPwBaru').value = '';
+    document.getElementById('profilPwKonfirmasi').value = '';
+    showProfilMsg('✅ Password berhasil diubah!', false);
+    showToast('Password berhasil diubah!', 'success');
+  } catch(err){
+    console.error('[FB] simpanPassword:', err);
+    let msg = err.message;
+    if(err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential')
+      msg = 'Password lama salah';
+    if(err.code === 'auth/too-many-requests')
+      msg = 'Terlalu banyak percobaan, coba beberapa menit lagi';
+    showProfilMsg(msg, true);
+  }
+}
+
+async function checkPasswordReset(uid){
+  try {
+    const doc = await fbDb.collection('passwordResets').doc(uid).get();
+    if(!doc.exists || doc.data().done) return;
+    const newPw = doc.data().newPassword;
+    if(!newPw) return;
+    // Update password user
+    await fbAuth.currentUser.updatePassword(newPw);
+    await fbDb.collection('passwordResets').doc(uid).update({ done: true });
+    showToast('Password Anda telah direset oleh admin. Gunakan password baru untuk login berikutnya.', 'info', 7000);
+  } catch(err){
+    console.warn('[FB] checkPasswordReset:', err);
+  }
+}
+
+async function doLogin(){
+  const username = document.getElementById('loginUsername').value.trim().toLowerCase();
+  const password = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+  const btn = document.getElementById('btnLogin');
+  errEl.style.display = 'none';
+  if(!username){ errEl.textContent = 'Username tidak boleh kosong'; errEl.style.display = 'block'; return; }
+  if(!password){ errEl.textContent = 'Password tidak boleh kosong'; errEl.style.display = 'block'; return; }
+  btn.disabled = true; btn.textContent = 'Memuat...';
+  try {
+    const email = username + '@tamma.app';
+    await fbAuth.signInWithEmailAndPassword(email, password);
+    // onAuthStateChanged akan handle selanjutnya
+  } catch(err) {
+    console.error('[FB] Login error:', err);
+    let msg = 'Username atau password salah';
+    if(err.code === 'auth/too-many-requests') msg = 'Terlalu banyak percobaan. Coba lagi nanti.';
+    if(err.code === 'auth/network-request-failed') msg = 'Tidak ada koneksi internet';
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Masuk';
+  }
+}
 
 function signOutApp(){
   // Cleanup listeners
@@ -3145,7 +3297,9 @@ function initAppUI(){
   // User menu
   document.getElementById('umAvatar').textContent = (currentGuru?.nama || '?').charAt(0).toUpperCase();
   document.getElementById('umNama').textContent = currentGuru?.nama || '—';
-  document.getElementById('umEmail').textContent = currentUser?.email || '—';
+  // Tampilkan username saja, bukan email internal @tamma.app
+  const displayEmail = currentGuru?.username ? '@' + currentGuru.username : (currentUser?.email || '—').replace('@tamma.app','');
+  document.getElementById('umEmail').textContent = displayEmail;
   document.getElementById('umRole').innerHTML = isAdmin
     ? '<span class="guru-role-badge grb-admin">👑 Admin</span>'
     : '<span class="guru-role-badge grb-guru">👨‍🏫 Guru</span>';
@@ -3382,6 +3536,210 @@ async function prosesNaikKelas(){
 }
 
 // ── Admin: Guru Management ────────────────────────────────────
+/* ── Guru Tab Switch ── */
+function switchGuruTab(tab){
+  document.getElementById('guruTab1').classList.toggle('on', tab==='satu');
+  document.getElementById('guruTabMassal').classList.toggle('on', tab==='massal');
+  document.getElementById('guruPanelSatu').style.display = tab==='satu' ? '' : 'none';
+  document.getElementById('guruPanelMassal').style.display = tab==='massal' ? '' : 'none';
+}
+
+/* ── Generate Username dari Nama ── */
+function generateUsername(nama, existing){
+  // Ambil kata-kata dari nama, bersihkan, gabung
+  const words = nama.toLowerCase()
+    .replace(/[^a-z\s]/g,'')
+    .trim().split(/\s+/)
+    .filter(Boolean);
+  
+  let base = '';
+  if(words.length === 1){
+    base = words[0];
+  } else if(words.length === 2){
+    base = words[0] + words[1].charAt(0);
+  } else {
+    // ustadz/ustadzah dibuang, ambil nama utama
+    const skip = ['ustadz','ustadzah','ustad','bapak','ibu','pak','bu'];
+    const filtered = words.filter(w => !skip.includes(w));
+    if(filtered.length >= 2){
+      base = filtered[0] + filtered[1].charAt(0);
+    } else if(filtered.length === 1){
+      base = filtered[0];
+    } else {
+      base = words[0];
+    }
+  }
+  base = base.substring(0, 12);
+  // Cek duplikat, tambah angka jika perlu
+  let username = base;
+  let counter = 2;
+  while(existing.has(username)){
+    username = base + counter;
+    counter++;
+  }
+  return username;
+}
+
+/* ── Generate Password Acak ── */
+function generatePassword(){
+  const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+  let pass = '';
+  for(let i=0; i<8; i++) pass += chars.charAt(Math.floor(Math.random() * chars.length));
+  return pass;
+}
+
+/* ── Salin semua akun ke clipboard ── */
+let _massalHasil = [];
+function salinSemuaAkun(){
+  if(!_massalHasil.length) return;
+  const text = '=== AKUN GURU TAMMA ===
+' +
+    _massalHasil.map((g,i) => `${i+1}. ${g.nama}
+   Username: ${g.username}
+   Password: ${g.password}`).join('
+') +
+    '
+
+Login di: https://tahfidh-dan-absensi.web.app';
+  navigator.clipboard?.writeText(text).then(()=>showToast('Semua akun berhasil disalin!','success'))
+    .catch(()=>showToast('Gagal salin otomatis, screenshot halaman ini','warning'));
+}
+
+/* ── Import Guru Massal ── */
+async function importMassalGuru(){
+  const raw = document.getElementById('massalNamaInput').value;
+  const errEl = document.getElementById('massalGuruError');
+  errEl.style.display = 'none';
+
+  const namaList = raw.split('
+').map(n => n.trim()).filter(n => n.length > 1);
+  if(!namaList.length){
+    errEl.textContent = 'Belum ada nama yang dimasukkan';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const btn = document.querySelector('#guruPanelMassal .btn');
+  btn.disabled = true;
+  btn.textContent = `⏳ Membuat ${namaList.length} akun...`;
+
+  // Ambil username yang sudah ada
+  const existingSnap = await fbDb.collection('guru').get();
+  const existingUsernames = new Set(existingSnap.docs.map(d => d.data().username).filter(Boolean));
+
+  const results = [];
+  const errors = [];
+
+  for(let i = 0; i < namaList.length; i++){
+    const nama = namaList[i];
+    const username = generateUsername(nama, existingUsernames);
+    const password = generatePassword();
+    existingUsernames.add(username);
+
+    btn.textContent = `⏳ Membuat akun ${i+1}/${namaList.length}...`;
+
+    try {
+      const email = username + '@tamma.app';
+      const tempApp = firebase.initializeApp(firebase.app().options, 'tmp_' + Date.now() + '_' + i);
+      const tempAuth = tempApp.auth();
+      const cred = await tempAuth.createUserWithEmailAndPassword(email, password);
+      const uid = cred.user.uid;
+      await tempAuth.signOut();
+      tempApp.delete();
+
+      await fbDb.collection('guru').doc(uid).set({
+        nama, username, email,
+        role: 'guru', status: 'aktif',
+        kelasDiajar: [],
+        joinedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      results.push({ nama, username, password });
+    } catch(err) {
+      console.error('[FB] importMassalGuru:', nama, err);
+      let msg = err.message;
+      if(err.code === 'auth/email-already-in-use') msg = 'Username sudah dipakai';
+      errors.push({ nama, msg });
+    }
+  }
+
+  btn.disabled = false;
+  btn.textContent = '🚀 Generate & Buat Semua Akun';
+
+  _massalHasil = results;
+
+  // Tampilkan hasil
+  const hasilEl = document.getElementById('massalGuruHasil');
+  const tabelEl = document.getElementById('massalGuruTabel');
+  hasilEl.style.display = 'block';
+
+  let html = `<div style="border:1.5px solid var(--brd);border-radius:10px;overflow:hidden;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--g8);color:#fff;font-size:.75rem;font-weight:700;padding:8px 10px;gap:6px;">
+      <span>Nama</span><span>Username</span><span>Password</span>
+    </div>`;
+
+  results.forEach((g, i) => {
+    html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:8px 10px;gap:6px;font-size:.78rem;border-top:1px solid var(--brd);background:${i%2===0?'#fff':'var(--surf2)'};">
+      <span style="font-weight:600;">${g.nama}</span>
+      <span style="color:var(--g7);font-weight:700;">${g.username}</span>
+      <span style="color:var(--g8);font-weight:700;letter-spacing:1px;">${g.password}</span>
+    </div>`;
+  });
+
+  html += '</div>';
+
+  if(errors.length){
+    html += `<div style="margin-top:10px;background:#ffebee;border-radius:9px;padding:10px;font-size:.78rem;color:var(--red);">
+      ⚠️ ${errors.length} akun gagal dibuat:<br>
+      ${errors.map(e=>`• ${e.nama}: ${e.msg}`).join('<br>')}
+    </div>`;
+  }
+
+  tabelEl.innerHTML = html;
+  document.getElementById('massalNamaInput').value = '';
+  showToast(`${results.length} akun guru berhasil dibuat!`, 'success', 5000);
+  renderAdminGuruList();
+}
+
+async function tambahGuruBaru(){
+  const nama = document.getElementById('newGuruNama').value.trim();
+  const username = document.getElementById('newGuruUsername').value.trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+  const password = document.getElementById('newGuruPassword').value;
+  const errEl = document.getElementById('newGuruError');
+  errEl.style.display = 'none';
+  if(!nama){ errEl.textContent = 'Nama tidak boleh kosong'; errEl.style.display = 'block'; return; }
+  if(username.length < 3){ errEl.textContent = 'Username minimal 3 karakter huruf/angka'; errEl.style.display = 'block'; return; }
+  if(password.length < 6){ errEl.textContent = 'Password minimal 6 karakter'; errEl.style.display = 'block'; return; }
+  showSyncing();
+  try {
+    const email = username + '@tamma.app';
+    // Buat akun Firebase Auth pakai secondary app agar tidak logout admin
+    const secondaryApp = firebase.initializeApp(firebase.app().options, 'tempCreateUser_' + Date.now());
+    const secondaryAuth = secondaryApp.auth();
+    const cred = await secondaryAuth.createUserWithEmailAndPassword(email, password);
+    const uid = cred.user.uid;
+    await secondaryAuth.signOut();
+    secondaryApp.delete();
+    // Simpan data guru ke Firestore
+    await fbDb.collection('guru').doc(uid).set({
+      nama, username, email,
+      role: 'guru', status: 'aktif',
+      kelasDiajar: [],
+      joinedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById('newGuruNama').value = '';
+    document.getElementById('newGuruUsername').value = '';
+    document.getElementById('newGuruPassword').value = '';
+    showToast(`Akun guru "${nama}" berhasil dibuat! Username: ${username}`, 'success', 5000);
+    renderAdminGuruList();
+  } catch(err) {
+    console.error('[FB] tambahGuruBaru:', err);
+    let msg = err.message;
+    if(err.code === 'auth/email-already-in-use') msg = 'Username sudah dipakai, gunakan username lain';
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+  }
+}
+
 async function renderAdminGuruList(){
   const list = document.getElementById('adminGuruList');
   list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--mut);">Memuat...</div>';
@@ -3402,11 +3760,11 @@ async function renderAdminGuruList(){
             <span class="guru-role-badge ${g.role==='admin'?'grb-admin':'grb-guru'}">${g.role==='admin'?'👑 Admin':'Guru'}</span>
             ${g.status==='nonaktif'?'<span style="font-size:.7rem;color:var(--red);font-weight:700;">• NONAKTIF</span>':''}
           </div>
-          <div class="guru-item-meta">${g.email || '—'}</div>
+          <div class="guru-item-meta">@${g.username || g.email?.split('@')[0] || '—'}</div>
           <div class="guru-item-kelas">${(g.kelasDiajar&&g.kelasDiajar.length)?'Kelas: '+g.kelasDiajar.join(', '):'Semua kelas'}</div>
         </div>
         ${g.uid !== currentUser?.uid ? `
-        <button class="sact-btn edit" onclick="openEditGuru('${g.uid}','${g.nama||''}','${(g.kelasDiajar||[]).join(', ')}','${g.status||'aktif'}')">✎</button>
+        <button class="sact-btn edit" onclick="openEditGuru('${g.uid}','${g.nama||''}','${g.username||''}','${(g.kelasDiajar||[]).join(', ')}','${g.status||'aktif'}')">✎</button>
         ` : '<span style="font-size:.72rem;color:var(--mut);">Anda</span>'}
       </div>`).join('');
   } catch(e) {
@@ -3414,12 +3772,48 @@ async function renderAdminGuruList(){
   }
 }
 
-function openEditGuru(uid, nama, kelas, status){
+function openEditGuru(uid, nama, username, kelas, status){
   document.getElementById('editGuruUid').value = uid;
   document.getElementById('editGuruNama').value = nama;
+  document.getElementById('editGuruUsername').value = username || '—';
   document.getElementById('editGuruKelas').value = kelas;
   document.getElementById('editGuruStatus').value = status;
+  // Reset bagian password
+  document.getElementById('editGuruNewPassword').value = '';
+  document.getElementById('resetPwHasil').style.display = 'none';
   document.getElementById('editGuruOverlay').classList.add('show');
+}
+
+function generateResetPassword(){
+  const pw = generatePassword();
+  document.getElementById('editGuruNewPassword').value = pw;
+}
+
+async function resetPasswordGuru(){
+  const uid = document.getElementById('editGuruUid').value;
+  const newPw = document.getElementById('editGuruNewPassword').value.trim();
+  if(newPw.length < 6){
+    showToast('Password minimal 6 karakter', 'warning');
+    return;
+  }
+  showSyncing();
+  try {
+    // Panggil Firebase Admin via Firestore trigger — simpan request reset
+    // Karena client SDK tidak bisa update password user lain,
+    // kita simpan password baru ke Firestore dan user akan diminta ganti saat login
+    await fbDb.collection('passwordResets').doc(uid).set({
+      newPassword: newPw,
+      requestedBy: currentUser.uid,
+      requestedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      done: false
+    });
+    // Tampilkan hasil
+    document.getElementById('resetPwValue').textContent = newPw;
+    document.getElementById('resetPwHasil').style.display = 'block';
+    showToast('Password baru disimpan! Guru harus login ulang.', 'success', 5000);
+  } catch(err){
+    showToast('Gagal reset password: ' + err.message, 'error');
+  }
 }
 function closeEditGuru(e){
   if(!e || e.target === document.getElementById('editGuruOverlay'))
@@ -5783,22 +6177,22 @@ function showToastSafe(msg, type, duration){
   <div class="login-title">Tamma</div>
   <div class="login-sub">Tahfidh Juz Amma & Absensi</div>
   <div class="login-card">
-    <p style="font-size:.85rem; color:var(--mut); text-align:center; margin-bottom:18px; line-height:1.5;">
-      Masuk dengan akun Google untuk mengakses data bersama
-    </p>
-    <button class="btn-google" onclick="signInWithGoogle()">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-      </svg>
-      Masuk dengan Google
-    </button>
+    <div class="login-input-group">
+      <label>Username</label>
+      <input class="login-input" id="loginUsername" type="text" placeholder="Masukkan username" autocomplete="username" autocapitalize="none">
+    </div>
+    <div class="login-input-group">
+      <label>Password</label>
+      <input class="login-input" id="loginPassword" type="password" placeholder="Masukkan password" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter') doLogin()">
+    </div>
+    <div class="login-error" id="loginError"></div>
+    <button class="btn-login" onclick="doLogin()" id="btnLogin">Masuk</button>
     <p style="font-size:.73rem; color:#bbb; text-align:center; margin-top:14px;">
-      Hanya guru yang diundang yang bisa mengakses
+      Hubungi admin untuk mendapatkan username & password
     </p>
   </div>
+  <div class="login-version">Tamma v2.3.4</div>
 </div>
 
 <!-- ════════ INVITE CODE SCREEN ════════ -->
@@ -5840,10 +6234,56 @@ function showToastSafe(msg, type, duration){
       style="display:none; width:100%; text-align:left; padding:8px 10px; border:none; background:var(--bg); border-radius:8px; font-size:.82rem; font-weight:700; color:var(--g7); cursor:pointer; margin-bottom:6px;">
       👑 Panel Admin
     </button>
+    <button onclick="closeUserMenu(); openProfilModal()"
+      style="width:100%; text-align:left; padding:8px 10px; border:none; background:var(--bg); border-radius:8px; font-size:.82rem; font-weight:700; color:var(--g7); cursor:pointer; margin-bottom:6px;">
+      ✏️ Ubah Username & Password
+    </button>
     <button onclick="signOutApp()"
       style="width:100%; text-align:left; padding:8px 10px; border:none; background:#ffebee; border-radius:8px; font-size:.82rem; font-weight:700; color:var(--red); cursor:pointer;">
       🚪 Keluar
     </button>
+  </div>
+</div>
+
+<!-- ════════ MODAL UBAH PROFIL ════════ -->
+<div class="edit-overlay" id="profilOverlay" onclick="closeProfilModal(event)">
+  <div class="edit-card" onclick="event.stopPropagation()">
+    <h3>✏️ Ubah Profil</h3>
+
+    <!-- Ubah Username -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:.78rem; font-weight:700; color:var(--mut); text-transform:uppercase; letter-spacing:.3px; margin-bottom:8px;">Username</div>
+      <div class="form-row">
+        <label>Username Baru <span style="font-weight:400;color:var(--mut)">(huruf kecil & angka saja)</span></label>
+        <input type="text" id="profilUsername" autocapitalize="none" placeholder="Contoh: ahmad2">
+      </div>
+      <div id="profilUsernameInfo" style="font-size:.75rem; color:var(--mut); margin-top:-6px; margin-bottom:8px;"></div>
+      <button class="btn bp bfull" onclick="simpanUsername()">Simpan Username</button>
+    </div>
+
+    <div style="border-top:1.5px dashed var(--brd); padding-top:14px; margin-bottom:4px;">
+      <div style="font-size:.78rem; font-weight:700; color:var(--mut); text-transform:uppercase; letter-spacing:.3px; margin-bottom:8px;">Password</div>
+      <div class="form-row">
+        <label>Password Lama</label>
+        <input type="password" id="profilPwLama" placeholder="Masukkan password saat ini" autocomplete="current-password">
+      </div>
+      <div class="form-row">
+        <label>Password Baru</label>
+        <input type="password" id="profilPwBaru" placeholder="Min. 6 karakter" autocomplete="new-password">
+      </div>
+      <div class="form-row">
+        <label>Konfirmasi Password Baru</label>
+        <input type="password" id="profilPwKonfirmasi" placeholder="Ulangi password baru" autocomplete="new-password">
+      </div>
+      <button class="btn bp bfull" onclick="simpanPassword()">Simpan Password</button>
+    </div>
+
+    <div id="profilError" style="color:var(--red); font-size:.8rem; font-weight:600; text-align:center; margin-top:10px; display:none;"></div>
+    <div id="profilSukses" style="color:var(--g7); font-size:.8rem; font-weight:600; text-align:center; margin-top:10px; display:none;"></div>
+
+    <div class="edit-actions" style="margin-top:12px;">
+      <button class="btn bo bfull" onclick="closeProfilModal()">Tutup</button>
+    </div>
   </div>
 </div>
 
@@ -5887,6 +6327,63 @@ function showToastSafe(msg, type, duration){
 
       <!-- ── Panel Guru ── -->
       <div class="admin-panel" id="apGuru">
+
+        <!-- Tab: Tambah 1 / Massal -->
+        <div style="display:flex; gap:6px; margin-bottom:12px;">
+          <button class="fchip on" id="guruTab1" onclick="switchGuruTab('satu')">➕ Tambah Satu</button>
+          <button class="fchip" id="guruTabMassal" onclick="switchGuruTab('massal')">📋 Massal</button>
+        </div>
+
+        <!-- Panel: Tambah Satu -->
+        <div id="guruPanelSatu">
+          <div style="background:var(--bg); border-radius:12px; padding:14px; margin-bottom:14px;">
+            <div class="form-row">
+              <label>Nama Lengkap</label>
+              <input type="text" id="newGuruNama" placeholder="Contoh: Ustadz Ahmad">
+            </div>
+            <div class="form-row">
+              <label>Username <span style="font-weight:400;color:var(--mut)">(huruf kecil, tanpa spasi)</span></label>
+              <input type="text" id="newGuruUsername" placeholder="Contoh: ahmad" autocapitalize="none">
+            </div>
+            <div class="form-row">
+              <label>Password</label>
+              <input type="password" id="newGuruPassword" placeholder="Min. 6 karakter">
+            </div>
+            <div id="newGuruError" style="color:var(--red);font-size:.78rem;margin-bottom:8px;display:none;"></div>
+            <button class="btn bp bfull" onclick="tambahGuruBaru()">Buat Akun Guru</button>
+          </div>
+        </div>
+
+        <!-- Panel: Tambah Massal -->
+        <div id="guruPanelMassal" style="display:none;">
+          <div style="background:var(--bg); border-radius:12px; padding:14px; margin-bottom:14px;">
+            <div class="info-badge" style="margin-bottom:12px;">
+              💡 Ketik satu nama guru per baris. Username & password akan dibuat otomatis. Catat hasilnya untuk dibagikan ke guru.
+            </div>
+            <div class="form-row">
+              <label>Daftar Nama Guru (1 nama per baris)</label>
+              <textarea id="massalNamaInput" rows="6"
+                style="width:100%;padding:10px;border:1.5px solid var(--brd);border-radius:9px;font-size:.85rem;resize:vertical;outline:none;font-family:inherit;background:var(--surf2);"
+                placeholder="Ustadz Ahmad&#10;Ustadzah Fatimah&#10;Ustadz Hasan&#10;Ustadzah Aisyah"></textarea>
+            </div>
+            <div id="massalGuruError" style="color:var(--red);font-size:.78rem;margin-bottom:8px;display:none;"></div>
+            <button class="btn bp bfull" onclick="importMassalGuru()">🚀 Generate & Buat Semua Akun</button>
+          </div>
+          <!-- Hasil -->
+          <div id="massalGuruHasil" style="display:none;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <div style="font-size:.82rem;font-weight:700;color:var(--g8);">✅ Akun Berhasil Dibuat</div>
+              <button onclick="salinSemuaAkun()" style="padding:5px 12px;border:none;background:var(--g1);color:var(--g7);border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;">📋 Salin Semua</button>
+            </div>
+            <div id="massalGuruTabel"></div>
+            <div class="info-badge" style="margin-top:10px;background:#fff8e1;border-color:#ffe082;color:#7a5800;">
+              ⚠️ Catat username & password ini sekarang! Password tidak bisa dilihat lagi setelah halaman ditutup.
+            </div>
+          </div>
+        </div>
+
+        <!-- Daftar Guru -->
+        <div style="font-size:.82rem;font-weight:700;color:var(--mut);margin:12px 0 8px;text-transform:uppercase;letter-spacing:.3px;">Daftar Guru Terdaftar</div>
         <div id="adminGuruList"></div>
       </div>
 
@@ -6006,6 +6503,10 @@ function showToastSafe(msg, type, duration){
       <input type="text" id="editGuruNama" readonly style="background:#f0f0f0;">
     </div>
     <div class="form-row">
+      <label>Username</label>
+      <input type="text" id="editGuruUsername" readonly style="background:#f0f0f0;">
+    </div>
+    <div class="form-row">
       <label>Kelas yang Diajar (pisahkan dengan koma)</label>
       <input type="text" id="editGuruKelas" placeholder="Kosongkan = semua kelas. Contoh: Kelas 1A, Kelas 2B">
     </div>
@@ -6016,9 +6517,29 @@ function showToastSafe(msg, type, duration){
         <option value="nonaktif">Nonaktif (blokir)</option>
       </select>
     </div>
-    <div class="edit-actions">
+
+    <!-- Reset Password Section -->
+    <div style="border-top:1.5px dashed var(--brd); margin-top:12px; padding-top:12px;">
+      <div style="font-size:.78rem; font-weight:700; color:var(--mut); text-transform:uppercase; letter-spacing:.3px; margin-bottom:8px;">🔑 Reset Password</div>
+      <div style="display:flex; gap:8px; align-items:flex-end;">
+        <div style="flex:1;">
+          <input type="text" id="editGuruNewPassword" placeholder="Password baru (min. 6 karakter)"
+            style="width:100%; padding:9px 10px; border:1.5px solid var(--brd); border-radius:9px; font-size:.82rem; outline:none;">
+        </div>
+        <button onclick="generateResetPassword()" style="padding:9px 12px; border:none; background:var(--g1); color:var(--g7); border-radius:9px; font-size:.82rem; font-weight:700; cursor:pointer; white-space:nowrap;">🎲 Acak</button>
+      </div>
+      <div id="resetPwHasil" style="display:none; margin-top:8px; background:#e8f5e9; border-radius:8px; padding:10px; font-size:.82rem;">
+        <div style="color:var(--mut); margin-bottom:2px;">Password baru:</div>
+        <div style="font-size:1.1rem; font-weight:800; color:var(--g8); letter-spacing:2px;" id="resetPwValue">—</div>
+        <div style="font-size:.72rem; color:var(--mut); margin-top:4px;">Catat & berikan ke guru yang bersangkutan</div>
+      </div>
+      <button class="btn" style="width:100%; margin-top:8px; background:#fff3e0; color:#e65100; border:1.5px solid #ffcc80; border-radius:9px; padding:9px; font-size:.82rem; font-weight:700; cursor:pointer;"
+        onclick="resetPasswordGuru()">🔑 Simpan Password Baru</button>
+    </div>
+
+    <div class="edit-actions" style="margin-top:12px;">
       <button class="btn bo" style="flex:1;" onclick="closeEditGuru()">Batal</button>
-      <button class="btn bp" style="flex:2;" onclick="simpanEditGuru()">Simpan</button>
+      <button class="btn bp" style="flex:2;" onclick="simpanEditGuru()">Simpan Data</button>
     </div>
   </div>
 </div>
