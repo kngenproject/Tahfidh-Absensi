@@ -2018,6 +2018,32 @@ span > .fai, div > .fai { vertical-align: middle; }
   cursor: pointer; border: none;
 }
 
+
+/* Pull-to-Refresh */
+#ptrIndicator {
+  position: fixed;
+  top: calc(var(--HDR) - 50px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  background: var(--g8);
+  color: #fff;
+  border-radius: 50px;
+  padding: 7px 18px;
+  font-size: .82rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  box-shadow: 0 4px 14px rgba(0,0,0,.25);
+  opacity: 0;
+  transition: top .2s, opacity .2s;
+  pointer-events: none;
+  white-space: nowrap;
+}
+#ptrIndicator.pulling { opacity: 1; }
+#ptrIndicator.refreshing { opacity: 1; top: calc(var(--HDR) + 8px); }
+#ptrSpinner { display:inline-block; transition: transform .2s; }
 </style>
 </head>
 <body>
@@ -2079,6 +2105,7 @@ span > .fai, div > .fai { vertical-align: middle; }
   </div>
 </div>
 <div id="syncStatus">↻ Menyinkron...</div>
+<div id="ptrIndicator"><span id="ptrSpinner">↻</span> <span id="ptrText">Tarik untuk perbarui</span></div>
 
 <!-- Pages Container -->
 <div class="pgwrap" id="pgwrap">
@@ -2761,83 +2788,103 @@ async function loadConfig(){
   } catch(e) { console.warn('[FB] loadConfig:', e); }
 }
 
-// ─── Realtime Firestore listeners ─────────────────────────────
-function setupRealtimeListeners(){
-  // Clear previous listeners
+// Fetch data dari Firestore (sekali saat load, bukan realtime)
+async function setupRealtimeListeners(){
   fbListeners.forEach(u => u());
   fbListeners = [];
-
-  // ── Siswa ──
-  const unsubSiswa = fbDb.collection('siswa')
-    .where('status', '==', 'aktif')
-    .onSnapshot(snap => {
-      masterSiswa = snap.docs.map(d => ({ fbId: d.id, ...d.data() }));
-      localStorage.setItem('db_master_siswa', JSON.stringify(masterSiswa));
-      renderDdSiswa && renderDdSiswa();
-      updateStrip && updateStrip();
-      renderSiswaCards && renderSiswaCards();
-      updateStatsAbsensi && updateStatsAbsensi();
-      renderTblSetoran && renderTblSetoran();
-      updateDashboard && updateDashboard();
-    }, err => console.warn('[FB] siswa listener:', err));
-  fbListeners.push(unsubSiswa);
-
-  // ── Setoran (tahun ajaran aktif) ──
-  const unsubSetoran = fbDb.collection('setoran')
-    .where('tahunAjaran', '==', tahunAjaranAktif)
-    .orderBy('inputAt', 'desc')
-    .onSnapshot(snap => {
-      dataSetoran = snap.docs.map(d => ({ fbId: d.id, ...d.data() }));
-      localStorage.setItem('db_setoran', JSON.stringify(dataSetoran));
-      renderTblSetoran && renderTblSetoran();
-      if(curPg === 0) updateDashboard && updateDashboard();
-    }, err => console.warn('[FB] setoran listener:', err));
-  fbListeners.push(unsubSetoran);
-
-  // ── Absensi hari ini ──
-  const todayKey = new Date().toISOString().slice(0,10);
-  const unsubAbsen = fbDb.collection('absensiHarian').doc(todayKey)
-    .onSnapshot(snap => {
-      if(snap.exists){
-        const d = snap.data().data || {};
-        dataAbsensi = Object.entries(d).map(([nama, val]) => ({
-          nama, status: val.status, waktu: val.waktu, kelas: val.kelas,
-          inputBy: val.inputBy, inputByNama: val.inputByNama
-        }));
-        localStorage.setItem('db_absensi_harian', JSON.stringify(dataAbsensi));
-        renderSiswaCards && renderSiswaCards();
-        updateStatsAbsensi && updateStatsAbsensi();
-        renderRiwAbsensi && renderRiwAbsensi();
-      }
-    }, err => console.warn('[FB] absensi listener:', err));
-  fbListeners.push(unsubAbsen);
-
-  // ── Points ──
-  const unsubPoints = fbDb.collection('points')
-    .onSnapshot(snap => {
-      userPoints = {}; userStreaks = {};
-      snap.docs.forEach(d => {
-        userPoints[d.id] = d.data().total || 0;
-        userStreaks[d.id] = d.data().streak || 0;
-      });
-      localStorage.setItem('db_points', JSON.stringify(userPoints));
-      localStorage.setItem('db_streaks', JSON.stringify(userStreaks));
-    }, err => console.warn('[FB] points listener:', err));
-  fbListeners.push(unsubPoints);
+  await fetchAllData();
 }
+
+async function fetchAllData(){
+  showSyncing();
+  try {
+    // Siswa
+    const snapSiswa = await fbDb.collection('siswa').where('status','==','aktif').get();
+    masterSiswa = snapSiswa.docs.map(d => ({ fbId: d.id, ...d.data() }));
+    localStorage.setItem('db_master_siswa', JSON.stringify(masterSiswa));
+
+    // Setoran
+    const snapSetoran = await fbDb.collection('setoran')
+      .where('tahunAjaran','==', tahunAjaranAktif).get();
+    dataSetoran = snapSetoran.docs.map(d => ({ fbId: d.id, ...d.data() }));
+    dataSetoran.sort((a, b) => {
+      const ta = a.inputAt?.toDate ? a.inputAt.toDate().getTime() : (a.id || 0);
+      const tb = b.inputAt?.toDate ? b.inputAt.toDate().getTime() : (b.id || 0);
+      return tb - ta;
+    });
+    localStorage.setItem('db_setoran', JSON.stringify(dataSetoran));
+
+    // Absensi hari ini
+    const todayKey = new Date().toISOString().slice(0,10);
+    const snapAbsen = await fbDb.collection('absensiHarian').doc(todayKey).get();
+    if(snapAbsen.exists){
+      const d = snapAbsen.data().data || {};
+      const fromServer = Object.entries(d).map(([nama, val]) => ({
+        nama, status: val.status, waktu: val.waktu, kelas: val.kelas,
+        inputBy: val.inputBy, inputByNama: val.inputByNama
+      }));
+      // Merge: utamakan perubahan lokal di sesi ini
+      const localMap = {};
+      dataAbsensi.forEach(a => { localMap[a.nama] = a; });
+      fromServer.forEach(a => { if(!localMap[a.nama]) localMap[a.nama] = a; });
+      dataAbsensi = Object.values(localMap);
+      localStorage.setItem('db_absensi_harian', JSON.stringify(dataAbsensi));
+    }
+
+    // Points
+    const snapPoints = await fbDb.collection('points').get();
+    userPoints = {}; userStreaks = {};
+    snapPoints.docs.forEach(d => {
+      userPoints[d.id] = d.data().total || 0;
+      userStreaks[d.id] = d.data().streak || 0;
+    });
+    localStorage.setItem('db_points', JSON.stringify(userPoints));
+    localStorage.setItem('db_streaks', JSON.stringify(userStreaks));
+
+  } catch(e){
+    console.warn('[FB] fetchAllData:', e);
+    showToast('Gagal ambil data server, pakai data lokal', 'warning', 3000);
+    masterSiswa  = JSON.parse(localStorage.getItem('db_master_siswa')||'[]');
+    dataSetoran  = JSON.parse(localStorage.getItem('db_setoran')||'[]');
+    dataAbsensi  = JSON.parse(localStorage.getItem('db_absensi_harian')||'[]');
+    userPoints   = JSON.parse(localStorage.getItem('db_points')||'{}');
+    userStreaks   = JSON.parse(localStorage.getItem('db_streaks')||'{}');
+  }
+
+  // Render semua UI
+  renderDdSiswa && renderDdSiswa();
+  updateStrip && updateStrip();
+  renderSiswaCards && renderSiswaCards();
+  updateStatsAbsensi && updateStatsAbsensi();
+  renderRiwAbsensi && renderRiwAbsensi();
+  renderTblSetoran && renderTblSetoran();
+  updateDashboard && updateDashboard();
+  showSyncDone();
+}
+
+// Refresh manual
+window.refreshData = async function(){
+  await fetchAllData();
+  showToast('Data diperbarui dari server', 'success', 2000);
+};
 
 // ─── Sync indicator ────────────────────────────────────────────
 let syncTimer = null;
 function showSyncing(){
   const el = document.getElementById('syncStatus');
+  if(!el) return;
   el.textContent = '↻ Menyinkron...';
   el.className = 'syncing show';
   clearTimeout(syncTimer);
-  syncTimer = setTimeout(() => {
-    el.textContent = '✓ Tersinkron';
-    el.className = 'show';
-    setTimeout(() => el.className = '', 2000);
-  }, 1500);
+}
+
+function showSyncDone(){
+  const el = document.getElementById('syncStatus');
+  if(!el) return;
+  clearTimeout(syncTimer);
+  el.textContent = '✓ Tersinkron';
+  el.className = 'show';
+  syncTimer = setTimeout(() => { el.className = ''; }, 2500);
 }
 
 // ─── Init app UI ───────────────────────────────────────────────
@@ -4475,6 +4522,11 @@ window.setStatusAbsen = function(nama, status){
     });
   }
   localStorage.setItem('db_absensi_harian', JSON.stringify(dataAbsensi));
+  renderSiswaCards();
+  updateStatsAbsensi();
+  renderRiwAbsensi();
+  // Set flag agar listener tidak overwrite
+  window._isSavingAbsen = true;
   // Write to Firestore (absensiHarian/{YYYY-MM-DD})
   const todayKey = new Date().toISOString().slice(0,10);
   const entry = { status, waktu: now, kelas: siswa?.kelas || 'Umum',
@@ -4484,11 +4536,14 @@ window.setStatusAbsen = function(nama, status){
     tanggal: todayKey,
     tahunAjaran: tahunAjaranAktif,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  }, { merge: true }).catch(err => console.warn('[FB] setStatusAbsen:', err));
+  }, { merge: true }).then(() => {
+    // Beri jeda 2 detik sebelum listener boleh overwrite lagi
+    setTimeout(() => { window._isSavingAbsen = false; }, 2000);
+  }).catch(err => {
+    window._isSavingAbsen = false;
+    console.warn('[FB] setStatusAbsen:', err);
+  });
   showSyncing();
-  renderSiswaCards();
-  updateStatsAbsensi();
-  renderRiwAbsensi();
   if(navigator.vibrate) navigator.vibrate(50);
 };
 
@@ -5232,6 +5287,96 @@ function simpanPencapaianAwal(){
 function showToastSafe(msg, type, duration){
   if(typeof showToast === 'function') showToast(msg, type, duration);
 }
+
+/* ==============================
+   PULL TO REFRESH
+============================== */
+(function(){
+  let startY = 0, currY = 0, isPulling = false, isRefreshing = false;
+  const THRESHOLD = 70; // px tarik sebelum trigger
+
+  const getScrollEl = () => {
+    const pages = document.querySelectorAll('.pg');
+    for(const pg of pages){
+      if(pg.classList.contains('active') || getComputedStyle(pg).display !== 'none'){
+        // cek apakah halaman ini yang aktif (transform)
+        if(pg.id === 'pg' + (window.curPg || 0)) return pg;
+      }
+    }
+    return document.querySelector('.pg');
+  };
+
+  const indicator = () => document.getElementById('ptrIndicator');
+  const spinner   = () => document.getElementById('ptrSpinner');
+  const ptrText   = () => document.getElementById('ptrText');
+
+  document.addEventListener('touchstart', e => {
+    if(isRefreshing) return;
+    const el = getScrollEl();
+    if(!el || el.scrollTop > 0) return; // hanya saat di atas
+    startY = e.touches[0].clientY;
+    isPulling = true;
+  }, { passive: true });
+
+  document.addEventListener('touchmove', e => {
+    if(!isPulling || isRefreshing) return;
+    const el = getScrollEl();
+    if(!el || el.scrollTop > 0) { isPulling = false; return; }
+    currY = e.touches[0].clientY;
+    const dist = Math.min(currY - startY, THRESHOLD * 1.5);
+    if(dist <= 0) return;
+
+    const ind = indicator();
+    ind.classList.add('pulling');
+    const ratio = Math.min(dist / THRESHOLD, 1);
+    const topPx = (-50 + ratio * 65);
+    ind.style.top = `calc(var(--HDR) + ${topPx}px)`;
+    ind.style.opacity = ratio;
+    spinner().style.transform = `rotate(${ratio * 270}deg)`;
+    ptrText().textContent = dist >= THRESHOLD ? 'Lepas untuk perbarui' : 'Tarik untuk perbarui';
+  }, { passive: true });
+
+  document.addEventListener('touchend', async () => {
+    if(!isPulling || isRefreshing) return;
+    const dist = currY - startY;
+    isPulling = false;
+    currY = 0;
+
+    if(dist >= THRESHOLD){
+      isRefreshing = true;
+      const ind = indicator();
+      ind.classList.remove('pulling');
+      ind.classList.add('refreshing');
+      ind.style.top = '';
+      ind.style.opacity = '';
+      spinner().style.transform = 'rotate(0deg)';
+      ptrText().textContent = 'Memperbarui...';
+      // Animasi putar terus
+      let deg = 0;
+      const spinInt = setInterval(() => {
+        deg += 30;
+        spinner().style.transform = `rotate(${deg}deg)`;
+      }, 60);
+
+      await fetchAllData();
+
+      clearInterval(spinInt);
+      ptrText().textContent = '✓ Selesai';
+      spinner().style.transform = 'rotate(360deg)';
+      setTimeout(() => {
+        ind.classList.remove('refreshing');
+        ind.style.top = '';
+        isRefreshing = false;
+      }, 800);
+    } else {
+      const ind = indicator();
+      ind.classList.remove('pulling');
+      ind.style.top = '';
+      ind.style.opacity = '';
+    }
+  });
+})();
+
 </script>
 
 <!-- Modal Pencapaian Awal -->
