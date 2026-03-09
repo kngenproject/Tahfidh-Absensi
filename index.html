@@ -424,10 +424,11 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
 }
 .g3 { 
   display:grid; 
-  grid-template-columns: 2fr 1fr 1fr !important; 
+  grid-template-columns: 1fr auto auto !important; 
   gap:6px; 
   width: 100%;
 }
+.g3 select { min-width: 0; width: 100%; }
 .mt6 { margin-top:6px; } 
 .mt8 { margin-top:8px; } 
 .mt10 { margin-top:10px; }
@@ -2096,25 +2097,24 @@ span > .fai, div > .fai { vertical-align: middle; }
 }
 .csd-overlay.show { display: flex; }
 .csd-sheet {
-  background: #fff;
+  background: var(--bg);
   border-radius: 20px 20px 0 0;
   width: 100%;
-  max-height: 75vh;
+  max-height: 80vh;
   display: flex;
   flex-direction: column;
   box-shadow: 0 -4px 24px rgba(0,0,0,.18);
   animation: slideUp .25s ease;
 }
 .csd-header {
-  padding: 14px 16px 10px;
+  padding: 14px 16px 12px;
   border-bottom: 1px solid var(--brd);
   flex-shrink: 0;
-}
-.csd-title-row {
+  background: #fff;
+  border-radius: 20px 20px 0 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
 }
 .csd-title {
   font-weight: 800;
@@ -2135,69 +2135,78 @@ span > .fai, div > .fai { vertical-align: middle; }
   border-radius: 50%;
 }
 .csd-close:active { background: var(--brd); }
-.csd-search-wrap {
-  position: relative;
-}
-.csd-search {
-  width: 100%;
-  padding: 8px 10px 8px 34px;
-  border: 1.5px solid var(--brd);
-  border-radius: 10px;
-  font-size: var(--fsm);
-  background: var(--surf2);
-  color: var(--txt);
-  outline: none;
-}
-.csd-search:focus { border-color: var(--g5); font-size: var(--fsm); }
-.csd-search-ico {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: var(--fsm);
-  color: var(--mut);
-  pointer-events: none;
-}
 .csd-body {
   overflow-y: auto;
   flex: 1;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding: 8px 10px;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
 }
 .csd-group-label {
-  padding: 8px 16px 4px;
+  padding: 8px 4px 4px;
   font-size: var(--fxs);
   font-weight: 700;
   color: var(--mut);
   text-transform: uppercase;
   letter-spacing: .4px;
-  background: var(--bg);
   position: sticky;
   top: 0;
+  background: var(--bg);
   z-index: 1;
 }
-.csd-item {
+.csd-card {
+  background: var(--surf);
+  border-radius: var(--rs);
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  border-left: 3px solid var(--g5);
+  box-shadow: var(--sh);
   display: flex;
   align-items: center;
-  padding: 10px 16px;
-  font-size: var(--fsm);
-  font-weight: 600;
-  color: var(--txt);
-  border-bottom: 1px solid var(--brd);
+  justify-content: space-between;
   cursor: pointer;
-  gap: 10px;
-  transition: background .1s;
+  transition: background .1s, transform .1s;
+  gap: 8px;
 }
-.csd-item:active { background: var(--g0); }
-.csd-item.selected {
+.csd-card:active { background: var(--g1); transform: scale(.98); }
+.csd-card.selected {
+  border-left-color: var(--g6);
   background: var(--g1);
-  color: var(--g8);
 }
-.csd-item-num {
+.csd-card-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+.csd-card-num {
   font-size: var(--fxs);
   color: var(--mut);
-  min-width: 22px;
   font-weight: 400;
+  min-width: 18px;
+  flex-shrink: 0;
+}
+.csd-card-name {
+  font-weight: 700;
+  font-size: var(--fmd);
+  color: var(--txt);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.csd-card-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.csd-check {
+  color: var(--g6);
+  font-size: var(--flg);
+  font-weight: 800;
 }
 .csd-empty {
   padding: 24px;
@@ -2205,13 +2214,13 @@ span > .fai, div > .fai { vertical-align: middle; }
   font-size: var(--fsm);
   color: var(--mut);
 }
-/* Trigger button — mirip select tapi custom */
+/* Trigger button */
 .csd-trigger {
   width: 100%;
   padding: 9px 36px 9px 10px;
   border: 1.5px solid var(--brd);
   border-radius: var(--rs);
-  font-size: var(--fsm);
+  font-size: var(--flg);
   font-weight: 600;
   color: var(--txt);
   background: var(--surf2);
@@ -2302,11 +2311,19 @@ span > .fai, div > .fai { vertical-align: middle; }
 
     <!-- TAB 0 — DASHBOARD -->
     <div class="pg active" id="pg0">
+      <!-- Filter Kelas Dashboard -->
+      <div id="kelasFilterDashboard" style="display:none; margin-bottom:6px;">
+        <div id="kelasChipsDashboard" class="frow" style="margin-bottom:0; flex-wrap:wrap;"></div>
+      </div>
       <!-- Siswa Selector -->
       <div class="siswa-selector-bar">
         <svg class="fai" viewBox="0 0 448 512" aria-hidden="true"><path d="M219.3 .5c3.1-.6 6.3-.6 9.4 0l200 40C439.9 42.7 448 52.6 448 64s-8.1 21.3-19.3 23.5L352 102.9V160c0 70.7-57.3 128-128 128s-128-57.3-128-128V102.9L48 93.3V184c0 13.3-10.7 24-24 24s-24-10.7-24-24V64C0 52.6 8.1 42.7 19.3 40.5l200-40zM105.8 123.3L224 147.1l118.2-23.8V175.1c0 44.2-35.8 80-80 80H185.8c-44.2 0-80-35.8-80-80V123.3zM1.5 433.1L44.6 421c9.1 21.2 22.8 39.8 40 55.1L16.4 502.6c-11 3.6-23.1-2.3-26.8-13.4s2.3-23.1 13.4-26.8l-1.5-.3zM256 336c0 17.7 14.3 32 32 32s32-14.3 32-32v-9.1c15.1-9.4 26.3-24.1 30.7-41.5l11.4-45.5c10-39.9-14.3-80.5-54.2-90.5s-80.5 14.3-90.5 54.2L206 249.6c-4.4 17.4-1.4 35.5 7.8 50.5l-31.2 8.2c-9.1 2.4-14.5 11.7-12.1 20.8s11.7 14.5 20.8 12.1l39.6-10.4c5.5 4.3 11.5 7.9 18 10.9V336z"/></svg>
         <span class="siswa-selector-label">Siswa</span>
-        <select id="dashboardSiswaSelect" onchange="onDashboardSiswaChange()">
+        <button type="button" class="csd-trigger placeholder" id="dashboardSiswaSelectTrigger" onclick="openCsdSiswa('dashboardSiswaSelect')" style="flex:1;">
+          <span id="dashboardSiswaSelectLabel">— Semua Siswa —</span>
+          <span class="csd-trigger-arrow">▼</span>
+        </button>
+        <select id="dashboardSiswaSelect" style="display:none;" onchange="onDashboardSiswaChange();">
           <option value="SEMUA">— Semua Siswa —</option>
         </select>
       </div>
@@ -2453,38 +2470,58 @@ span > .fai, div > .fai { vertical-align: middle; }
           <div>
             <label class="flbl">Nama Siswa</label>
             <button type="button" class="csd-trigger placeholder" id="namaSiswaTrigger" onclick="openCsdSiswa('namaSiswa')">
-            <span id="namaSiswaLabel">— Pilih Siswa —</span>
-            <span class="csd-trigger-arrow">▼</span>
-          </button>
-          <select id="namaSiswa" style="display:none;"></select>
+              <span id="namaSiswaLabel">— Pilih Siswa —</span>
+              <span class="csd-trigger-arrow">▼</span>
+            </button>
+            <select id="namaSiswa" style="display:none;"></select>
           </div>
           <!-- Surat Juz 30 + Ayat -->
           <div class="g3 mt8">
             <div>
               <label class="flbl">Surat</label>
-              <select id="surat" onchange="renderAyatList()"></select>
+              <button type="button" class="csd-trigger placeholder" id="suratTrigger" onclick="openCsd('surat','📖 Pilih Surat')">
+                <span id="suratLabel">— Pilih Surat —</span>
+                <span class="csd-trigger-arrow">▼</span>
+              </button>
+              <select id="surat" style="display:none;" onchange="renderAyatList();"></select>
             </div>
             <div>
               <label class="flbl">Dari</label>
-              <select id="ayatMulai" onchange="renderAyatGrid()"></select>
+              <button type="button" class="csd-trigger placeholder" id="ayatMulaiTrigger" onclick="openCsd('ayatMulai','Dari Ayat')">
+                <span id="ayatMulaiLabel">—</span>
+                <span class="csd-trigger-arrow">▼</span>
+              </button>
+              <select id="ayatMulai" style="display:none;" onchange="renderAyatGrid();"></select>
             </div>
             <div>
               <label class="flbl">Sampai</label>
-              <select id="ayatSampai" onchange="renderAyatGrid()"></select>
+              <button type="button" class="csd-trigger placeholder" id="ayatSampaiTrigger" onclick="openCsd('ayatSampai','Sampai Ayat')">
+                <span id="ayatSampaiLabel">—</span>
+                <span class="csd-trigger-arrow">▼</span>
+              </button>
+              <select id="ayatSampai" style="display:none;" onchange="renderAyatGrid();"></select>
             </div>
           </div>
           <!-- Status + Tambahan -->
-          <div class="g2 mt8">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
             <div>
               <label class="flbl">Status</label>
-              <select id="statLancar">
+              <button type="button" class="csd-trigger" id="statLancarTrigger" onclick="openCsd('statLancar','Status Hafalan')">
+                <span id="statLancarLabel">✅ Lancar</span>
+                <span class="csd-trigger-arrow">▼</span>
+              </button>
+              <select id="statLancar" style="display:none;">
                 <option value="L">✅ Lancar</option>
                 <option value="KL">⚠️ Kurang Lancar</option>
               </select>
             </div>
             <div>
               <label class="flbl">Tambahan</label>
-              <select id="tambahan">
+              <button type="button" class="csd-trigger placeholder" id="tambahanTrigger" onclick="openCsd('tambahan','Keterangan Tambahan')">
+                <span id="tambahanLabel">— Pilih —</span>
+                <span class="csd-trigger-arrow">▼</span>
+              </button>
+              <select id="tambahan" style="display:none;">
                 <option value="">— Pilih —</option>
                 <option value="Belum Khatam">Belum Khatam</option>
                 <option value="Muroja'ah">Muroja'ah</option>
@@ -2944,6 +2981,17 @@ let isAdmin = true; // mode tanpa login = selalu admin
 let tahunAjaranAktif = '';
 let fbListeners   = [];
 
+// ─── Deklarasi global state kelas filter & handler registry ───
+// PENTING: harus di-declare di sini (sebelum semua fungsi yang menggunakannya)
+// agar tidak terkena Temporal Dead Zone (TDZ) error saat script dijalankan.
+const _kelasHandlers = {};
+let activeDashboardSiswa  = 'SEMUA';
+let activeDashboardKelas  = 'SEMUA';
+let activeKelasTahfidh    = 'SEMUA';
+let activeKelasAbsen      = 'SEMUA';
+let activeKelasViewer     = 'SEMUA';
+let activeKelasMpa        = 'SEMUA';
+
 // ─── Auto-start app tanpa login ────────────────────────────────
 (async function initApp(){
   try {
@@ -3006,8 +3054,8 @@ async function loadConfig(){
       const m = new Date().getMonth();
       tahunAjaranAktif = m >= 6 ? `${y}/${y+1}` : `${y-1}/${y}`;
     }
-    document.getElementById('taCurrent').textContent = tahunAjaranAktif;
-    document.getElementById('taInput').value = tahunAjaranAktif;
+    const _taC=document.getElementById('taCurrent'); if(_taC) _taC.textContent = tahunAjaranAktif;
+    const _taI=document.getElementById('taInput'); if(_taI) _taI.value = tahunAjaranAktif;
     document.getElementById('hdrSub').textContent = `Tahun Ajaran ${tahunAjaranAktif}`;
   } catch(e) { console.warn('[FB] loadConfig:', e); }
 }
@@ -3042,11 +3090,21 @@ async function fetchAllData(){
     const todayKey = _localDateKey();
     const snapAbsen = await fbDb.collection('absensiHarian').doc(todayKey).get(FROM_SERVER);
     if(snapAbsen.exists){
-      const d = snapAbsen.data().data || {};
-      dataAbsensi = Object.entries(d).map(([nama, val]) => ({
-        nama, status: val.status, waktu: val.waktu, kelas: val.kelas,
-        inputBy: val.inputBy, inputByNama: val.inputByNama
-      }));
+      const d = snapAbsen.data();
+      // Coba baca dari field 'data' (object by nama) dulu, lalu fallback ke 'siswa' (array)
+      if(d.data && typeof d.data === 'object' && Object.keys(d.data).length > 0){
+        dataAbsensi = Object.entries(d.data).map(([nama, val]) => ({
+          nama, status: val.status, waktu: val.waktu, kelas: val.kelas,
+          inputBy: val.inputBy, inputByNama: val.inputByNama
+        }));
+      } else if(Array.isArray(d.siswa) && d.siswa.length > 0){
+        dataAbsensi = d.siswa.map(s => ({
+          nama: s.nama, status: s.status, waktu: s.waktu||'', kelas: s.kelas||'Umum',
+          inputBy: 'offline', inputByNama: ''
+        }));
+      } else {
+        dataAbsensi = [];
+      }
     } else {
       dataAbsensi = [];
     }
@@ -3189,16 +3247,17 @@ function closeUserMenu(){}
 
 // ── Admin: Invite Codes ───────────────────────────────────────
 document.getElementById('newCodeType')?.addEventListener('change', function(){
-  document.getElementById('maxUseRow').style.display = this.value === 'limited' ? 'block' : 'none';
+  const _mur=document.getElementById('maxUseRow'); if(_mur) _mur.style.display = this.value === 'limited' ? 'block' : 'none';
 });
 
 async function buatKodeUndangan(){
-  const kode = document.getElementById('newCodeInput').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+  const _nci=document.getElementById('newCodeInput'); if(!_nci) return;
+  const kode = _nci.value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
   if(kode.length < 4){ showToast('Kode minimal 4 karakter huruf/angka', 'warning'); return; }
-  const type = document.getElementById('newCodeType').value;
-  const expiry = document.getElementById('newCodeExpiry').value;
-  const label  = document.getElementById('newCodeLabel').value.trim();
-  const maxUse = parseInt(document.getElementById('newCodeMaxUse').value) || 5;
+  const type = document.getElementById('newCodeType')?.value || 'unlimited';
+  const expiry = document.getElementById('newCodeExpiry')?.value || '';
+  const label  = (document.getElementById('newCodeLabel')?.value || '').trim();
+  const maxUse = parseInt(document.getElementById('newCodeMaxUse')?.value) || 5;
   try {
     const existing = await fbDb.collection('inviteCodes').doc(kode).get();
     if(existing.exists){ showToast('Kode sudah ada, gunakan kode lain', 'warning'); return; }
@@ -3211,9 +3270,9 @@ async function buatKodeUndangan(){
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     showToast(`Kode "${kode}" berhasil dibuat`, 'success');
-    document.getElementById('newCodeInput').value = '';
-    document.getElementById('newCodeLabel').value = '';
-    document.getElementById('newCodeExpiry').value = '';
+    const _ni=document.getElementById('newCodeInput'); if(_ni) _ni.value = '';
+    const _nl=document.getElementById('newCodeLabel'); if(_nl) _nl.value = '';
+    const _ne=document.getElementById('newCodeExpiry'); if(_ne) _ne.value = '';
   } catch(e){ showToast('Gagal: ' + e.message, 'error'); }
 }
 
@@ -3348,6 +3407,8 @@ self.addEventListener('fetch', evt => {
 window.addEventListener('online', () => {
   document.getElementById('offline').style.display = 'none';
   if (typeof showToast === 'function') showToast('Kembali online ✓', 'success');
+  // Re-sync data dari Firestore setelah koneksi pulih
+  if (typeof fetchAllData === 'function') fetchAllData();
 });
 window.addEventListener('offline', () => {
   document.getElementById('offline').style.display = 'block';
@@ -3523,7 +3584,7 @@ pgw.addEventListener('touchend',e=>{
 function quickAction(){
   if(curPg === 2) {
     if(confirm('Tandai semua siswa Hadir?')){
-      masterSiswa.forEach(s=>setStatusAbsen(s.nama,'Hadir'));
+      masterSiswa.forEach(s=>window.setStatusAbsen(s.nama,'Hadir'));
       showToast('Semua siswa ditandai Hadir!','success');
     }
   }
@@ -3575,24 +3636,36 @@ const SURAT_JUZ30 = [
 (()=>{
   const sel=document.getElementById('surat');
   SURAT_JUZ30.forEach(s=>sel.add(new Option(`${s.n}. ${s.nm}`, s.nm)));
+  if(sel.options.length > 0){ sel.selectedIndex = 0; syncCsdTrigger('surat'); }
 })();
 
 /* ==============================
    DASHBOARD FUNCTIONS
 ============================== */
-let activeDashboardSiswa = 'SEMUA';
-
 function onDashboardSiswaChange(){
   activeDashboardSiswa = document.getElementById('dashboardSiswaSelect').value;
   updateDashboard();
 }
 
+function setKelasDashboard(k){
+  activeDashboardKelas = k;
+  activeDashboardSiswa = 'SEMUA';
+  updateDashboard(); // updateDashboard sudah memanggil updateDashboardSiswaDropdown + renderKelasChips
+}
+_kelasHandlers['setKelasDashboard'] = setKelasDashboard;
+
 function updateDashboardSiswaDropdown(){
+  // Render kelas chips
+  renderKelasChips('kelasChipsDashboard','kelasFilterDashboard', activeDashboardKelas, 'setKelasDashboard', 'master');
   const sel = document.getElementById('dashboardSiswaSelect');
   const prev = sel.value;
   sel.innerHTML = '<option value="SEMUA">— Semua Siswa —</option>';
+  // Filter siswa sesuai kelas aktif
+  const siswaDitampil = activeDashboardKelas === 'SEMUA'
+    ? masterSiswa
+    : masterSiswa.filter(s => (s.kelas||'Umum').trim() === activeDashboardKelas);
   const grouped = {};
-  masterSiswa.forEach(s => {
+  siswaDitampil.forEach(s => {
     const k = (s.kelas || 'Umum').trim();
     if(!grouped[k]) grouped[k] = [];
     grouped[k].push(s.nama);
@@ -3603,27 +3676,37 @@ function updateDashboardSiswaDropdown(){
       const og = document.createElement('optgroup');
       const namaUrut = grouped[k].slice().sort((a, b) => a.localeCompare(b, 'id'));
       og.label = `── ${k} (${namaUrut.length} siswa) ──`;
-      namaUrut.forEach((nama, i) => {
-        og.appendChild(new Option(`${i + 1}. ${nama}`, nama));
-      });
+      namaUrut.forEach((nama, i) => { og.appendChild(new Option(`${i + 1}. ${nama}`, nama)); });
       sel.appendChild(og);
     });
   } else {
-    const namaUrut = masterSiswa.map(s => s.nama).sort((a, b) => a.localeCompare(b, 'id'));
-    namaUrut.forEach((nama, i) => {
-      sel.appendChild(new Option(`${i + 1}. ${nama}`, nama));
-    });
+    const namaUrut = siswaDitampil.map(s => s.nama).sort((a, b) => a.localeCompare(b, 'id'));
+    namaUrut.forEach((nama, i) => { sel.appendChild(new Option(`${i + 1}. ${nama}`, nama)); });
   }
   if([...sel.options].some(o => o.value === prev)) sel.value = prev;
   else { sel.value = 'SEMUA'; activeDashboardSiswa = 'SEMUA'; }
+  syncCsdTrigger('dashboardSiswaSelect');
 }
 
 function getFilteredSetoran(){
-  if(activeDashboardSiswa === 'SEMUA') return dataSetoran;
-  return dataSetoran.filter(s => s.nama === activeDashboardSiswa);
+  let data = dataSetoran;
+  if(activeDashboardKelas !== 'SEMUA'){
+    const kelasSiswa = new Set(masterSiswa.filter(s=>(s.kelas||'Umum').trim()===activeDashboardKelas).map(s=>s.nama));
+    data = data.filter(s => kelasSiswa.has(s.nama));
+  }
+  if(activeDashboardSiswa !== 'SEMUA') data = data.filter(s => s.nama === activeDashboardSiswa);
+  return data;
 }
 
+// Reentry guards untuk cegah maximum call stack
+let _inUpdateDashboard = false;
+let _inRenderSiswaCards = false;
+let _inRenderDetailSetoran = false;
+
 function updateDashboard(){
+  if(_inUpdateDashboard) return;
+  _inUpdateDashboard = true;
+  try {
   updateDashboardSiswaDropdown();
   updateStreakDisplay();
   updatePointsDisplay();
@@ -3634,6 +3717,7 @@ function updateDashboard(){
   if('Notification' in window && Notification.permission === 'default'){
     document.getElementById('notifBanner').classList.add('show');
   }
+  } finally { _inUpdateDashboard = false; }
 }
 
 function updateStreakDisplay(){
@@ -4431,11 +4515,6 @@ function updateStrip(){
 /* ==============================
    KELAS FILTER STATE
 ============================== */
-let activeKelasTahfidh = 'SEMUA';
-let activeKelasAbsen = 'SEMUA';
-let activeKelasViewer = 'SEMUA';
-let activeKelasMpa = 'SEMUA';
-
 function getKelasUnik(source){
   if(source === 'viewer'){
     if(!vData.length || !vCols.tambahan) return [];
@@ -4453,10 +4532,18 @@ function renderKelasChips(containerId, filterId, activeKelas, onClickFn, source)
   if(!container || !filterDiv) return;
   if(kelas.length <= 1){ filterDiv.style.display = 'none'; return; }
   filterDiv.style.display = 'block';
-  const all = ['SEMUA', ...kelas];
-  container.innerHTML = all.map(k =>
-    `<button class="fchip ${activeKelas === k ? 'on' : ''}" onclick="${onClickFn}('${k}')">${k === 'SEMUA' ? 'Semua Kelas' : k}</button>`
-  ).join('');
+  // Resolve fungsi — support string nama fungsi maupun fungsi langsung
+  const fn = typeof onClickFn === 'function' ? onClickFn
+           : (window[onClickFn] || _kelasHandlers[onClickFn]);
+  if(!fn){ console.warn('renderKelasChips: fn tidak ditemukan:', onClickFn); return; }
+  container.innerHTML = '';
+  ['SEMUA', ...kelas].forEach(k => {
+    const btn = document.createElement('button');
+    btn.className = 'fchip' + (activeKelas === k ? ' on' : '');
+    btn.textContent = k === 'SEMUA' ? 'Semua Kelas' : k;
+    btn.addEventListener('click', () => { fn(k); });
+    container.appendChild(btn);
+  });
 }
 
 function setKelasTahfidh(k){
@@ -4464,18 +4551,21 @@ function setKelasTahfidh(k){
   renderKelasChips('kelasChipsTahfidh','kelasFilterTahfidh', activeKelasTahfidh, 'setKelasTahfidh', 'master');
   renderDdSiswa();
 }
+_kelasHandlers['setKelasTahfidh'] = setKelasTahfidh;
 
 function setKelasAbsen(k){
   activeKelasAbsen = k;
   renderKelasChips('kelasChipsAbsen','kelasFilterAbsen', activeKelasAbsen, 'setKelasAbsen', 'master');
   renderSiswaCards();
 }
+_kelasHandlers['setKelasAbsen'] = setKelasAbsen;
 
 function setKelasViewer(k){
   activeKelasViewer = k;
   renderKelasChips('kelasChipsViewer','kelasFilterViewer', activeKelasViewer, 'setKelasViewer', 'viewer');
   renderViewer();
 }
+_kelasHandlers['setKelasViewer'] = setKelasViewer;
 
 function renderDdSiswa(){
   const sel = document.getElementById('namaSiswa');
@@ -4523,7 +4613,10 @@ function renderAyatList(){
     m.add(new Option(i,i)); 
     sp.add(new Option(i,i)); 
   }
+  m.value = 1;
   sp.value = s.a;
+  syncCsdTrigger('ayatMulai');
+  syncCsdTrigger('ayatSampai');
   renderAyatGrid();
 }
 
@@ -4779,6 +4872,8 @@ function tutupDetailSetoran(e){
 }
 
 function renderDetailSetoran(){
+  if(_inRenderDetailSetoran) return;
+  _inRenderDetailSetoran = true;
   const key = _detailSetoranKey;
   const rows = dataSetoran.filter(i => _setoranTglKey(i) === key);
 
@@ -4809,7 +4904,7 @@ function renderDetailSetoran(){
   document.getElementById('detailSetoranSub').textContent = sub;
 
   const tabelEl = document.getElementById('detailSetoranTabel');
-  if(!filtered.length){ tabelEl.innerHTML = '<div style="padding:20px;text-align:center;color:#bbb;">Tidak ada data</div>'; return; }
+  if(!filtered.length){ tabelEl.innerHTML = '<div style="padding:20px;text-align:center;color:#bbb;">Tidak ada data</div>'; _inRenderDetailSetoran = false; return; }
 
   tabelEl.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:var(--fmd);">
     <thead>
@@ -4846,6 +4941,7 @@ function renderDetailSetoran(){
       }).join('')}
     </tbody>
   </table>`;
+  _inRenderDetailSetoran = false;
 }
 
 window.setDetailSetoranKelas = function(k){
@@ -4946,7 +5042,7 @@ window.hapusSemuaSetoran = function(){
 
 function resetForm(){
   document.querySelectorAll('.cat-salah').forEach(x => x.checked = false);
-  document.getElementById('tambahan').value = '';
+  document.getElementById('tambahan').value = ''; syncCsdTrigger('tambahan');
   renderAyatGrid();
 }
 
@@ -5025,12 +5121,15 @@ function downloadLaporanGabungan(){
    ABSENSI FUNCTIONS
 ============================== */
 function renderSiswaCards(){
+  if(_inRenderSiswaCards) return;
+  _inRenderSiswaCards = true;
+  try {
   const c = document.getElementById('siswaCards');
   document.getElementById('jmlSiswaAbsen').textContent = masterSiswa.length;
   if(!masterSiswa.length){
     c.innerHTML = '<div class="empty"><div class="eico">📤</div><h3>Import siswa dulu di tab Tahfidh</h3><p>Data siswa akan otomatis muncul di sini</p></div>';
     document.getElementById('kelasFilterAbsen').style.display = 'none';
-    return;
+    _inRenderSiswaCards = false; return;
   }
   syncAbsensiWithMaster();
   renderKelasChips('kelasChipsAbsen','kelasFilterAbsen', activeKelasAbsen, 'setKelasAbsen', 'master');
@@ -5040,6 +5139,7 @@ function renderSiswaCards(){
   const stMap = {Hadir:'bg', Ijin:'bgd', Sakit:'bt', Alpha:'br'};
   const kelas = getKelasUnik('master');
   let html = '';
+  const sortNama = (a,b) => a.nama.localeCompare(b.nama,'id');
   if(activeKelasAbsen === 'SEMUA' && kelas.length > 1){
     const grouped = {};
     filtered.forEach(s => {
@@ -5049,17 +5149,19 @@ function renderSiswaCards(){
     });
     Object.keys(grouped).sort().forEach(k => {
       html += `<div style="font-size:var(--fmd);font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.3px;padding:6px 0 4px;border-bottom:1px solid var(--brd);margin-bottom:6px;">${k} <span style="font-weight:400">(${grouped[k].length})</span></div>`;
-      html += grouped[k].map(s => buildSiswaCard(s, stMap)).join('');
+      html += grouped[k].slice().sort(sortNama).map(s => buildSiswaCard(s, stMap)).join('');
     });
   } else {
-    html = filtered.map(s => buildSiswaCard(s, stMap)).join('');
+    html = filtered.slice().sort(sortNama).map(s => buildSiswaCard(s, stMap)).join('');
   }
   c.innerHTML = html || '<div class="empty"><div class="eico">👥</div><p>Tidak ada siswa di kelas ini</p></div>';
+  } finally { _inRenderSiswaCards = false; }
 }
 
 function buildSiswaCard(s, stMap){
   const ab = dataAbsensi.find(a => a.nama === s.nama) || {status:'Hadir', waktu:''};
   const stl = ab.status.toLowerCase();
+  const namaEsc = s.nama.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
   return `<div class="scard ${stl}">
     <div class="sc-top">
       <span class="sc-name">${s.nama}</span>
@@ -5069,10 +5171,10 @@ function buildSiswaCard(s, stMap){
       </div>
     </div>
     <div class="strow">
-      <button class="stbtn hadir ${ab.status === 'Hadir' ? 'on' : ''}" onclick="setStatusAbsen('${s.nama}','Hadir')">✓ Hadir</button>
-      <button class="stbtn ijin  ${ab.status === 'Ijin' ? 'on' : ''}"  onclick="setStatusAbsen('${s.nama}','Ijin')">Ijin</button>
-      <button class="stbtn sakit ${ab.status === 'Sakit' ? 'on' : ''}" onclick="setStatusAbsen('${s.nama}','Sakit')">Sakit</button>
-      <button class="stbtn alpha ${ab.status === 'Alpha' ? 'on' : ''}" onclick="setStatusAbsen('${s.nama}','Alpha')">Alpha</button>
+      <button class="stbtn hadir ${ab.status === 'Hadir' ? 'on' : ''}" onclick="setStatusAbsen(this)" data-nama="${namaEsc}" data-status="Hadir">✓ Hadir</button>
+      <button class="stbtn ijin  ${ab.status === 'Ijin'  ? 'on' : ''}" onclick="setStatusAbsen(this)" data-nama="${namaEsc}" data-status="Ijin">Ijin</button>
+      <button class="stbtn sakit ${ab.status === 'Sakit' ? 'on' : ''}" onclick="setStatusAbsen(this)" data-nama="${namaEsc}" data-status="Sakit">Sakit</button>
+      <button class="stbtn alpha ${ab.status === 'Alpha' ? 'on' : ''}" onclick="setStatusAbsen(this)" data-nama="${namaEsc}" data-status="Alpha">Alpha</button>
     </div>
     ${ab.waktu ? `<div class="sc-time">🕐 ${ab.waktu}</div>` : ''}
   </div>`;
@@ -5097,7 +5199,15 @@ function syncAbsensiWithMaster(){
   localStorage.setItem('db_absensi_harian', JSON.stringify(dataAbsensi));
 }
 
-window.setStatusAbsen = function(nama, status){
+window.setStatusAbsen = function(btnOrNama, status){
+  // Support dua cara pemanggilan: (btn element) atau (nama string, status string)
+  let nama, st;
+  if(typeof btnOrNama === 'string'){
+    nama = btnOrNama; st = status;
+  } else {
+    nama = btnOrNama.dataset.nama; st = btnOrNama.dataset.status;
+  }
+  status = st;
   const now = new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
   const idx = dataAbsensi.findIndex(a => a.nama === nama);
   const siswa = masterSiswa.find(s => s.nama === nama);
@@ -5167,6 +5277,17 @@ async function simpanAbsensiHarian(){
   const ijin  = dataAbsensi.filter(a => a.status==='Ijin').length;
   const sakit = dataAbsensi.filter(a => a.status==='Sakit').length;
   const alpha = dataAbsensi.filter(a => a.status==='Alpha').length;
+  // Bangun kedua format sekaligus agar pembaca manapun bisa baca
+  const siswaArr = dataAbsensi.map(a => ({
+    nama: a.nama, kelas: a.kelas || 'Umum', status: a.status, waktu: a.waktu || '-'
+  }));
+  const dataObj = dataAbsensi.reduce((acc, a) => {
+    acc[a.nama] = {
+      status: a.status, waktu: a.waktu || '-', kelas: a.kelas || 'Umum',
+      inputBy: a.inputBy || 'offline', inputByNama: a.inputByNama || 'Guru'
+    };
+    return acc;
+  }, {});
   const payload = {
     tanggal: key,
     tanggalStr: tglStr,
@@ -5174,15 +5295,12 @@ async function simpanAbsensiHarian(){
     simpanBy: currentUser?.uid || 'offline',
     total: masterSiswa.length,
     hadir, ijin, sakit, alpha,
-    siswa: dataAbsensi.map(a => ({
-      nama: a.nama,
-      kelas: a.kelas || 'Umum',
-      status: a.status,
-      waktu: a.waktu || '-'
-    }))
+    siswa: siswaArr,  // format array untuk detail/riwayat
+    data: dataObj     // format object untuk fetchAllData
   };
   try {
-    await fbDb.collection('absensiHarian').doc(key).set(payload);
+    // merge:true agar field lain (inputBy per-siswa, dll) tidak terhapus
+    await fbDb.collection('absensiHarian').doc(key).set(payload, { merge: true });
     // Simpan ke cache lokal riwayat
     let riwayat = JSON.parse(localStorage.getItem('cache_riwayat_absensi') || '[]');
     const idx = riwayat.findIndex(r => r.tanggal === key);
@@ -5264,7 +5382,13 @@ async function bukaDetailAbsensi(key){
     document.getElementById('detailAbsensiJudul').textContent = d.tanggalStr || key;
     document.getElementById('detailAbsensiRingkasan').textContent =
       `Hadir ${d.hadir||0}  ·  Ijin ${d.ijin||0}  ·  Sakit ${d.sakit||0}  ·  Alpha ${d.alpha||0}  ·  Total ${d.total||0}`;
-    const siswa = d.siswa || [];
+    // Fallback: kalau siswa array belum ada (dokumen hanya punya format data-object dari setStatusAbsen)
+    let siswa = d.siswa || [];
+    if (!siswa.length && d.data && typeof d.data === 'object') {
+      siswa = Object.entries(d.data).map(([nama, v]) => ({
+        nama, kelas: v.kelas || 'Umum', status: v.status || 'Hadir', waktu: v.waktu || '-'
+      })).sort((a, b) => a.nama.localeCompare(b.nama, 'id'));
+    }
     tabelEl.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:var(--fmd);">
       <thead>
         <tr style="background:var(--g8);color:#fff;">
@@ -5734,6 +5858,7 @@ function setKelasMpa(k){
   renderKelasChips('kelasChipsMpa','kelasFilterMpa', activeKelasMpa, 'setKelasMpa', 'master');
   populateMpaSiswaDropdown();
 }
+_kelasHandlers['setKelasMpa'] = setKelasMpa;
 
 function openPencapaian(){
   if(!masterSiswa.length){
@@ -5869,6 +5994,7 @@ function onMpaSuratChange(){
   }
   // Default: last ayat (full surat)
   ayatSel.value = s.a;
+  syncCsdTrigger('mpaAyatSampai');
   // Show helpers
   ayatWrap.style.display = 'block';
   ayatHelper.style.display = 'flex';
@@ -5881,6 +6007,7 @@ function setMpaAyatAll(){
   if(v === '') return;
   const s = SURAT_JUZ30[parseInt(v)];
   document.getElementById('mpaAyatSampai').value = s.a;
+  syncCsdTrigger('mpaAyatSampai');
   updateQuickPreview();
 }
 
@@ -5907,11 +6034,13 @@ function setMpaArah(arah){
   // restore selection if still valid
   if([...suratSel.options].some(o => o.value === prev)) suratSel.value = prev;
   else suratSel.value = '';
+  syncCsdTrigger('mpaSuratSampai');
   document.getElementById('quickPreview').textContent = 'Pilih arah hafalan, surat, dan ayat terakhir untuk melihat preview.';
   // Reset ayat picker
   document.getElementById('mpaAyatWrap').style.display = 'none';
   document.getElementById('mpaAyatHelper').style.display = 'none';
   document.getElementById('mpaAyatSampai').innerHTML = '<option value="">Ayat</option>';
+  syncCsdTrigger('mpaAyatSampai');
   updateMpaCount();
 }
 
@@ -5975,7 +6104,7 @@ function getTglFromInput(){
   return `${parseInt(d)}/${parseInt(m)}/${y}`;
 }
 
-function simpanPencapaianAwal(){
+async function simpanPencapaianAwal(){
   const nama = document.getElementById('mpaSiswa').value;
   if(!nama){ showToast('Pilih nama siswa terlebih dahulu','warning'); return; }
 
@@ -6096,7 +6225,7 @@ window.openEditSiswa = function(fbId){
   document.getElementById('editSiswaNama').value = s.nama || '';
   document.getElementById('editSiswaKelas').value = s.kelas || '';
   const statusEl = document.getElementById('editSiswaStatus');
-  if(statusEl) statusEl.value = s.status || 'aktif';
+  if(statusEl){ statusEl.value = s.status || 'aktif'; syncCsdTrigger('editSiswaStatus'); }
   document.getElementById('editSiswaOverlay').classList.add('show');
 };
 
@@ -6186,24 +6315,45 @@ window.hapusSiswa = async function(fbId){
 let _csdTargetId = null;     // 'namaSiswa' | 'mpaSiswa'
 let _csdItems = [];          // [{value, label, group}]
 
-function openCsdSiswa(targetId) {
+function openCsd(targetId, title) {
   _csdTargetId = targetId;
-  // Ambil data dari <select> tersembunyi
+  // Update judul sheet
+  const titleEl = document.getElementById('csdTitle');
+  if(titleEl) titleEl.textContent = title || 'Pilih';
   const sel = document.getElementById(targetId);
   _csdItems = [];
   for (const child of sel.children) {
     if (child.tagName === 'OPTGROUP') {
       for (const opt of child.children) {
-        if (opt.value) _csdItems.push({ value: opt.value, label: opt.text, group: child.label });
+        _csdItems.push({ value: opt.value, label: opt.text, group: child.label });
       }
-    } else if (child.value) {
+    } else {
       _csdItems.push({ value: child.value, label: child.text, group: null });
     }
   }
-  document.getElementById('csdSearch').value = '';
-  renderCsdItems('');
+  renderCsdItems();
   document.getElementById('csdOverlay').classList.add('show');
-  setTimeout(() => document.getElementById('csdSearch').focus(), 150);
+}
+// Alias lama supaya kode lain tidak rusak
+function openCsdSiswa(targetId) { openCsd(targetId, '👤 Pilih Siswa'); }
+
+// Sync label trigger setelah select diupdate secara programatik
+function syncCsdTrigger(selectId) {
+  const sel = document.getElementById(selectId);
+  if(!sel) return;
+  const trigger = document.getElementById(selectId + 'Trigger');
+  const labelEl = document.getElementById(selectId + 'Label');
+  if(!trigger || !labelEl) return;
+  const opt = sel.options[sel.selectedIndex];
+  const raw = opt ? opt.text : '';
+  const clean = raw.replace(/^\d+\.\s*/, '').replace(/^[—-]\s*|\s*[—-]$/g,'').trim();
+  if(sel.value && sel.value !== 'SEMUA' && sel.value !== '' && clean) {
+    labelEl.textContent = clean;
+    trigger.classList.remove('placeholder');
+  } else {
+    labelEl.textContent = raw || '— Pilih —';
+    trigger.classList.add('placeholder');
+  }
 }
 
 function closeCsdSiswa() {
@@ -6215,104 +6365,82 @@ function closeCsdSiswaOutside(e) {
   if (e.target === document.getElementById('csdOverlay')) closeCsdSiswa();
 }
 
-function filterCsdItems() {
-  const q = document.getElementById('csdSearch').value;
-  renderCsdItems(q);
-}
+function filterCsdItems() { renderCsdItems(); }
 
-function renderCsdItems(query) {
-  const q = query.trim().toLowerCase();
+function renderCsdItems() {
   const currentVal = _csdTargetId ? document.getElementById(_csdTargetId).value : '';
-  const filtered = q
-    ? _csdItems.filter(it => it.label.toLowerCase().includes(q))
-    : _csdItems;
-
   const body = document.getElementById('csdBody');
-  if (!filtered.length) {
-    body.innerHTML = '<div class="csd-empty">Tidak ada siswa ditemukan</div>';
+
+  const specialItems = _csdItems.filter(it => !it.value || it.value === 'SEMUA' || it.value === '');
+  const siswaItems   = _csdItems.filter(it =>  it.value && it.value !== 'SEMUA' && it.value !== '');
+
+  if (!siswaItems.length && !specialItems.length) {
+    body.innerHTML = '<div class="csd-empty">Belum ada siswa</div>';
     return;
   }
 
-  // Kelompokkan jika ada group
-  const hasGroup = filtered.some(it => it.group);
-  let html = '';
+  // Bangun dengan DOM — tidak ada onclick inline, tidak ada masalah kutip
+  body.innerHTML = '';
+
+  // Item special (Semua Siswa dll)
+  specialItems.forEach(it => {
+    const isSel = it.value === currentVal || (!currentVal && it.value === 'SEMUA');
+    const cleanLabel = it.label.replace(/^[—-]\s*|\s*[—-]$/g,'').trim() || it.label;
+    const card = document.createElement('div');
+    card.className = 'csd-card' + (isSel ? ' selected' : '');
+    card.style.cssText = 'border-left-color:var(--g4); margin-bottom:10px;';
+    card.innerHTML = `<div class="csd-card-left"><span class="csd-card-name" style="color:var(--g7);">👥 ${cleanLabel}</span></div><div class="csd-card-right">${isSel ? '<span class="csd-check">✓</span>' : ''}</div>`;
+    card.addEventListener('click', () => selectCsdItem(it.value, it.label));
+    body.appendChild(card);
+  });
+
+  // Siswa — kelompokkan jika ada group
+  const hasGroup = siswaItems.some(it => it.group);
   if (hasGroup) {
     const groups = {};
-    filtered.forEach(it => {
+    siswaItems.forEach(it => {
       const g = it.group || 'Lainnya';
       if (!groups[g]) groups[g] = [];
       groups[g].push(it);
     });
     Object.keys(groups).sort().forEach(g => {
-      html += `<div class="csd-group-label">${g}</div>`;
+      const cleanG = g.replace(/^──\s*/, '').replace(/\s*──$/, '');
+      const lbl = document.createElement('div');
+      lbl.className = 'csd-group-label';
+      lbl.textContent = cleanG;
+      body.appendChild(lbl);
       groups[g].forEach((it, idx) => {
-        const sel = it.value === currentVal ? ' selected' : '';
-        html += `<div class="csd-item${sel}" onclick="selectCsdItem(${JSON.stringify(it.value)}, ${JSON.stringify(it.label)})">
-          <span class="csd-item-num">${idx+1}.</span>
-          <span style="flex:1;">${it.label}</span>
-          ${sel ? '<span style="color:var(--g6);font-size:var(--fxl);">✓</span>' : ''}
-        </div>`;
+        const isSel = it.value === currentVal;
+        const cleanLabel = it.label.replace(/^\d+\.\s*/, '');
+        const card = document.createElement('div');
+        card.className = 'csd-card' + (isSel ? ' selected' : '');
+        card.innerHTML = `<div class="csd-card-left"><span class="csd-card-num">${idx+1}.</span><span class="csd-card-name">${cleanLabel}</span></div><div class="csd-card-right">${isSel ? '<span class="csd-check">✓</span>' : ''}</div>`;
+        card.addEventListener('click', () => selectCsdItem(it.value, it.label));
+        body.appendChild(card);
       });
     });
   } else {
-    filtered.forEach((it, idx) => {
-      const sel = it.value === currentVal ? ' selected' : '';
-      html += `<div class="csd-item${sel}" onclick="selectCsdItem(${JSON.stringify(it.value)}, ${JSON.stringify(it.label)})">
-        <span class="csd-item-num">${idx+1}.</span>
-        <span style="flex:1;">${it.label}</span>
-        ${sel ? '<span style="color:var(--g6);font-size:var(--fxl);">✓</span>' : ''}
-      </div>`;
+    siswaItems.forEach((it, idx) => {
+      const isSel = it.value === currentVal;
+      const cleanLabel = it.label.replace(/^\d+\.\s*/, '');
+      const card = document.createElement('div');
+      card.className = 'csd-card' + (isSel ? ' selected' : '');
+      card.innerHTML = `<div class="csd-card-left"><span class="csd-card-num">${idx+1}.</span><span class="csd-card-name">${cleanLabel}</span></div><div class="csd-card-right">${isSel ? '<span class="csd-check">✓</span>' : ''}</div>`;
+      card.addEventListener('click', () => selectCsdItem(it.value, it.label));
+      body.appendChild(card);
     });
   }
-  body.innerHTML = html;
 }
 
 function selectCsdItem(value, label) {
   if (!_csdTargetId) return;
-  // Set value di hidden select
   const sel = document.getElementById(_csdTargetId);
   sel.value = value;
-  // Update trigger button
-  const triggerId = _csdTargetId + 'Trigger';
-  const labelId   = _csdTargetId + 'Label';
-  const trigger = document.getElementById(triggerId);
-  const labelEl = document.getElementById(labelId);
-  // Ambil nama saja (tanpa nomor "1. ")
-  const cleanLabel = label.replace(/^\d+\.\s*/, '');
-  if (labelEl) labelEl.textContent = cleanLabel;
-  if (trigger) trigger.classList.remove('placeholder');
-  // Trigger onchange
+  syncCsdTrigger(_csdTargetId);
   sel.dispatchEvent(new Event('change'));
   closeCsdSiswa();
 }
 
-/* Patch populateMpaSiswaDropdown & renderDdSiswa untuk sync trigger label */
-const _origPopulateMpa = populateMpaSiswaDropdown;
-function populateMpaSiswaDropdown() {
-  _origPopulateMpa();
-  // Reset trigger
-  const trigger = document.getElementById('mpaSiswaTrigger');
-  const labelEl = document.getElementById('mpaSiswaLabel');
-  if (labelEl) labelEl.textContent = '— Pilih Siswa —';
-  if (trigger) trigger.classList.add('placeholder');
-}
-
-/* Reset trigger namaSiswa saat renderDdSiswa dipanggil */
-const _origRenderDdSiswa = renderDdSiswa;
-function renderDdSiswa() {
-  _origRenderDdSiswa();
-  const trigger = document.getElementById('namaSiswaTrigger');
-  const labelEl = document.getElementById('namaSiswaLabel');
-  if (!trigger || !labelEl) return;
-  const sel = document.getElementById('namaSiswa');
-  if (sel && sel.value) {
-    labelEl.textContent = sel.options[sel.selectedIndex]?.text?.replace(/^\d+\.\s*/,'') || sel.value;
-    trigger.classList.remove('placeholder');
-  } else {
-    labelEl.textContent = '— Pilih Siswa —';
-    trigger.classList.add('placeholder');
-  }
-}
 </script>
 
 <!-- Modal Pencapaian Awal -->
@@ -6380,12 +6508,20 @@ function renderDdSiswa() {
         <label class="flbl" id="mpaLabelSampai">Sudah hafal sampai surat...</label>
         <div style="display:grid; grid-template-columns:1fr auto; gap:8px; align-items:start;">
           <div>
-            <select id="mpaSuratSampai" onchange="onMpaSuratChange()" style="background-image:none;">
+            <button type="button" class="csd-trigger placeholder" id="mpaSuratSampaiTrigger" onclick="openCsd('mpaSuratSampai','📖 Pilih Surat')">
+              <span id="mpaSuratSampaiLabel">— Pilih surat —</span>
+              <span class="csd-trigger-arrow">▼</span>
+            </button>
+            <select id="mpaSuratSampai" style="display:none;" onchange="onMpaSuratChange();">
               <option value="">— Pilih surat —</option>
             </select>
           </div>
           <div id="mpaAyatWrap" style="display:none; min-width:90px;">
-            <select id="mpaAyatSampai" onchange="updateQuickPreview()" style="background-image:none;">
+            <button type="button" class="csd-trigger placeholder" id="mpaAyatSampaiTrigger" onclick="openCsd('mpaAyatSampai','Sampai Ayat')">
+              <span id="mpaAyatSampaiLabel">Ayat</span>
+              <span class="csd-trigger-arrow">▼</span>
+            </button>
+            <select id="mpaAyatSampai" style="display:none;" onchange="updateQuickPreview();">
               <option value="">Ayat</option>
             </select>
           </div>
@@ -6485,7 +6621,11 @@ function renderDdSiswa() {
     </div>
     <div class="form-row" id="editSiswaStatusRow">
       <label>Status</label>
-      <select id="editSiswaStatus">
+      <button type="button" class="csd-trigger" id="editSiswaStatusTrigger" onclick="openCsd('editSiswaStatus','Status Siswa')">
+        <span id="editSiswaStatusLabel">Aktif</span>
+        <span class="csd-trigger-arrow">▼</span>
+      </button>
+      <select id="editSiswaStatus" style="display:none;">
         <option value="aktif">Aktif</option>
         <option value="lulus">Lulus</option>
         <option value="arsip">Arsip / Pindah</option>
@@ -6561,14 +6701,8 @@ function renderDdSiswa() {
 <div class="csd-overlay" id="csdOverlay" onclick="closeCsdSiswaOutside(event)">
   <div class="csd-sheet" onclick="event.stopPropagation()">
     <div class="csd-header">
-      <div class="csd-title-row">
-        <span class="csd-title">📋 Pilih Siswa</span>
-        <button class="csd-close" onclick="closeCsdSiswa()">×</button>
-      </div>
-      <div class="csd-search-wrap">
-        <span class="csd-search-ico">🔍</span>
-        <input type="text" class="csd-search" id="csdSearch" placeholder="Cari nama siswa..." oninput="filterCsdItems()" autocomplete="off">
-      </div>
+      <span class="csd-title" id="csdTitle">👤 Pilih Siswa</span>
+      <button class="csd-close" onclick="closeCsdSiswa()">×</button>
     </div>
     <div class="csd-body" id="csdBody"></div>
   </div>
