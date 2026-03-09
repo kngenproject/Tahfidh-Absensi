@@ -2667,9 +2667,26 @@ span > .fai, div > .fai { vertical-align: middle; }
         </div>
       </div>
 
+      <div class="card">
+        <div class="chd">🔄 Sinkronisasi & Cache</div>
+        <div class="cbd">
+          <div style="font-size:var(--fsm);color:var(--mut);margin-bottom:10px;line-height:1.5;">
+            Jika data siswa tidak sesuai (terlalu banyak / tidak sinkron setelah hapus dari Firebase Console), gunakan tombol di bawah untuk membersihkan cache lokal dan mengambil data terbaru dari server.
+          </div>
+          <div class="brow" style="flex-wrap:wrap;gap:8px;">
+            <button class="btn bo bsm" onclick="sinkronisasiUlang()" style="flex:1;">
+              <svg class="fai" viewBox="0 0 512 512" aria-hidden="true"><path d="M48.5 224H40c-13.3 0-24-10.7-24-24V72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L98.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L185 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8H48.5z"/></svg>
+              Sinkronisasi Ulang
+            </button>
+            <button class="btn bd bsm" onclick="bersihkanCacheLokal()" style="flex:1;">
+              🗑 Bersihkan Cache Lokal
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="ab-foot">
-        Data disimpan lokal di perangkat Anda.<br>
-        Tidak ada data yang dikirim ke server.<br><br>
+        Data disimpan di Firebase Firestore &amp; cache lokal perangkat.<br><br>
         <strong style="color:var(--g7)">TAMMA</strong> — Tahfidh & Absensi
       </div>
     </div>
@@ -2846,58 +2863,63 @@ async function setupRealtimeListeners(){
 
 async function fetchAllData(){
   showSyncing();
+  // Selalu paksa ambil dari server Firestore, bukan dari cache offline
+  const FROM_SERVER = { source: 'server' };
   try {
-    // Siswa
-    const snapSiswa = await fbDb.collection('siswa').where('status','==','aktif').get();
+    // Siswa — paksa dari server agar hapus di Firebase Console langsung terefleksi
+    const snapSiswa = await fbDb.collection('siswa').where('status','==','aktif').get(FROM_SERVER);
     masterSiswa = snapSiswa.docs.map(d => ({ fbId: d.id, ...d.data() }));
-    localStorage.setItem('db_master_siswa', JSON.stringify(masterSiswa));
 
     // Setoran
     const snapSetoran = await fbDb.collection('setoran')
-      .where('tahunAjaran','==', tahunAjaranAktif).get();
+      .where('tahunAjaran','==', tahunAjaranAktif).get(FROM_SERVER);
     dataSetoran = snapSetoran.docs.map(d => ({ fbId: d.id, ...d.data() }));
     dataSetoran.sort((a, b) => {
       const ta = a.inputAt?.toDate ? a.inputAt.toDate().getTime() : (a.id || 0);
       const tb = b.inputAt?.toDate ? b.inputAt.toDate().getTime() : (b.id || 0);
       return tb - ta;
     });
-    localStorage.setItem('db_setoran', JSON.stringify(dataSetoran));
 
     // Absensi hari ini
     const todayKey = _localDateKey();
-    const snapAbsen = await fbDb.collection('absensiHarian').doc(todayKey).get();
+    const snapAbsen = await fbDb.collection('absensiHarian').doc(todayKey).get(FROM_SERVER);
     if(snapAbsen.exists){
       const d = snapAbsen.data().data || {};
-      const fromServer = Object.entries(d).map(([nama, val]) => ({
+      dataAbsensi = Object.entries(d).map(([nama, val]) => ({
         nama, status: val.status, waktu: val.waktu, kelas: val.kelas,
         inputBy: val.inputBy, inputByNama: val.inputByNama
       }));
-      // Merge: utamakan perubahan lokal di sesi ini
-      const localMap = {};
-      dataAbsensi.forEach(a => { localMap[a.nama] = a; });
-      fromServer.forEach(a => { if(!localMap[a.nama]) localMap[a.nama] = a; });
-      dataAbsensi = Object.values(localMap);
-      localStorage.setItem('db_absensi_harian', JSON.stringify(dataAbsensi));
+    } else {
+      dataAbsensi = [];
     }
 
     // Points
-    const snapPoints = await fbDb.collection('points').get();
+    const snapPoints = await fbDb.collection('points').get(FROM_SERVER);
     userPoints = {}; userStreaks = {};
     snapPoints.docs.forEach(d => {
       userPoints[d.id] = d.data().total || 0;
       userStreaks[d.id] = d.data().streak || 0;
     });
-    localStorage.setItem('db_points', JSON.stringify(userPoints));
-    localStorage.setItem('db_streaks', JSON.stringify(userStreaks));
 
   } catch(e){
-    console.warn('[FB] fetchAllData:', e);
-    showToast('Gagal ambil data server, pakai data lokal', 'warning', 3000);
-    masterSiswa  = JSON.parse(localStorage.getItem('db_master_siswa')||'[]');
-    dataSetoran  = JSON.parse(localStorage.getItem('db_setoran')||'[]');
-    dataAbsensi  = JSON.parse(localStorage.getItem('db_absensi_harian')||'[]');
-    userPoints   = JSON.parse(localStorage.getItem('db_points')||'{}');
-    userStreaks   = JSON.parse(localStorage.getItem('db_streaks')||'{}');
+    console.warn('[FB] fetchAllData gagal dari server, coba cache Firestore:', e);
+    showToast('Tidak bisa ke server, pakai data cache', 'warning', 3000);
+    // Fallback ke cache Firestore offline (bukan localStorage)
+    try {
+      const snapSiswa = await fbDb.collection('siswa').where('status','==','aktif').get({ source: 'cache' });
+      masterSiswa = snapSiswa.docs.map(d => ({ fbId: d.id, ...d.data() }));
+      const snapSetoran = await fbDb.collection('setoran').where('tahunAjaran','==', tahunAjaranAktif).get({ source: 'cache' });
+      dataSetoran = snapSetoran.docs.map(d => ({ fbId: d.id, ...d.data() }));
+      const snapPoints = await fbDb.collection('points').get({ source: 'cache' });
+      snapPoints.docs.forEach(d => {
+        userPoints[d.id] = d.data().total || 0;
+        userStreaks[d.id] = d.data().streak || 0;
+      });
+    } catch(e2) {
+      console.warn('[FB] Cache Firestore juga gagal:', e2);
+      masterSiswa = []; dataSetoran = []; dataAbsensi = [];
+      userPoints = {}; userStreaks = {};
+    }
   }
 
   // Render semua UI
@@ -5408,30 +5430,74 @@ function renderDsSiswa(){
   ).join('');
 }
 
-function hapusSemuaDataSiswa(){
-  if(!masterSiswa.length){ showToast('Sudah kosong','warning'); return; }
-  if(!confirm('Hapus semua data siswa? Semua setoran dan absensi juga akan terhapus!')) return;
-  masterSiswa = [];
-  dataSetoran = [];
-  dataAbsensi = [];
-  userPoints = {};
-  userStreaks = {};
+async function hapusSemuaDataSiswa(){
+  if(!confirm('Hapus semua data siswa dari Firebase & cache lokal?\n\nSemua setoran dan absensi juga akan ikut dihapus!')) return;
+
+  showToast('⏳ Menghapus data dari server...', 'warning', 8000);
+
+  try {
+    // 1. Hapus semua dokumen siswa dari Firestore
+    const snapSiswa = await fbDb.collection('siswa').get();
+    const batchSiswa = fbDb.batch();
+    snapSiswa.docs.forEach(d => batchSiswa.delete(d.ref));
+    if(snapSiswa.docs.length) await batchSiswa.commit();
+
+    // 2. Hapus semua dokumen setoran dari Firestore
+    const snapSetoran = await fbDb.collection('setoran').get();
+    const chunks = [];
+    for(let i=0; i<snapSetoran.docs.length; i+=400) chunks.push(snapSetoran.docs.slice(i,i+400));
+    for(const chunk of chunks){
+      const b = fbDb.batch();
+      chunk.forEach(d => b.delete(d.ref));
+      await b.commit();
+    }
+
+    // 3. Hapus semua dokumen absensi dari Firestore
+    const snapAbsen = await fbDb.collection('absensiHarian').get();
+    const chunksAbsen = [];
+    for(let i=0; i<snapAbsen.docs.length; i+=400) chunksAbsen.push(snapAbsen.docs.slice(i,i+400));
+    for(const chunk of chunksAbsen){
+      const b = fbDb.batch();
+      chunk.forEach(d => b.delete(d.ref));
+      await b.commit();
+    }
+
+    // 4. Hapus semua dokumen points dari Firestore
+    const snapPoints = await fbDb.collection('points').get();
+    const batchPts = fbDb.batch();
+    snapPoints.docs.forEach(d => batchPts.delete(d.ref));
+    if(snapPoints.docs.length) await batchPts.commit();
+
+  } catch(err) {
+    console.warn('[hapusSemua] Firestore error:', err);
+    showToast('⚠️ Gagal hapus dari server, lanjut hapus cache lokal...', 'warning', 3000);
+  }
+
+  // 5. Bersihkan semua localStorage
+  masterSiswa = []; dataSetoran = []; dataAbsensi = []; userPoints = {}; userStreaks = {};
   activeDashboardSiswa = 'SEMUA';
-  localStorage.setItem('db_master_siswa', JSON.stringify(masterSiswa));
-  localStorage.setItem('db_setoran', JSON.stringify(dataSetoran));
-  localStorage.setItem('db_absensi_harian', JSON.stringify(dataAbsensi));
-  localStorage.setItem('db_points', JSON.stringify(userPoints));
-  localStorage.setItem('db_streaks', JSON.stringify(userStreaks));
-  renderDdSiswa();
-  updateStrip();
-  renderSiswaCards();
-  updateStatsAbsensi();
-  renderTblSetoran();
-  renderDsSiswa();
-  renderRiwAbsensi();
-  updateDashboard();
+  localStorage.setItem('db_master_siswa', '[]');
+  localStorage.setItem('db_setoran', '[]');
+  localStorage.setItem('db_absensi_harian', '[]');
+  localStorage.setItem('db_points', '{}');
+  localStorage.setItem('db_streaks', '{}');
+
+  // 6. Clear Firestore offline cache (IndexedDB) & reload
+  try {
+    await fbDb.clearPersistence();
+  } catch(e) { /* ignore — bisa gagal jika ada tab lain terbuka */ }
+
+  renderDdSiswa && renderDdSiswa();
+  updateStrip && updateStrip();
+  renderSiswaCards && renderSiswaCards();
+  updateStatsAbsensi && updateStatsAbsensi();
+  renderTblSetoran && renderTblSetoran();
+  renderDsSiswa && renderDsSiswa();
+  renderRiwAbsensi && renderRiwAbsensi();
+  updateDashboard && updateDashboard();
   document.getElementById('totSetoran').textContent = '0';
-  showToast('Semua data dihapus','success');
+  showToast('✅ Semua data berhasil dihapus! Halaman akan dimuat ulang...', 'success', 3000);
+  setTimeout(() => location.reload(), 3000);
 }
 
 /* ==============================
@@ -5887,6 +5953,37 @@ async function simpanEditSiswa(){
   } catch(err){
     showToast('Gagal: ' + err.message, 'error');
   }
+}
+
+// ── Sinkronisasi ulang dari Firestore (hapus cache lama) ─────────
+async function sinkronisasiUlang(){
+  showToast('⏳ Mengambil data terbaru dari server...', 'warning', 5000);
+  // Reset cache localStorage dulu
+  localStorage.setItem('db_master_siswa', '[]');
+  localStorage.setItem('db_setoran', '[]');
+  localStorage.setItem('db_absensi_harian', '[]');
+  localStorage.setItem('db_points', '{}');
+  localStorage.setItem('db_streaks', '{}');
+  masterSiswa = []; dataSetoran = []; dataAbsensi = []; userPoints = {}; userStreaks = {};
+  try {
+    await fetchAllData();
+    showToast(`✅ Sinkronisasi selesai! ${masterSiswa.length} siswa ditemukan.`, 'success', 4000);
+  } catch(e) {
+    showToast('Gagal sinkronisasi: ' + e.message, 'error');
+  }
+}
+
+// ── Bersihkan SEMUA cache lokal (tanpa hapus Firestore) ──────────
+async function bersihkanCacheLokal(){
+  if(!confirm('Bersihkan semua cache lokal?\n\nData di Firebase tidak akan terhapus. Halaman akan dimuat ulang setelah ini.')) return;
+  localStorage.removeItem('db_master_siswa');
+  localStorage.removeItem('db_setoran');
+  localStorage.removeItem('db_absensi_harian');
+  localStorage.removeItem('db_points');
+  localStorage.removeItem('db_streaks');
+  try { await fbDb.clearPersistence(); } catch(e) {}
+  showToast('✅ Cache lokal dibersihkan. Memuat ulang...', 'success', 2000);
+  setTimeout(() => location.reload(), 2000);
 }
 
 window.hapusSiswa = async function(fbId){
