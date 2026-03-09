@@ -394,7 +394,7 @@ select, input[type=file] {
   padding:9px 10px; 
   border:1.5px solid var(--brd); 
   border-radius:var(--rs); 
-  font-size:16px; /* 16px min untuk cegah iOS auto-zoom */
+  font-size:var(--flg); /* serasi dengan elemen lain */
   color:var(--txt); 
   background:var(--surf2); 
   outline:none; 
@@ -405,11 +405,15 @@ select, input[type=file] {
   background-position: right 10px center;
   padding-right: 28px;
 }
-/* Semua input text juga 16px agar iOS tidak zoom */
+/* Cegah iOS auto-zoom: besarkan font hanya saat fokus */
+select:focus, input[type=file]:focus { font-size: 16px; }
+/* Semua input text juga pakai trik yang sama */
 input[type=text], input[type=password], input[type=email], input[type=search], textarea {
-  font-size: 16px;
+  font-size: var(--flg);
   color: var(--txt);
 }
+input[type=text]:focus, input[type=password]:focus, input[type=email]:focus,
+input[type=search]:focus, textarea:focus { font-size: 16px; }
 
 /* GRID SYSTEM */
 .g2 { 
@@ -2356,7 +2360,13 @@ span > .fai, div > .fai { vertical-align: middle; }
       <div class="card">
         <div class="chd">
           <span><svg class="fai" viewBox="0 0 512 512" aria-hidden="true"><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg>Riwayat Setoran</span>
-          <span class="bdg bg" id="totSetoran">0</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span class="bdg bg" id="totSetoran">0</span>
+            <button class="btn bd bsm" style="padding:3px 8px;font-size:var(--fxs);" onclick="event.stopPropagation();hapusSemuaSetoran()">
+              <svg class="fai" viewBox="0 0 448 512" aria-hidden="true"><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></svg>
+              Hapus
+            </button>
+          </div>
         </div>
         <!-- Filter kelas -->
         <div id="filterKelasSetoran" style="padding:6px 12px 0; display:none;">
@@ -4550,17 +4560,17 @@ function renderSetoranPerTanggal(){
     const namaPreview = namaList.slice(0,3).join(', ') + (namaList.length > 3 ? ` +${namaList.length-3}` : '');
     const suratList = [...new Set(rows.map(r => r.surat).filter(Boolean))];
     const suratPreview = suratList.slice(0,3).join(', ') + (suratList.length > 3 ? ` +${suratList.length-3}` : '');
-    return `<div onclick="bukaDetailSetoran('${key}')" style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--brd);cursor:pointer;background:${isToday?'var(--g0)':'#fff'};">
+    return `<div onclick="bukaDetailSetoran('${key}')" style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--brd);cursor:pointer;background:${isToday?'var(--g0)':'#fff'};">
       <div style="flex:1;min-width:0;">
-        <div style="font-weight:700;font-size:var(--fmd);">${isToday?'🟢 ':''}<span>${label}</span></div>
-        <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-top:3px;">
-          ${kelasSet.map(k=>`<span style="background:var(--g1);color:var(--g8);padding:1px 7px;border-radius:10px;font-size:var(--fxs);font-weight:700;">${k}</span>`).join('')}
-          <span style="font-size:var(--fsm);color:var(--mut);">${rows.length} setoran · <span style="color:var(--g6)">L ${lancar}</span>${kurang?` · <span style="color:#c07f00">KL ${kurang}</span>`:''}</span>
+        <div style="font-weight:700;font-size:var(--fsm);">${isToday?'🟢 ':''}<span>${label}</span></div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin-top:2px;">
+          ${kelasSet.map(k=>`<span style="background:var(--g1);color:var(--g8);padding:1px 6px;border-radius:10px;font-size:var(--fxs);font-weight:700;">${k}</span>`).join('')}
+          <span style="font-size:var(--fxs);color:var(--mut);">${rows.length} setoran · <span style="color:var(--g6)">L ${lancar}</span>${kurang?` · <span style="color:#c07f00">KL ${kurang}</span>`:''}</span>
         </div>
-        ${namaPreview ? `<div style="font-size:var(--fsm);color:var(--mut);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">👤 ${namaPreview}</div>` : ''}
-        ${suratPreview ? `<div style="font-size:var(--fsm);color:var(--tel);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">📖 ${suratPreview}</div>` : ''}
+        ${namaPreview ? `<div style="font-size:var(--fxs);color:var(--mut);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">👤 ${namaPreview}</div>` : ''}
+        ${suratPreview ? `<div style="font-size:var(--fxs);color:var(--tel);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">📖 ${suratPreview}</div>` : ''}
       </div>
-      <div style="color:#ccc;font-size:var(--flg);">›</div>
+      <div style="color:#ccc;font-size:var(--fmd);">›</div>
     </div>`;
   }).join('');
 }
