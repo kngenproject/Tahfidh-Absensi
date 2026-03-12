@@ -2989,6 +2989,9 @@ span > .fai, div > .fai { vertical-align: middle; }
 
       <!-- Panel: Pribadi -->
       <div class="stat-panel" id="statPersonal">
+        <div id="kelasFilterPersonal" style="margin-bottom:10px;">
+          <div id="kelasChipsPersonal" class="frow" style="flex-wrap:wrap; margin-bottom:0;"></div>
+        </div>
         <div class="chart-slot" id="slotWeekly">
           <div class="chart-slot-title">Performa Mingguan</div>
           <canvas id="cvWeekly"></canvas>
@@ -4696,12 +4699,18 @@ const ST = (() => {
   /* ---- Pribadi ---- */
   function _renderPersonal() {
     renderBadgesGrid();
+    renderKelasChips('kelasChipsPersonal', 'kelasFilterPersonal', activeKelasPersonal, 'setKelasPersonal', 'master');
+    // Filter siswa berdasarkan kelas aktif
+    const siswaDiKelas = activeKelasPersonal === 'SEMUA'
+      ? masterSiswa.map(s => s.nama)
+      : masterSiswa.filter(s => (s.kelas || 'Umum').trim() === activeKelasPersonal).map(s => s.nama);
+    const setoranFiltered = dataSetoran.filter(d => siswaDiKelas.includes(d.nama));
     const labels = [], lancar = [], kl = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date(); d.setDate(d.getDate() - i);
       const ds = _localDateKey(d);
       labels.push(d.toLocaleDateString('id-ID', { weekday:'long' }));
-      const day = dataSetoran.filter(s => s.tgl === ds);
+      const day = setoranFiltered.filter(s => s.tgl === ds);
       lancar.push(day.filter(s => s.stat === 'L').length);
       kl.push(day.filter(s => s.stat === 'KL').length);
     }
@@ -4732,41 +4741,69 @@ const ST = (() => {
   /* ---- Kelas ---- */
   function _renderClass() {
     _renderLeaderboard();
+    // Hitung per siswa: setoran biasa, muroja'ah, tasmi'
     const userStats = {};
-    masterSiswa.forEach(s => { userStats[s.nama] = dataSetoran.filter(d => d.nama === s.nama).length; });
-    const sorted = Object.entries(userStats).sort((a,b) => b[1]-a[1]).slice(0,10);
+    masterSiswa.forEach(s => {
+      const setoranSiswa = dataSetoran.filter(d => d.nama === s.nama);
+      const tasmi   = setoranSiswa.filter(d => d.tambahan === "Tasmi'").length;
+      const muroja  = setoranSiswa.filter(d => d.tambahan === "Muroja'ah").length;
+      const biasa   = setoranSiswa.length - tasmi - muroja;
+      const total   = setoranSiswa.length;
+      userStats[s.nama] = { biasa, muroja, tasmi, total };
+    });
+    const sorted = Object.entries(userStats)
+      .sort((a,b) => b[1].total - a[1].total)
+      .slice(0,10);
     const emptyEl = document.getElementById('cvClassEmpty');
     const cv = document.getElementById('cvClass');
-    const isEmpty = !sorted.length || sorted.every(x => x[1] === 0);
+    const isEmpty = !sorted.length || sorted.every(x => x[1].total === 0);
     if (emptyEl) emptyEl.style.display = isEmpty ? 'flex' : 'none';
     if (cv) cv.style.display = isEmpty ? 'none' : '';
     if (isEmpty) { if (_charts.class) { try{_charts.class.destroy();}catch(e){} delete _charts.class; } return; }
-    const colors = ['#2da55f','#35b86a','#3dc475','#45d080','#4abf79','#56c980','#62d388','#6edd90','#7ae798','#86f1a0'];
-    const newLabels = sorted.map(x => x[0].length > 16 ? x[0].slice(0,15)+'…' : x[0]);
-    const newData   = sorted.map(x => x[1]);
-    const newColors = sorted.map((_,i) => colors[i]||'#2da55f');
+    const newLabels  = sorted.map(x => x[0].length > 16 ? x[0].slice(0,15)+'…' : x[0]);
+    const dataBiasa  = sorted.map(x => x[1].biasa);
+    const dataMuroja = sorted.map(x => x[1].muroja);
+    const dataTasmi  = sorted.map(x => x[1].tasmi);
     const classConfig = {
       type:'bar',
       data:{
         labels: newLabels,
-        datasets:[{
-          label:'Jumlah Setoran', data:newData,
-          backgroundColor:newColors, borderRadius:6, borderSkipped:false
-        }]
+        datasets:[
+          { label:'Setoran',    data:dataBiasa,  backgroundColor:'#2da55f', borderRadius:0, borderSkipped:false, stack:'s' },
+          { label:"Muroja'ah",  data:dataMuroja, backgroundColor:'#f59e0b', borderRadius:0, borderSkipped:false, stack:'s' },
+          { label:"Tasmi'",     data:dataTasmi,  backgroundColor:'#6366f1', borderRadius:6, borderSkipped:false, stack:'s' }
+        ]
       },
       options:{
         indexAxis:'y', responsive:true, maintainAspectRatio:false,
-        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c => ` ${c.parsed.x} setoran` } } },
+        plugins:{
+          legend:{ display:true, position:'top', labels:{ boxWidth:12, font:{size:11}, padding:12 } },
+          tooltip:{
+            callbacks:{
+              label: c => {
+                const val = c.parsed.x;
+                if (!val) return null;
+                return ` ${c.dataset.label}: ${val}`;
+              },
+              afterBody: (items) => {
+                const idx = items[0]?.dataIndex;
+                const total = sorted[idx]?.[1]?.total ?? 0;
+                return [`Total: ${total} setoran`];
+              }
+            }
+          }
+        },
         scales:{
-          x:{ beginAtZero:true, ticks:{ stepSize:1, font:{size:10} }, grid:{ color:'rgba(0,0,0,0.05)' } },
-          y:{ ticks:{ font:{size:10}, padding:4 }, grid:{display:false} }
+          x:{ stacked:true, beginAtZero:true, ticks:{ stepSize:1, font:{size:10} }, grid:{ color:'rgba(0,0,0,0.05)' } },
+          y:{ stacked:true, ticks:{ font:{size:10}, padding:4 }, grid:{display:false} }
         }
       }
     };
     if (_charts.class) {
       _charts.class.data.labels = newLabels;
-      _charts.class.data.datasets[0].data = newData;
-      _charts.class.data.datasets[0].backgroundColor = newColors;
+      _charts.class.data.datasets[0].data = dataBiasa;
+      _charts.class.data.datasets[1].data = dataMuroja;
+      _charts.class.data.datasets[2].data = dataTasmi;
       _charts.class.update('none');
     } else {
       _initChart('class', 'cvClass', classConfig);
@@ -5036,21 +5073,26 @@ function _renderAIInsight() {
 
 /* ---- updateStatsPage — dipanggil goPage saat buka pg3 ---- */
 function updateStatsPage() {
-  document.getElementById('statTotalSetoran').textContent = dataSetoran.length;
-  const avgAyat = dataSetoran.length > 0
-    ? dataSetoran.reduce((a,b) => {
+  // Filter berdasarkan kelas aktif tab Pribadi
+  const siswaDiKelas = activeKelasPersonal === 'SEMUA'
+    ? masterSiswa.map(s => s.nama)
+    : masterSiswa.filter(s => (s.kelas || 'Umum').trim() === activeKelasPersonal).map(s => s.nama);
+  const ds = dataSetoran.filter(d => siswaDiKelas.includes(d.nama));
+  document.getElementById('statTotalSetoran').textContent = ds.length;
+  const avgAyat = ds.length > 0
+    ? ds.reduce((a,b) => {
         const rng = (b.rentang||'').split('-');
         return a + ((parseInt(rng[1])||parseInt(rng[0])||0) - (parseInt(rng[0])||0) + 1);
-      }, 0) / dataSetoran.length : 0;
+      }, 0) / ds.length : 0;
   document.getElementById('statAvgAyat').textContent = avgAyat.toFixed(0);
-  const lancarPct = dataSetoran.length > 0
-    ? Math.round(dataSetoran.filter(s => s.stat==='L').length / dataSetoran.length * 100) : 0;
+  const lancarPct = ds.length > 0
+    ? Math.round(ds.filter(s => s.stat==='L').length / ds.length * 100) : 0;
   document.getElementById('statLancarPct').textContent = lancarPct + '%';
   const sc = {};
-  dataSetoran.forEach(s => sc[s.surat] = (sc[s.surat]||0) + 1);
+  ds.forEach(s => sc[s.surat] = (sc[s.surat]||0) + 1);
   const fav = Object.entries(sc).sort((a,b) => b[1]-a[1])[0];
   document.getElementById('statFavSurat').textContent = fav ? fav[0] : '-';
-  document.getElementById('statKhatam').textContent = Math.floor(dataSetoran.length / 37) + 'x';
+  document.getElementById('statKhatam').textContent = Math.floor(ds.length / 37) + 'x';
   ST.rerender();
 }
 
@@ -5363,6 +5405,14 @@ function setKelasViewer(k){
   renderViewer();
 }
 _kelasHandlers['setKelasViewer'] = setKelasViewer;
+
+let activeKelasPersonal = 'SEMUA';
+function setKelasPersonal(k) {
+  activeKelasPersonal = k;
+  renderKelasChips('kelasChipsPersonal', 'kelasFilterPersonal', activeKelasPersonal, 'setKelasPersonal', 'master');
+  ST.rerender();
+}
+_kelasHandlers['setKelasPersonal'] = setKelasPersonal;
 
 let activeKelasRekap = 'SEMUA';
 function setKelasRekap(k) {
