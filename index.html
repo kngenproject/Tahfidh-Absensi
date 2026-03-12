@@ -89,19 +89,29 @@ body {
   --f4xl: 2.20rem;  /* 35.2px */
 }
 
-#offline { 
-  display:none; 
-  background:var(--red); 
-  color:#fff; 
-  font-size:var(--fsm); 
-  font-weight:700; 
-  padding:4px 10px; 
-  border-radius:20px; 
-  position:fixed; 
-  top:calc(8px + env(safe-area-inset-top, 0px)); 
-  right:calc(8px + env(safe-area-inset-right, 0px)); 
-  z-index:999; 
+/* ── Status dot online/offline (di dalam header) ── */
+#netDot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.4), 0 0 5px 1px #22c55e99;
+  transition: background .4s, box-shadow .4s;
+  flex-shrink: 0;
 }
+#netDot.offline {
+  background: #ef4444;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.4), 0 0 5px 1px #ef444499;
+}
+#netDot.syncing {
+  background: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.4), 0 0 5px 1px #f59e0b99;
+  animation: dotPulse .9s ease-in-out infinite alternate;
+}
+@keyframes dotPulse {
+  from { transform: scale(1);   opacity: 1; }
+  to   { transform: scale(1.6); opacity: .6; }
+}
+#offline { display:none; }
 
 /* Toast */
 .toast {
@@ -1958,9 +1968,9 @@ span > .fai, div > .fai { vertical-align: middle; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 9px 6px;
+  justify-content: flex-start;
+  gap: 3px;
+  padding: 9px 5px;
   border: 1.5px solid var(--brd);
   border-radius: var(--rs);
   background: var(--surf2);
@@ -1971,6 +1981,14 @@ span > .fai, div > .fai { vertical-align: middle; }
   transition: all .18s;
   line-height: 1.2;
   text-align: center;
+  min-height: 78px;
+}
+.mpa-ket-btn .ket-desc {
+  font-size: var(--fxs);
+  font-weight: 400;
+  opacity: .72;
+  line-height: 1.3;
+  margin-top: 1px;
 }
 .mpa-ket-btn:active { transform: scale(.96); }
 .mpa-ket-btn.on {
@@ -2550,7 +2568,10 @@ span > .fai, div > .fai { vertical-align: middle; }
     </div>
   </div>
   <div class="hdr-right">
-    <span class="hdr-date" id="tglHdr">—</span>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <div id="netDot" title="Online"></div>
+      <span class="hdr-date" id="tglHdr">—</span>
+    </div>
     <button id="btnInstall" onclick="installApp()" style="display:none;">⬇ Pasang</button>
   </div>
 </div>
@@ -3367,6 +3388,24 @@ async function fetchAllData(){
   showSyncing();
   // Selalu paksa ambil dari server Firestore, bukan dari cache offline
   const FROM_SERVER = { source: 'server' };
+
+  // ── Helper: sort setoran konsisten (frontier surat pertama untuk pencapaian awal) ──
+  function _sortSetoran(arr) {
+    arr.sort((a, b) => {
+      const ta = a.inputAt?.toDate ? a.inputAt.toDate().getTime() : (a.id || 0);
+      const tb = b.inputAt?.toDate ? b.inputAt.toDate().getTime() : (b.id || 0);
+      if(tb !== ta) return tb - ta;
+      // Tiebreaker untuk pencapaian awal (inputAt sama dalam satu batch):
+      // naba-nas → frontier = suratN tertinggi (sort desc)
+      // nas-naba → frontier = suratN terendah (sort asc)
+      const ah = a.arahHafalan || b.arahHafalan || '';
+      if(ah === 'naba-nas') return (b.suratN || 0) - (a.suratN || 0);
+      if(ah === 'nas-naba') return (a.suratN || 0) - (b.suratN || 0);
+      return 0;
+    });
+    return arr;
+  }
+
   try {
     // Siswa — paksa dari server agar hapus di Firebase Console langsung terefleksi
     const snapSiswa = await fbDb.collection('siswa').where('status','==','aktif').get(FROM_SERVER);
@@ -3375,12 +3414,7 @@ async function fetchAllData(){
     // Setoran
     const snapSetoran = await fbDb.collection('setoran')
       .where('tahunAjaran','==', tahunAjaranAktif).get(FROM_SERVER);
-    dataSetoran = snapSetoran.docs.map(d => ({ fbId: d.id, ...d.data() }));
-    dataSetoran.sort((a, b) => {
-      const ta = a.inputAt?.toDate ? a.inputAt.toDate().getTime() : (a.id || 0);
-      const tb = b.inputAt?.toDate ? b.inputAt.toDate().getTime() : (b.id || 0);
-      return tb - ta;
-    });
+    dataSetoran = _sortSetoran(snapSetoran.docs.map(d => ({ fbId: d.id, ...d.data() })));
 
     // Absensi hari ini
     const todayKey = _localDateKey();
@@ -3421,12 +3455,16 @@ async function fetchAllData(){
       const snapSiswa = await fbDb.collection('siswa').where('status','==','aktif').get({ source: 'cache' });
       masterSiswa = snapSiswa.docs.map(d => ({ fbId: d.id, ...d.data() }));
       const snapSetoran = await fbDb.collection('setoran').where('tahunAjaran','==', tahunAjaranAktif).get({ source: 'cache' });
-      dataSetoran = snapSetoran.docs.map(d => ({ fbId: d.id, ...d.data() }));
+      dataSetoran = _sortSetoran(snapSetoran.docs.map(d => ({ fbId: d.id, ...d.data() })));
       const snapPoints = await fbDb.collection('points').get({ source: 'cache' });
       snapPoints.docs.forEach(d => {
         userPoints[d.id] = d.data().total || 0;
         userStreaks[d.id] = d.data().streak || 0;
       });
+      // Load absensi hari ini dari cache per-tanggal (support offline multi-hari)
+      const _todayCacheKey = _localDateKey();
+      const _absensiToday = localStorage.getItem(`db_absensi_${_todayCacheKey}`);
+      dataAbsensi = _absensiToday ? JSON.parse(_absensiToday) : JSON.parse(localStorage.getItem('db_absensi_harian') || '[]');
     } catch(e2) {
       console.warn('[FB] Cache Firestore juga gagal:', e2);
       masterSiswa = []; dataSetoran = []; dataAbsensi = [];
@@ -3443,19 +3481,51 @@ async function fetchAllData(){
   recalcAllStreaks && recalcAllStreaks();
   renderTblSetoran && renderTblSetoran();
   updateDashboard && updateDashboard();
+  _lastSyncAt = Date.now();
+  localStorage.setItem('_lastSyncAt', String(_lastSyncAt));
+  // Bersihkan cache absensi per-tanggal yang sudah > 60 hari
+  const _cutoff = new Date(); _cutoff.setDate(_cutoff.getDate() - 60);
+  const _cutoffKey = _cutoff.toISOString().slice(0,10);
+  Object.keys(localStorage).filter(k => k.startsWith('db_absensi_') && k !== 'db_absensi_harian').forEach(k => {
+    if(k.replace('db_absensi_','') < _cutoffKey) localStorage.removeItem(k);
+  });
   showSyncDone();
 }
 
 // Refresh manual
 // Sync saat tab/app ditutup atau di-background
+// ── Sinkronisasi otomatis saat buka / tutup app ─────────────────
+// Catat kapan app terakhir di-background dan kapan terakhir sync
+let _hiddenAt = null;     // timestamp saat masuk background
+let _lastSyncAt = Date.now(); // timestamp saat terakhir fetch dari Firestore
+const _MIN_BG_MS = 30_000; // min waktu background (30 detik) sebelum re-fetch
+
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState === 'hidden'){
-    // Simpan semua data lokal ke localStorage sebelum keluar
-    localStorage.setItem('db_setoran', JSON.stringify(dataSetoran));
-    localStorage.setItem('db_absensi_harian', JSON.stringify(dataAbsensi));
-    localStorage.setItem('db_master_siswa', JSON.stringify(masterSiswa));
-    localStorage.setItem('db_points', JSON.stringify(userPoints));
-    localStorage.setItem('db_streaks', JSON.stringify(userStreaks));
+    // ── TUTUP / BACKGROUND: simpan ke localStorage ──
+    _hiddenAt = Date.now();
+    localStorage.setItem('db_setoran',          JSON.stringify(dataSetoran));
+    localStorage.setItem('db_absensi_harian',   JSON.stringify(dataAbsensi));
+    localStorage.setItem('db_master_siswa',     JSON.stringify(masterSiswa));
+    localStorage.setItem('db_points',           JSON.stringify(userPoints));
+    localStorage.setItem('db_streaks',          JSON.stringify(userStreaks));
+    localStorage.setItem('_lastSyncAt',         String(_lastSyncAt));
+
+  } else if(document.visibilityState === 'visible'){
+    // ── BUKA / KEMBALI KE FOREGROUND: re-fetch jika sudah lama di background ──
+    const bgDuration = _hiddenAt ? Date.now() - _hiddenAt : Infinity;
+    _hiddenAt = null;
+
+    if(bgDuration >= _MIN_BG_MS){
+      // Sudah ≥30 detik di background → ambil data terbaru dari Firestore
+      if(typeof fetchAllData === 'function'){
+        fetchAllData().then(() => {
+          _lastSyncAt = Date.now();
+          localStorage.setItem('_lastSyncAt', String(_lastSyncAt));
+        });
+      }
+    }
+    // Jika < 30 detik (misal switch tab sebentar), tidak perlu fetch ulang
   }
 });
 
@@ -3463,19 +3533,22 @@ document.addEventListener('visibilitychange', () => {
 let syncTimer = null;
 function showSyncing(){
   const el = document.getElementById('syncStatus');
-  if(!el) return;
-  el.textContent = '↻ Menyinkron...';
-  el.className = 'syncing show';
+  const dot = document.getElementById('netDot');
+  if(el){ el.textContent = '↻ Menyinkron...'; el.className = 'syncing show'; }
+  if(dot){ dot.className = 'syncing'; dot.title = 'Menyinkron...'; }
   clearTimeout(syncTimer);
 }
 
 function showSyncDone(){
   const el = document.getElementById('syncStatus');
-  if(!el) return;
+  const dot = document.getElementById('netDot');
   clearTimeout(syncTimer);
-  el.textContent = '✓ Tersinkron';
-  el.className = 'show';
-  syncTimer = setTimeout(() => { el.className = ''; }, 2500);
+  const now = new Date();
+  const jam = now.getHours().toString().padStart(2,'0');
+  const mnt = now.getMinutes().toString().padStart(2,'0');
+  if(el){ el.textContent = `✓ Tersinkron ${jam}:${mnt}`; el.className = 'show'; }
+  if(dot){ dot.className = ''; dot.title = `Online — tersinkron ${jam}:${mnt}`; }
+  syncTimer = setTimeout(() => { if(el) el.className = ''; }, 3500);
 }
 
 // ─── Init app UI ───────────────────────────────────────────────
@@ -3702,12 +3775,15 @@ self.addEventListener('fetch', evt => {
 
 window.addEventListener('online', () => {
   document.getElementById('offline').style.display = 'none';
-  if (typeof showToast === 'function') showToast('Kembali online ✓', 'success');
-  // Re-sync data dari Firestore setelah koneksi pulih
+  const dot = document.getElementById('netDot');
+  if(dot){ dot.className = ''; dot.title = 'Online'; }
+  if (typeof showToast === 'function') showToast('🟢 Kembali online', 'success');
   if (typeof fetchAllData === 'function') fetchAllData();
 });
 window.addEventListener('offline', () => {
-  document.getElementById('offline').style.display = 'block';
+  document.getElementById('offline').style.display = 'none'; /* tetap sembunyikan teks lama */
+  const dot = document.getElementById('netDot');
+  if(dot){ dot.className = 'offline'; dot.title = 'Offline'; }
   if (typeof showToast === 'function') showToast('Mode offline — semua fitur tetap berjalan', 'info', 4000);
 });
 
@@ -3899,7 +3975,9 @@ function quickAction(){
 let masterSiswa = JSON.parse(localStorage.getItem('db_master_siswa')) || [];
 let dataSetoran = JSON.parse(localStorage.getItem('db_setoran')) || [];
 let vData = [], vFil = 'SEMUA', vCols = {};
-let dataAbsensi = JSON.parse(localStorage.getItem('db_absensi_harian')) || [];
+// Absensi: load dari cache per-tanggal hari ini jika ada (support offline multi-hari)
+const _initTodayKey = (()=>{ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
+let dataAbsensi = JSON.parse(localStorage.getItem(`db_absensi_${_initTodayKey}`) || localStorage.getItem('db_absensi_harian') || '[]');
 let userPoints = JSON.parse(localStorage.getItem('db_points')) || {};
 let userStreaks = JSON.parse(localStorage.getItem('db_streaks')) || {};
 let lastActive = localStorage.getItem('db_last_active') || new Date().toDateString();
@@ -5807,6 +5885,11 @@ window.setStatusAbsen = function(btnOrNama, status){
     });
   }
   localStorage.setItem('db_absensi_harian', JSON.stringify(dataAbsensi));
+  // Simpan juga per-tanggal agar tidak hilang saat offline multi-hari
+  const _todayKeyAbs = _localDateKey();
+  if(_todayKeyAbs && dataAbsensi.length > 0){
+    localStorage.setItem(`db_absensi_${_todayKeyAbs}`, JSON.stringify(dataAbsensi));
+  }
   renderSiswaCards();
   updateStatsAbsensi();
   renderRiwAbsensi();
@@ -5880,20 +5963,25 @@ async function simpanAbsensiHarian(){
     siswa: siswaArr,  // format array untuk detail/riwayat
     data: dataObj     // format object untuk fetchAllData
   };
-  try {
-    // merge:true agar field lain (inputBy per-siswa, dll) tidak terhapus
-    await fbDb.collection('absensiHarian').doc(key).set(payload, { merge: true });
-    // Simpan ke cache lokal riwayat
-    let riwayat = JSON.parse(localStorage.getItem('cache_riwayat_absensi') || '[]');
-    const idx = riwayat.findIndex(r => r.tanggal === key);
-    const meta = { tanggal: key, tanggalStr: tglStr, total: masterSiswa.length, hadir, ijin, sakit, alpha };
-    if(idx >= 0) riwayat[idx] = meta; else riwayat.unshift(meta);
-    riwayat.sort((a,b) => b.tanggal.localeCompare(a.tanggal));
-    localStorage.setItem('cache_riwayat_absensi', JSON.stringify(riwayat));
-    showToast(`✅ Absensi ${tglStr} tersimpan`, 'success', 3000);
-  } catch(err){
-    showToast('Gagal simpan: ' + err.message, 'error');
-  }
+  // Simpan ke localStorage dulu — langsung tanpa tunggu network
+  localStorage.setItem('db_absensi_harian', JSON.stringify(dataAbsensi));
+  localStorage.setItem(`db_absensi_${key}`, JSON.stringify(dataAbsensi)); // per-tanggal
+  const meta = { tanggal: key, tanggalStr: tglStr, total: masterSiswa.length, hadir, ijin, sakit, alpha };
+  let riwayat = JSON.parse(localStorage.getItem('cache_riwayat_absensi') || '[]');
+  const idx = riwayat.findIndex(r => r.tanggal === key);
+  if(idx >= 0) riwayat[idx] = meta; else riwayat.unshift(meta);
+  riwayat.sort((a,b) => b.tanggal.localeCompare(a.tanggal));
+  localStorage.setItem('cache_riwayat_absensi', JSON.stringify(riwayat));
+
+  // Kirim ke Firestore (fire-and-forget)
+  // Jika offline: Firestore antri → sinkron otomatis saat online kembali
+  // Jika online: langsung tersimpan ke server
+  const isOfflineNow = !navigator.onLine;
+  fbDb.collection('absensiHarian').doc(key).set(payload, { merge: true })
+    .catch(err => console.warn('[FB] simpanAbsensiHarian:', err));
+
+  const offlineNote = isOfflineNow ? ' (akan sinkron saat online)' : '';
+  showToast('✅ Absensi ' + tglStr + ' tersimpan' + offlineNote, 'success', isOfflineNow ? 5000 : 3000);
 }
 
 // ── Riwayat Absensi ───────────────────────────────────────────
@@ -5919,8 +6007,23 @@ async function bukaRiwayatAbsensi(){
   } catch(err){
     // Fallback ke cache lokal
     const cached = JSON.parse(localStorage.getItem('cache_riwayat_absensi') || '[]');
-    if(cached.length) renderRiwayatList(cached);
-    else listEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--mut);">Gagal memuat. Periksa koneksi.</div>';
+    // Tambahkan hari-hari yang ada di per-date cache tapi belum masuk cache_riwayat_absensi
+    const allKeys = Object.keys(localStorage).filter(k => k.startsWith('db_absensi_') && k !== 'db_absensi_harian');
+    allKeys.forEach(k => {
+      const tgl = k.replace('db_absensi_','');
+      if(!cached.find(r => r.tanggal === tgl)){
+        const absenArr = JSON.parse(localStorage.getItem(k) || '[]');
+        const hadir = absenArr.filter(a=>a.status==='Hadir').length;
+        cached.push({ tanggal: tgl, tanggalStr: tgl, total: absenArr.length, hadir, ijin: absenArr.filter(a=>a.status==='Ijin').length, sakit: absenArr.filter(a=>a.status==='Sakit').length, alpha: absenArr.filter(a=>a.status==='Alpha').length });
+      }
+    });
+    cached.sort((a,b) => b.tanggal.localeCompare(a.tanggal));
+    if(cached.length){
+      showToast('Mode offline — menampilkan data cache lokal','warning',3000);
+      renderRiwayatList(cached);
+    } else {
+      listEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--mut);">Gagal memuat. Periksa koneksi.</div>';
+    }
   }
 }
 
@@ -6371,6 +6474,12 @@ async function hapusSemuaDataSiswa(){
    INIT
 ============================== */
 document.addEventListener('DOMContentLoaded', function() {
+  // Init status dot sesuai kondisi jaringan saat buka app
+  const dot = document.getElementById('netDot');
+  if(dot){
+    if(!navigator.onLine){ dot.className = 'offline'; dot.title = 'Offline'; }
+    else { dot.className = ''; dot.title = 'Online'; }
+  }
   if ('caches' in window) {
     caches.keys().then(keys => keys.filter(k => k !== 'tamma-v4').forEach(k => caches.delete(k)));
   }
@@ -6473,6 +6582,7 @@ function openPencapaian(){
   document.getElementById('quickPreview').textContent = 'Pilih surat terakhir yang sudah dihafal untuk melihat preview.';
   document.getElementById('mpaSelCount').textContent = '0';
   document.getElementById('mpaSuratSampai').value = '';
+  syncCsdTrigger('mpaSuratSampai');
   document.getElementById('mpaAyatWrap').style.display = 'none';
   document.getElementById('mpaAyatHelper').style.display = 'none';
   setMpaArah('naba-nas');
@@ -6718,11 +6828,34 @@ function setMpaKet(val, btn){
   document.getElementById('mpaKet').value = val;
   document.querySelectorAll('.mpa-ket-btn').forEach(b => b.classList.remove('on'));
   if(btn) btn.classList.add('on');
+  // Toggle jumlah khatam row
+  const khatamRow = document.getElementById('mpaJumlahKhatamRow');
+  if(khatamRow) khatamRow.style.display = (val === "Muroja'ah") ? 'block' : 'none';
+  // Toggle info Tasmi'
+  const tasmiInfo = document.getElementById('mpaTasmiInfo');
+  if(tasmiInfo) tasmiInfo.style.display = (val === "Tasmi'") ? 'block' : 'none';
+}
+
+function changeKhatamCount(delta) {
+  const input = document.getElementById('mpaJumlahKhatam');
+  const display = document.getElementById('mpaKhatamDisplay');
+  if (!input || !display) return;
+  const next = Math.max(1, Math.min(99, (parseInt(input.value) || 1) + delta));
+  input.value = next;
+  display.textContent = next;
 }
 
 function resetMpaKet(){
   document.getElementById('mpaKet').value = '';
   document.querySelectorAll('.mpa-ket-btn').forEach(b => b.classList.remove('on'));
+  const khatamRow = document.getElementById('mpaJumlahKhatamRow');
+  const tasmiInfo = document.getElementById('mpaTasmiInfo');
+  if(khatamRow) khatamRow.style.display = 'none';
+  if(tasmiInfo) tasmiInfo.style.display = 'none';
+  const input = document.getElementById('mpaJumlahKhatam');
+  const display = document.getElementById('mpaKhatamDisplay');
+  if(input) input.value = '1';
+  if(display) display.textContent = '1';
 }
 
 async function simpanPencapaianAwal(){
@@ -6749,6 +6882,10 @@ async function simpanPencapaianAwal(){
 
   const tgl = getTglFromInput();
   const mpaKetVal = document.getElementById('mpaKet').value || '';
+  const mpaJumlahKhatam = mpaKetVal === "Muroja'ah"
+    ? (parseInt(document.getElementById('mpaJumlahKhatam')?.value) || 1)
+    : null;
+  const arahHafalanVal = mpaMode === 'cepat' ? mpaArah : 'manual';
 
   // Determine partial ayat for the boundary surat (Mode Cepat only)
   let partialIdx = null;
@@ -6785,14 +6922,29 @@ async function simpanPencapaianAwal(){
       tgl,
       nama,
       surat: s.nm,
+      suratN: s.n,                          // nomor surat dalam Quran (untuk pengurutan)
+      arahHafalan: arahHafalanVal,           // simpan arah hafalan
       rentang,
       stat,
       salah: '-',
       jml: 0,
       tambahan: mpaKetVal || 'Data Awal',
+      jumlahKhatam: mpaJumlahKhatam,        // berapa kali khatam (untuk Muroja'ah)
       kategori: '-'
     };
   });
+
+  // ── Urutkan newRecords agar surat FRONTIER selalu menjadi setorans[0] ──
+  // naba-nas: frontier = surat dengan suratN tertinggi (boundary, paling dekat An-Nas)
+  // nas-naba: frontier = surat dengan suratN terendah (boundary, paling dekat An-Naba')
+  // Keduanya diletakkan di indeks 0 sehingga setelah prepend & sort Firestore tetap benar.
+  if(mpaMode === 'cepat') {
+    if(mpaArah === 'naba-nas') {
+      newRecords.sort((a, b) => (b.suratN || 0) - (a.suratN || 0)); // suratN desc → frontier dulu
+    } else {
+      newRecords.sort((a, b) => (a.suratN || 0) - (b.suratN || 0)); // suratN asc  → frontier dulu
+    }
+  }
 
   // Prepend to dataSetoran (optimistic local)
   dataSetoran = [...newRecords, ...dataSetoran];
@@ -6813,7 +6965,10 @@ async function simpanPencapaianAwal(){
         const fbRec = { ...r, tahunAjaran: tahunAjaranAktif, editLog: [],
           inputBy: currentUser?.uid||'offline', inputByNama: currentGuru?.nama||'Guru',
           inputAt: firebase.firestore.FieldValue.serverTimestamp() };
+        // Hapus field yang tidak perlu di Firestore
         delete fbRec.id;
+        // jumlahKhatam null → hapus dari dokumen agar tidak menyimpan null
+        if(fbRec.jumlahKhatam === null) delete fbRec.jumlahKhatam;
         batch.set(fbDb.collection('setoran').doc(), fbRec);
       });
       await batch.commit();
@@ -7078,16 +7233,23 @@ const KET_PRIORITY = {"Tasmi'": 3, "Muroja'ah": 2, "Belum Khatam": 1};
 
 function getSiswaTahfidhInfo(nama) {
   const setorans = dataSetoran.filter(s => s.nama === nama);
-  if (!setorans.length) return { ket: '', lastSurat: null, lastJuz: null, jumlahSurat: 0, totalSetoran: 0 };
+  if (!setorans.length) return { ket: '', lastSurat: null, lastJuz: null, jumlahSurat: 0, totalSetoran: 0, jumlahKhatam: null };
   
   // Best keterangan (highest priority across all setorans)
   let bestKet = '';
+  let bestJumlahKhatam = null;
   setorans.forEach(s => {
     const raw = (s.tambahan || s.ket || '').replace('-','').trim();
-    if ((KET_PRIORITY[raw] || 0) > (KET_PRIORITY[bestKet] || 0)) bestKet = raw;
+    if ((KET_PRIORITY[raw] || 0) > (KET_PRIORITY[bestKet] || 0)) {
+      bestKet = raw;
+    }
+    // Ambil jumlahKhatam dari record Muroja'ah pertama (= terbaru karena setorans sudah sorted)
+    if (raw === "Muroja'ah" && s.jumlahKhatam && bestJumlahKhatam === null) {
+      bestJumlahKhatam = s.jumlahKhatam;
+    }
   });
   
-  // Last surat (most recent setoran)
+  // Last surat (most recent setoran — setorans sudah diurutkan frontier dulu)
   const lastSurat = setorans[0]?.surat || null;
   const suratObj = lastSurat ? ALL_SURAT.find(s => s.nm === lastSurat) : null;
   const lastJuz = suratObj ? suratObj.juz : null;
@@ -7096,12 +7258,15 @@ function getSiswaTahfidhInfo(nama) {
   // Unique surat count
   const suratSet = new Set(setorans.map(s => s.surat).filter(Boolean));
   
-  return { ket: bestKet, lastSurat, lastJuz, lastSuratNum, jumlahSurat: suratSet.size, totalSetoran: setorans.length };
+  return { ket: bestKet, lastSurat, lastJuz, lastSuratNum, jumlahSurat: suratSet.size, totalSetoran: setorans.length, jumlahKhatam: bestJumlahKhatam };
 }
 
-function getKetBadgeHTML(ket) {
+function getKetBadgeHTML(ket, jumlahKhatam) {
   if (ket === "Tasmi'") return `<span class="ket-badge ket-tasmi">🎤 Tasmi'</span>`;
-  if (ket === "Muroja'ah") return `<span class="ket-badge ket-muroja">🔁 Muroja'ah</span>`;
+  if (ket === "Muroja'ah") {
+    const khatamTxt = jumlahKhatam ? ` <span style="font-weight:400;opacity:.8;">(${jumlahKhatam}× khatam)</span>` : '';
+    return `<span class="ket-badge ket-muroja">🔁 Muroja'ah${khatamTxt}</span>`;
+  }
   if (ket === 'Belum Khatam') return `<span class="ket-badge ket-belum">📖 Belum Khatam</span>`;
   return `<span class="ket-badge ket-none">⚪ Belum Setoran</span>`;
 }
@@ -7182,7 +7347,7 @@ function renderProgressBeranda() {
         <div class="prog-detail">${s.kelas ? `<span style="color:var(--g6);font-weight:600;">${s.kelas}</span> · ` : ''}${suratInfo}</div>
       </div>
       <div class="prog-right">
-        ${getKetBadgeHTML(s.ket)}
+        ${getKetBadgeHTML(s.ket, s.jumlahKhatam)}
         ${s.totalSetoran > 0 ? `<span style="font-size:var(--fxs);color:var(--mut);">${s.totalSetoran}x setoran</span>` : ''}
       </div>
     </div>`;
@@ -7243,7 +7408,7 @@ function _renderRekapRows() {
           <div class="rekap-surat">${s.lastSurat||'—'}</div>
           <div style="font-size:var(--fxs);color:var(--mut);">${s.lastJuz?'Juz '+s.lastJuz:'—'}</div>
         </div>
-        <div>${getKetBadgeHTML(s.ket)}</div>
+        <div>${getKetBadgeHTML(s.ket, s.jumlahKhatam)}</div>
       </div>`;
     }).join('');
     html += `<div class="rekap-kelas-section">
@@ -7275,14 +7440,16 @@ function exportRekapProgressExcel() {
     ? masterSiswa
     : masterSiswa.filter(s => (s.kelas || 'Umum').trim() === activeDashboardKelas);
   
-  const rows = [['No', 'Nama', 'Kelas', 'Surat Terakhir', 'Juz Terakhir', 'Jumlah Surat', 'Total Setoran', 'Status Hafalan']];
+  const rows = [['No', 'Nama', 'Kelas', 'Surat Terakhir', 'Juz Terakhir', 'Jumlah Surat', 'Total Setoran', 'Status Hafalan', 'Jumlah Khatam']];
   siswaDitampil.forEach((s, i) => {
     const info = getSiswaTahfidhInfo(s.nama);
-    rows.push([i + 1, s.nama, s.kelas || 'Umum', info.lastSurat || '—', info.lastJuz ? `Juz ${info.lastJuz}` : '—', info.jumlahSurat, info.totalSetoran, info.ket || 'Belum Setoran']);
+    const statusLabel = info.ket || 'Belum Setoran';
+    const khatamCol = info.ket === "Muroja'ah" && info.jumlahKhatam ? info.jumlahKhatam : '';
+    rows.push([i + 1, s.nama, s.kelas || 'Umum', info.lastSurat || '—', info.lastJuz ? `Juz ${info.lastJuz}` : '—', info.jumlahSurat, info.totalSetoran, statusLabel, khatamCol]);
   });
   
   const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = [{ wch: 4 }, { wch: 28 }, { wch: 12 }, { wch: 22 }, { wch: 10 }, { wch: 13 }, { wch: 13 }, { wch: 16 }];
+  ws['!cols'] = [{ wch: 4 }, { wch: 28 }, { wch: 12 }, { wch: 22 }, { wch: 10 }, { wch: 13 }, { wch: 13 }, { wch: 16 }, { wch: 14 }];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Rekap Progress');
   XLSX.writeFile(wb, `Rekap_Progress_Hafalan_${new Date().toISOString().slice(0,10)}.xlsx`);
@@ -7301,22 +7468,24 @@ function exportRekapKelasExcel() {
   });
   
   Object.keys(grouped).sort().forEach(kelas => {
-    const rows = [['No', 'Nama', 'Surat Terakhir', 'Juz', 'Surat No.', 'Jml Surat Hafal', 'Total Setoran', 'Status']];
+    const rows = [['No', 'Nama', 'Surat Terakhir', 'Juz', 'Surat No.', 'Jml Surat Hafal', 'Total Setoran', 'Status', 'Jumlah Khatam']];
     grouped[kelas].sort((a, b) => a.nama.localeCompare(b.nama, 'id')).forEach((s, i) => {
       const info = getSiswaTahfidhInfo(s.nama);
-      rows.push([i + 1, s.nama, info.lastSurat || '—', info.lastJuz ? `Juz ${info.lastJuz}` : '—', info.lastSuratNum || '—', info.jumlahSurat, info.totalSetoran, info.ket || 'Belum Setoran']);
+      const khatamCol = info.ket === "Muroja'ah" && info.jumlahKhatam ? info.jumlahKhatam : '';
+      rows.push([i + 1, s.nama, info.lastSurat || '—', info.lastJuz ? `Juz ${info.lastJuz}` : '—', info.lastSuratNum || '—', info.jumlahSurat, info.totalSetoran, info.ket || 'Belum Setoran', khatamCol]);
     });
     const ws = XLSX.utils.aoa_to_sheet(rows);
-    ws['!cols'] = [{ wch: 4 }, { wch: 26 }, { wch: 22 }, { wch: 8 }, { wch: 8 }, { wch: 14 }, { wch: 13 }, { wch: 16 }];
+    ws['!cols'] = [{ wch: 4 }, { wch: 26 }, { wch: 22 }, { wch: 8 }, { wch: 8 }, { wch: 14 }, { wch: 13 }, { wch: 16 }, { wch: 14 }];
     const sheetName = kelas.length > 28 ? kelas.slice(0, 28) : kelas;
     XLSX.utils.book_append_sheet(wb, ws, sheetName);
   });
   
   // All sheet
-  const allRows = [['No', 'Nama', 'Kelas', 'Surat Terakhir', 'Juz', 'Jml Surat Hafal', 'Total Setoran', 'Status']];
+  const allRows = [['No', 'Nama', 'Kelas', 'Surat Terakhir', 'Juz', 'Jml Surat Hafal', 'Total Setoran', 'Status', 'Jumlah Khatam']];
   masterSiswa.sort((a,b) => (a.kelas||'').localeCompare(b.kelas||'') || a.nama.localeCompare(b.nama,'id')).forEach((s, i) => {
     const info = getSiswaTahfidhInfo(s.nama);
-    allRows.push([i + 1, s.nama, s.kelas || 'Umum', info.lastSurat || '—', info.lastJuz ? `Juz ${info.lastJuz}` : '—', info.jumlahSurat, info.totalSetoran, info.ket || 'Belum Setoran']);
+    const khatamCol = info.ket === "Muroja'ah" && info.jumlahKhatam ? info.jumlahKhatam : '';
+    allRows.push([i + 1, s.nama, s.kelas || 'Umum', info.lastSurat || '—', info.lastJuz ? `Juz ${info.lastJuz}` : '—', info.jumlahSurat, info.totalSetoran, info.ket || 'Belum Setoran', khatamCol]);
   });
   const wsAll = XLSX.utils.aoa_to_sheet(allRows);
   XLSX.utils.book_append_sheet(wb, wsAll, 'SEMUA KELAS');
@@ -7328,13 +7497,14 @@ function exportRekapKelasExcel() {
 function exportRekapKelasExcelByKelas(kelas) {
   if (!window.XLSX) { showToast('Library XLSX belum siap', 'error'); return; }
   const siswaKelas = masterSiswa.filter(s => (s.kelas || 'Umum').trim() === kelas);
-  const rows = [['No', 'Nama', 'Surat Terakhir', 'Juz', 'No. Surat', 'Jml Surat Hafal', 'Total Setoran', 'Status']];
+  const rows = [['No', 'Nama', 'Surat Terakhir', 'Juz', 'No. Surat', 'Jml Surat Hafal', 'Total Setoran', 'Status', 'Jumlah Khatam']];
   siswaKelas.sort((a, b) => a.nama.localeCompare(b.nama, 'id')).forEach((s, i) => {
     const info = getSiswaTahfidhInfo(s.nama);
-    rows.push([i + 1, s.nama, info.lastSurat || '—', info.lastJuz ? `Juz ${info.lastJuz}` : '—', info.lastSuratNum || '—', info.jumlahSurat, info.totalSetoran, info.ket || 'Belum Setoran']);
+    const khatamCol = info.ket === "Muroja'ah" && info.jumlahKhatam ? info.jumlahKhatam : '';
+    rows.push([i + 1, s.nama, info.lastSurat || '—', info.lastJuz ? `Juz ${info.lastJuz}` : '—', info.lastSuratNum || '—', info.jumlahSurat, info.totalSetoran, info.ket || 'Belum Setoran', khatamCol]);
   });
   const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = [{ wch: 4 }, { wch: 26 }, { wch: 22 }, { wch: 8 }, { wch: 8 }, { wch: 14 }, { wch: 13 }, { wch: 16 }];
+  ws['!cols'] = [{ wch: 4 }, { wch: 26 }, { wch: 22 }, { wch: 8 }, { wch: 8 }, { wch: 14 }, { wch: 13 }, { wch: 16 }, { wch: 14 }];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, kelas.slice(0, 28));
   XLSX.writeFile(wb, `Rekap_${kelas}_${new Date().toISOString().slice(0,10)}.xlsx`);
@@ -7488,23 +7658,46 @@ document.addEventListener('keydown', function(e) {
 
       <!-- Keterangan Setoran -->
       <div style="margin-top:14px;">
-        <label class="flbl">Keterangan</label>
+        <label class="flbl">Keterangan Status Hafalan</label>
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-top:4px;" id="mpaKetGrid">
           <button type="button" class="mpa-ket-btn" id="mpaKetBtnBelum" onclick="setMpaKet('Belum Khatam',this)">
-            <span style="font-size:1.1em;">📖</span>
-            <span>Belum Khatam</span>
+            <span style="font-size:1.2em;">📖</span>
+            <span style="font-weight:700;">Belum Khatam</span>
+            <span class="ket-desc">Masih dalam proses hafalan Juz Amma</span>
           </button>
           <button type="button" class="mpa-ket-btn" id="mpaKetBtnMuroja" onclick="setMpaKet(&quot;Muroja'ah&quot;,this)">
-            <span style="font-size:1.1em;">🔁</span>
-            <span>Muroja'ah</span>
+            <span style="font-size:1.2em;">🔁</span>
+            <span style="font-weight:700;">Muroja'ah</span>
+            <span class="ket-desc">Sudah khatam, mengulang setoran An-Naba'→An-Nas</span>
           </button>
           <button type="button" class="mpa-ket-btn" id="mpaKetBtnTasmi" onclick="setMpaKet(&quot;Tasmi'&quot;,this)">
-            <span style="font-size:1.1em;">🎤</span>
-            <span>Tasmi'</span>
+            <span style="font-size:1.2em;">🎤</span>
+            <span style="font-weight:700;">Tasmi'</span>
+            <span class="ket-desc">Khatam & disema' guru, lanjut surat luar Juz Amma</span>
           </button>
         </div>
         <input type="hidden" id="mpaKet" value="">
-        <div style="font-size:var(--fxs); color:var(--mut); margin-top:4px;">Opsional — kosongkan jika tidak relevan</div>
+
+        <!-- Jumlah Khatam — tampil saat Muroja'ah dipilih -->
+        <div id="mpaJumlahKhatamRow" style="display:none; margin-top:8px; background:#eff6ff; border:1.5px solid #bfdbfe; border-radius:var(--rs); padding:10px 12px;">
+          <label class="flbl" style="color:#1e40af; margin-bottom:6px;">Sudah khatam Juz Amma berapa kali?</label>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <button type="button" onclick="changeKhatamCount(-1)" style="width:34px;height:34px;border-radius:50%;border:1.5px solid #bfdbfe;background:#fff;font-size:var(--flg);font-weight:800;cursor:pointer;color:#1e40af;display:flex;align-items:center;justify-content:center;flex-shrink:0;">−</button>
+            <div style="text-align:center; flex:1;">
+              <div id="mpaKhatamDisplay" style="font-size:var(--f2xl);font-weight:800;color:#1e40af;line-height:1;">1</div>
+              <div style="font-size:var(--fxs);color:#1e40af;margin-top:2px;">kali khatam</div>
+            </div>
+            <button type="button" onclick="changeKhatamCount(1)" style="width:34px;height:34px;border-radius:50%;border:1.5px solid #bfdbfe;background:#fff;font-size:var(--flg);font-weight:800;cursor:pointer;color:#1e40af;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</button>
+          </div>
+          <input type="hidden" id="mpaJumlahKhatam" value="1">
+        </div>
+
+        <!-- Info Tasmi' — tampil saat Tasmi' dipilih -->
+        <div id="mpaTasmiInfo" style="display:none; margin-top:8px; background:#fefce8; border:1.5px solid #fde68a; border-radius:var(--rs); padding:9px 12px; font-size:var(--fsm); color:#78350f; line-height:1.55;">
+          🎤 <strong>Tasmi'</strong> — Siswa sudah khatam Juz Amma dan hafalannya telah didengar (disema') oleh guru dari <strong>An-Naba' sampai An-Nas</strong>, serta telah <strong>melanjutkan hafalan ke surat-surat di luar Juz Amma</strong>.
+        </div>
+
+        <div style="font-size:var(--fxs); color:var(--mut); margin-top:6px;">Opsional — kosongkan jika belum ditentukan</div>
       </div>
 
       <!-- Tanggal -->
