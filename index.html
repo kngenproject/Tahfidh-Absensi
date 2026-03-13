@@ -2307,131 +2307,191 @@ span > .fai, div > .fai { vertical-align: middle; }
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: rgba(0,0,0,.5);
-  backdrop-filter: blur(2px);
+  background: rgba(0,0,0,.45);
   align-items: flex-end;
   justify-content: center;
 }
 .csd-overlay.show { display: flex; }
+
+/* ── Sheet ── */
 .csd-sheet {
-  background: var(--bg);
-  border-radius: 20px 20px 0 0;
-  width: 100%;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 -4px 24px rgba(0,0,0,.18);
-  animation: slideUp .25s ease;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-.csd-header {
-  padding: 14px 16px 12px;
-  border-bottom: 1px solid var(--brd);
-  flex-shrink: 0;
   background: #fff;
   border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 -2px 20px rgba(0,0,0,.12);
+  animation: slideUp .22s ease;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ── Drag handle ── */
+.csd-sheet::before {
+  content: '';
+  display: block;
+  width: 36px;
+  height: 4px;
+  background: #e0e5e2;
+  border-radius: 2px;
+  margin: 10px auto 0;
+  flex-shrink: 0;
+}
+
+/* ── Header ── */
+.csd-header {
+  padding: 10px 16px 0;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 .csd-title {
   font-weight: 800;
-  font-size: var(--flg);
-  color: var(--g8);
+  font-size: var(--fxl);
+  color: var(--g9);
+  letter-spacing: -.1px;
 }
 .csd-close {
-  background: none;
+  background: #f0f4f1;
   border: none;
-  font-size: var(--f2xl);
   color: var(--mut);
   cursor: pointer;
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
+  font-size: var(--flg);
+  line-height: 1;
 }
-.csd-close:active { background: var(--brd); }
+.csd-close:active { background: var(--brd); color: var(--txt); }
+
+/* ── Search box ── */
+.csd-search-wrap {
+  padding: 10px 12px 6px;
+  flex-shrink: 0;
+}
+.csd-search {
+  width: 100%;
+  padding: 9px 14px 9px 36px;
+  border: 1.5px solid var(--brd);
+  border-radius: 10px;
+  font-size: var(--fmd);
+  color: var(--txt);
+  background: var(--surf2);
+  outline: none;
+  box-sizing: border-box;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 512 512'%3E%3Cpath fill='%236b7c72' d='M416 208c0 45.4-14.9 87.3-40 120.9L502.6 457c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0L340.9 376c-33.6 25.1-75.5 40-120.9 40C100.3 416 0 315.7 0 192S100.3-32 220-32s220 100.3 220 220zm-220 176a176 176 0 1 0 0-352 176 176 0 1 0 0 352z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 11px center;
+}
+.csd-search:focus { border-color: var(--g5); background-color: #fff; }
+
+/* ── Divider ── */
+.csd-divider {
+  height: 1px;
+  background: var(--brd);
+  margin: 0 12px;
+  flex-shrink: 0;
+}
+
+/* ── Scrollable body ── */
 .csd-body {
   overflow-y: auto;
   flex: 1;
   -webkit-overflow-scrolling: touch;
-  padding: 8px 10px;
+  padding: 4px 0 8px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
 }
+.csd-body::-webkit-scrollbar { width: 3px; }
+.csd-body::-webkit-scrollbar-thumb { background: var(--brd); border-radius: 3px; }
+
+/* ── Group label ── */
 .csd-group-label {
-  padding: 8px 4px 4px;
+  padding: 10px 16px 4px;
   font-size: var(--fxs);
   font-weight: 700;
   color: var(--mut);
   text-transform: uppercase;
-  letter-spacing: .4px;
+  letter-spacing: .5px;
   position: sticky;
   top: 0;
-  background: var(--bg);
+  background: #fff;
   z-index: 1;
 }
-.csd-card {
-  background: var(--surf);
-  border-radius: var(--rs);
-  padding: 10px 12px;
-  margin-bottom: 6px;
-  border-left: 3px solid var(--g5);
-  box-shadow: var(--sh);
+
+/* ── Row item (ringan, tanpa shadow/card) ── */
+.csd-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  padding: 12px 16px;
+  gap: 12px;
   cursor: pointer;
-  transition: background .1s, transform .1s;
-  gap: 8px;
+  border-bottom: 1px solid #f0f3f1;
+  transition: background .12s;
+  min-height: 50px;
 }
-.csd-card:active { background: var(--g1); transform: scale(.98); }
-.csd-card.selected {
-  border-left-color: var(--g6);
-  background: var(--g1);
-}
-.csd-card-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  flex: 1;
-}
-.csd-card-num {
-  font-size: var(--fxs);
-  color: var(--mut);
-  font-weight: 400;
-  min-width: 18px;
+.csd-row:last-child { border-bottom: none; }
+.csd-row:active { background: var(--g1); }
+.csd-row.selected { background: #f0faf4; }
+
+/* ── Nomor urut ── */
+.csd-row-num {
+  font-size: var(--fsm);
+  color: #bcc5c0;
+  font-weight: 500;
+  min-width: 22px;
+  text-align: right;
   flex-shrink: 0;
 }
-.csd-card-name {
-  font-weight: 700;
-  font-size: var(--fmd);
-  color: var(--txt);
+
+/* ── Nama ── */
+.csd-row-name {
   flex: 1;
   min-width: 0;
+  font-size: var(--fmd);
+  font-weight: 600;
+  color: var(--txt);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 1.3;
 }
-.csd-card-right {
+.csd-row.selected .csd-row-name { color: var(--g8); font-weight: 700; }
+
+/* ── Centang pilihan ── */
+.csd-row-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--g6);
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
   flex-shrink: 0;
 }
-.csd-check {
-  color: var(--g6);
-  font-size: var(--flg);
-  font-weight: 800;
+.csd-row-check svg { fill: #fff; width: 12px; height: 12px; }
+
+/* ── "Semua Siswa" special row ── */
+.csd-row.special {
+  background: var(--surf2);
+  border-bottom: 2px solid var(--brd);
+  border-top: none;
+  margin-bottom: 2px;
 }
+.csd-row.special .csd-row-name { color: var(--g7); font-weight: 700; }
+.csd-row.special.selected { background: var(--g1); }
+
 .csd-empty {
-  padding: 24px;
+  padding: 32px 16px;
   text-align: center;
-  font-size: var(--fsm);
+  font-size: var(--fmd);
   color: var(--mut);
 }
+/* Backward compat — kode lama mungkin masih pakai .csd-card */
+.csd-card { display: none !important; }
 /* ==============================
    PROGRESS STATUS & REKAP KELAS STYLES
 ============================== */
@@ -2528,10 +2588,10 @@ span > .fai, div > .fai { vertical-align: middle; }
 /* Trigger button */
 .csd-trigger {
   width: 100%;
-  padding: 9px 36px 9px 10px;
+  padding: 10px 38px 10px 12px;
   border: 1.5px solid var(--brd);
   border-radius: var(--rs);
-  font-size: var(--flg);
+  font-size: var(--fmd);
   font-weight: 600;
   color: var(--txt);
   background: var(--surf2);
@@ -2539,20 +2599,24 @@ span > .fai, div > .fai { vertical-align: middle; }
   text-align: left;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   position: relative;
   outline: none;
+  min-height: 42px;
+  transition: border-color .15s, background .15s;
 }
+.csd-trigger:active,
+.csd-trigger:focus-visible { border-color: var(--g5); background: #fff; }
 .csd-trigger.placeholder { color: var(--mut); font-weight: 400; }
 .csd-trigger-arrow {
   position: absolute;
-  right: 10px;
+  right: 11px;
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
   color: var(--mut);
-  font-size: 10px;
+  line-height: 1;
 }
+.csd-trigger-arrow svg { display: block; }
 
 
 /* ==============================
@@ -2584,6 +2648,11 @@ span > .fai, div > .fai { vertical-align: middle; }
   .mpa-ket-btn:hover { border-color: var(--g5); background: var(--g0); }
   .rekap-row:hover { background: var(--surf2); }
   .lrow:hover { background: var(--surf2); }
+  /* CSD rows */
+  .csd-row:hover { background: #f5faf7; }
+  .csd-row.special:hover { background: var(--g1); }
+  /* CSD trigger */
+  .csd-trigger:hover { border-color: var(--g5); background: #fff; }
 }
 
 /* ==============================
@@ -2705,7 +2774,7 @@ span > .fai, div > .fai { vertical-align: middle; }
         <span class="siswa-selector-label">Siswa</span>
         <button type="button" class="csd-trigger placeholder" id="dashboardSiswaSelectTrigger" onclick="openCsdSiswa('dashboardSiswaSelect')" style="flex:1;">
           <span id="dashboardSiswaSelectLabel">— Pilih Siswa —</span>
-          <span class="csd-trigger-arrow">▼</span>
+          <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
         </button>
         <select id="dashboardSiswaSelect" style="display:none;" onchange="onDashboardSiswaChange();">
           <option value="SEMUA">— Semua Siswa —</option>
@@ -2905,7 +2974,7 @@ span > .fai, div > .fai { vertical-align: middle; }
             <label class="flbl">Nama Siswa</label>
             <button type="button" class="csd-trigger placeholder" id="namaSiswaTrigger" onclick="openCsdSiswa('namaSiswa')">
               <span id="namaSiswaLabel">— Pilih Siswa —</span>
-              <span class="csd-trigger-arrow">▼</span>
+              <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
             </button>
             <select id="namaSiswa" style="display:none;" onchange="showSiswaHafalanHistory(this.value);"></select>
           </div>
@@ -2917,7 +2986,7 @@ span > .fai, div > .fai { vertical-align: middle; }
             <label class="flbl">Pilih Juz</label>
             <button type="button" class="csd-trigger placeholder" id="juzSelectTrigger" onclick="openCsd('juzSelect','📚 Pilih Juz')">
               <span id="juzSelectLabel">Juz 30 — Juz Amma</span>
-              <span class="csd-trigger-arrow">▼</span>
+              <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
             </button>
             <select id="juzSelect" style="display:none;" onchange="onJuzChange();"></select>
           </div>
@@ -2928,7 +2997,7 @@ span > .fai, div > .fai { vertical-align: middle; }
               <label class="flbl">Surat</label>
               <button type="button" class="csd-trigger placeholder" id="suratTrigger" onclick="openCsd('surat','📖 Pilih Surat')">
                 <span id="suratLabel">— Pilih Surat —</span>
-                <span class="csd-trigger-arrow">▼</span>
+                <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
               </button>
               <select id="surat" style="display:none;" onchange="renderAyatList();"></select>
             </div>
@@ -2936,7 +3005,7 @@ span > .fai, div > .fai { vertical-align: middle; }
               <label class="flbl">Dari</label>
               <button type="button" class="csd-trigger placeholder" id="ayatMulaiTrigger" onclick="openCsd('ayatMulai','Dari Ayat')">
                 <span id="ayatMulaiLabel">—</span>
-                <span class="csd-trigger-arrow">▼</span>
+                <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
               </button>
               <select id="ayatMulai" style="display:none;" onchange="renderAyatGrid();"></select>
             </div>
@@ -2944,7 +3013,7 @@ span > .fai, div > .fai { vertical-align: middle; }
               <label class="flbl">Sampai</label>
               <button type="button" class="csd-trigger placeholder" id="ayatSampaiTrigger" onclick="openCsd('ayatSampai','Sampai Ayat')">
                 <span id="ayatSampaiLabel">—</span>
-                <span class="csd-trigger-arrow">▼</span>
+                <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
               </button>
               <select id="ayatSampai" style="display:none;" onchange="renderAyatGrid();"></select>
             </div>
@@ -2955,7 +3024,7 @@ span > .fai, div > .fai { vertical-align: middle; }
               <label class="flbl">Status</label>
               <button type="button" class="csd-trigger" id="statLancarTrigger" onclick="openCsd('statLancar','Status Hafalan')">
                 <span id="statLancarLabel">✅ Lancar</span>
-                <span class="csd-trigger-arrow">▼</span>
+                <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
               </button>
               <select id="statLancar" style="display:none;">
                 <option value="L">✅ Lancar</option>
@@ -2966,7 +3035,7 @@ span > .fai, div > .fai { vertical-align: middle; }
               <label class="flbl">Tambahan</label>
               <button type="button" class="csd-trigger placeholder" id="tambahanTrigger" onclick="openCsd('tambahan','Keterangan Tambahan')">
                 <span id="tambahanLabel">— Pilih —</span>
-                <span class="csd-trigger-arrow">▼</span>
+                <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
               </button>
               <select id="tambahan" style="display:none;">
                 <option value="">— Pilih —</option>
@@ -7446,8 +7515,15 @@ function openCsd(targetId, title) {
       _csdItems.push({ value: child.value, label: child.text, group: null });
     }
   }
+  // Clear search
+  const searchInput = document.getElementById('csdSearchInput');
+  if (searchInput) searchInput.value = '';
   renderCsdItems();
   document.getElementById('csdOverlay').classList.add('show');
+  // Auto-focus search on non-touch devices (tablet/PC)
+  if (searchInput && window.matchMedia('(hover:hover)').matches) {
+    requestAnimationFrame(() => searchInput.focus());
+  }
 }
 // Alias lama supaya kode lain tidak rusak
 function openCsdSiswa(targetId) { openCsd(targetId, '👤 Pilih Siswa'); }
@@ -7485,35 +7561,57 @@ function filterCsdItems() { renderCsdItems(); }
 function renderCsdItems() {
   const currentVal = _csdTargetId ? document.getElementById(_csdTargetId).value : '';
   const body = document.getElementById('csdBody');
+  const q = (document.getElementById('csdSearchInput')?.value || '').trim().toLowerCase();
 
   const specialItems = _csdItems.filter(it => !it.value || it.value === 'SEMUA' || it.value === '');
-  const siswaItems   = _csdItems.filter(it =>  it.value && it.value !== 'SEMUA' && it.value !== '');
+  const regularItems = _csdItems.filter(it => it.value && it.value !== 'SEMUA' && it.value !== '');
 
-  if (!siswaItems.length && !specialItems.length) {
-    body.innerHTML = '<div class="csd-empty">Belum ada siswa</div>';
+  // Apply search filter to regular items
+  const filtered = q
+    ? regularItems.filter(it => it.label.toLowerCase().includes(q) || (it.group||'').toLowerCase().includes(q))
+    : regularItems;
+
+  // Hide search bar for very short lists (≤5 items, no groups)
+  const searchWrap = document.getElementById('csdSearchWrap');
+  if (searchWrap) {
+    const hasGroups = regularItems.some(it => it.group);
+    searchWrap.style.display = (regularItems.length > 5 || hasGroups) ? '' : 'none';
+  }
+
+  if (!filtered.length && !specialItems.length) {
+    body.innerHTML = '<div class="csd-empty">Tidak ada pilihan</div>';
     return;
   }
 
-  // Bangun dengan DOM — tidak ada onclick inline, tidak ada masalah kutip
   body.innerHTML = '';
 
-  // Item special (Semua Siswa dll)
+  const CHECK_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7l233.4-233.3c12.5-12.5 32.8-12.5 45.3 0z"/></svg>';
+
+  // Special items (e.g. "Semua Siswa")
   specialItems.forEach(it => {
     const isSel = it.value === currentVal || (!currentVal && it.value === 'SEMUA');
     const cleanLabel = it.label.replace(/^[—-]\s*|\s*[—-]$/g,'').trim() || it.label;
-    const card = document.createElement('div');
-    card.className = 'csd-card' + (isSel ? ' selected' : '');
-    card.style.cssText = 'border-left-color:var(--g4); margin-bottom:10px;';
-    card.innerHTML = `<div class="csd-card-left"><span class="csd-card-name" style="color:var(--g7);">👥 ${cleanLabel}</span></div><div class="csd-card-right">${isSel ? '<span class="csd-check">✓</span>' : ''}</div>`;
-    card.addEventListener('click', () => selectCsdItem(it.value, it.label));
-    body.appendChild(card);
+    const row = document.createElement('div');
+    row.className = 'csd-row special' + (isSel ? ' selected' : '');
+    row.innerHTML = `
+      <div class="csd-row-name">👥 ${cleanLabel}</div>
+      ${isSel ? `<div class="csd-row-check">${CHECK_SVG}</div>` : ''}`;
+    row.addEventListener('click', () => selectCsdItem(it.value, it.label));
+    body.appendChild(row);
   });
 
-  // Siswa — kelompokkan jika ada group
-  const hasGroup = siswaItems.some(it => it.group);
+  if (q && !filtered.length) {
+    const empty = document.createElement('div');
+    empty.className = 'csd-empty';
+    empty.textContent = `Tidak ditemukan "${q}"`;
+    body.appendChild(empty);
+    return;
+  }
+
+  const hasGroup = filtered.some(it => it.group);
   if (hasGroup) {
     const groups = {};
-    siswaItems.forEach(it => {
+    filtered.forEach(it => {
       const g = it.group || 'Lainnya';
       if (!groups[g]) groups[g] = [];
       groups[g].push(it);
@@ -7527,24 +7625,36 @@ function renderCsdItems() {
       groups[g].forEach((it, idx) => {
         const isSel = it.value === currentVal;
         const cleanLabel = it.label.replace(/^\d+\.\s*/, '');
-        const card = document.createElement('div');
-        card.className = 'csd-card' + (isSel ? ' selected' : '');
-        card.innerHTML = `<div class="csd-card-left"><span class="csd-card-num">${idx+1}.</span><span class="csd-card-name">${cleanLabel}</span></div><div class="csd-card-right">${isSel ? '<span class="csd-check">✓</span>' : ''}</div>`;
-        card.addEventListener('click', () => selectCsdItem(it.value, it.label));
-        body.appendChild(card);
+        const row = document.createElement('div');
+        row.className = 'csd-row' + (isSel ? ' selected' : '');
+        row.innerHTML = `
+          <span class="csd-row-num">${idx+1}</span>
+          <span class="csd-row-name">${cleanLabel}</span>
+          ${isSel ? `<div class="csd-row-check">${CHECK_SVG}</div>` : ''}`;
+        row.addEventListener('click', () => selectCsdItem(it.value, it.label));
+        body.appendChild(row);
       });
     });
   } else {
-    siswaItems.forEach((it, idx) => {
+    filtered.forEach((it, idx) => {
       const isSel = it.value === currentVal;
       const cleanLabel = it.label.replace(/^\d+\.\s*/, '');
-      const card = document.createElement('div');
-      card.className = 'csd-card' + (isSel ? ' selected' : '');
-      card.innerHTML = `<div class="csd-card-left"><span class="csd-card-num">${idx+1}.</span><span class="csd-card-name">${cleanLabel}</span></div><div class="csd-card-right">${isSel ? '<span class="csd-check">✓</span>' : ''}</div>`;
-      card.addEventListener('click', () => selectCsdItem(it.value, it.label));
-      body.appendChild(card);
+      const row = document.createElement('div');
+      row.className = 'csd-row' + (isSel ? ' selected' : '');
+      row.innerHTML = `
+        <span class="csd-row-num">${idx+1}</span>
+        <span class="csd-row-name">${cleanLabel}</span>
+        ${isSel ? `<div class="csd-row-check">${CHECK_SVG}</div>` : ''}`;
+      row.addEventListener('click', () => selectCsdItem(it.value, it.label));
+      body.appendChild(row);
     });
   }
+
+  // Scroll to selected item
+  requestAnimationFrame(() => {
+    const sel = body.querySelector('.csd-row.selected');
+    if (sel) sel.scrollIntoView({ block: 'nearest' });
+  });
 }
 
 function selectCsdItem(value, label) {
@@ -7912,7 +8022,7 @@ document.addEventListener('keydown', function(e) {
         <label class="flbl">Pilih Siswa</label>
         <button type="button" class="csd-trigger placeholder" id="mpaSiswaTrigger" onclick="openCsdSiswa('mpaSiswa')">
           <span id="mpaSiswaLabel">— Pilih Siswa —</span>
-          <span class="csd-trigger-arrow">▼</span>
+          <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
         </button>
         <select id="mpaSiswa" onchange="onMpaSiswaChange()" style="display:none;"></select>
       </div>
@@ -7950,7 +8060,7 @@ document.addEventListener('keydown', function(e) {
           <div>
             <button type="button" class="csd-trigger placeholder" id="mpaSuratSampaiTrigger" onclick="openCsd('mpaSuratSampai','📖 Pilih Surat')">
               <span id="mpaSuratSampaiLabel">— Pilih surat —</span>
-              <span class="csd-trigger-arrow">▼</span>
+              <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
             </button>
             <select id="mpaSuratSampai" style="display:none;" onchange="onMpaSuratChange();">
               <option value="">— Pilih surat —</option>
@@ -7959,7 +8069,7 @@ document.addEventListener('keydown', function(e) {
           <div id="mpaAyatWrap" style="display:none; min-width:90px;">
             <button type="button" class="csd-trigger placeholder" id="mpaAyatSampaiTrigger" onclick="openCsd('mpaAyatSampai','Sampai Ayat')">
               <span id="mpaAyatSampaiLabel">Ayat</span>
-              <span class="csd-trigger-arrow">▼</span>
+              <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
             </button>
             <select id="mpaAyatSampai" style="display:none;" onchange="updateQuickPreview();">
               <option value="">Ayat</option>
@@ -8112,7 +8222,7 @@ document.addEventListener('keydown', function(e) {
       <label>Status</label>
       <button type="button" class="csd-trigger" id="editSiswaStatusTrigger" onclick="openCsd('editSiswaStatus','Status Siswa')">
         <span id="editSiswaStatusLabel">Aktif</span>
-        <span class="csd-trigger-arrow">▼</span>
+        <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
       </button>
       <select id="editSiswaStatus" style="display:none;">
         <option value="aktif">Aktif</option>
@@ -8191,8 +8301,14 @@ document.addEventListener('keydown', function(e) {
   <div class="csd-sheet" onclick="event.stopPropagation()">
     <div class="csd-header">
       <span class="csd-title" id="csdTitle">👤 Pilih Siswa</span>
-      <button class="csd-close" onclick="closeCsdSiswa()">×</button>
+      <button class="csd-close" onclick="closeCsdSiswa()" aria-label="Tutup">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 384 512"><path fill="currentColor" d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3l105.4 105.3c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256l105.3-105.4z"/></svg>
+      </button>
     </div>
+    <div class="csd-search-wrap" id="csdSearchWrap">
+      <input class="csd-search" id="csdSearchInput" type="search" placeholder="Cari..." oninput="filterCsdItems()" autocomplete="off" autocorrect="off" spellcheck="false">
+    </div>
+    <div class="csd-divider"></div>
     <div class="csd-body" id="csdBody"></div>
   </div>
 </div>
