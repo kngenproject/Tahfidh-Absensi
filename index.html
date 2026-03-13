@@ -3161,8 +3161,17 @@ span > .fai, div > .fai { vertical-align: middle; }
 
       <!-- Panel: Pribadi -->
       <div class="stat-panel" id="statPersonal">
-        <div id="kelasFilterPersonal" style="margin-bottom:10px;">
+        <!-- Filter kelas -->
+        <div id="kelasFilterPersonal" style="margin-bottom:8px;">
           <div id="kelasChipsPersonal" class="frow" style="flex-wrap:wrap; margin-bottom:0;"></div>
+        </div>
+        <!-- Pilih siswa -->
+        <div style="margin-bottom:12px;">
+          <button type="button" class="csd-trigger" id="personalSiswaTrigger" onclick="openCsdSiswa('personalSiswaSelect')" style="font-size:var(--fmd);">
+            <span id="personalSiswaLabel">— Semua Siswa —</span>
+            <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
+          </button>
+          <select id="personalSiswaSelect" style="display:none;" onchange="onPersonalSiswaChange();"></select>
         </div>
         <div class="chart-slot" id="slotWeekly">
           <div class="chart-slot-title">Performa Mingguan</div>
@@ -3189,7 +3198,8 @@ span > .fai, div > .fai { vertical-align: middle; }
       <!-- Panel: Kelas -->
       <div class="stat-panel" id="statClass" style="display:none">
         <div class="chart-slot tall" id="slotClass">
-          <div class="chart-slot-title">Perbandingan Antar Siswa (Top 10)</div>
+          <div class="chart-slot-title">Perbandingan Antar Siswa — Poin Efektif (Top 10)</div>
+          <div id="cvClassLegend" style="display:flex;flex-wrap:wrap;padding:0 4px 8px;gap:2px;"></div>
           <canvas id="cvClass"></canvas>
           <div id="cvClassEmpty" style="display:none;flex:1;align-items:center;justify-content:center;color:var(--mut);font-size:var(--fmd);">Belum ada data setoran</div>
         </div>
@@ -4873,11 +4883,17 @@ const ST = (() => {
   function _renderPersonal() {
     renderBadgesGrid();
     renderKelasChips('kelasChipsPersonal', 'kelasFilterPersonal', activeKelasPersonal, 'setKelasPersonal', 'master');
-    // Filter siswa berdasarkan kelas aktif
+    _rebuildPersonalSiswaSelect();
+
+    // Tentukan daftar nama siswa berdasar filter kelas + pilihan siswa
     const siswaDiKelas = activeKelasPersonal === 'SEMUA'
       ? masterSiswa.map(s => s.nama)
       : masterSiswa.filter(s => (s.kelas || 'Umum').trim() === activeKelasPersonal).map(s => s.nama);
-    const setoranFiltered = dataSetoran.filter(d => siswaDiKelas.includes(d.nama));
+    const namaFilter = (activePersonalSiswa && activePersonalSiswa !== 'SEMUA')
+      ? [activePersonalSiswa]
+      : siswaDiKelas;
+
+    const setoranFiltered = dataSetoran.filter(d => namaFilter.includes(d.nama));
     const labels = [], lancar = [], kl = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date(); d.setDate(d.getDate() - i);
@@ -4909,77 +4925,110 @@ const ST = (() => {
     if (!_updateChart('weekly', labels, weeklyConfig.data.datasets)) {
       _initChart('weekly', 'cvWeekly', weeklyConfig);
     }
+    // Update stat detail cards juga
+    updateStatsPage();
   }
 
   /* ---- Kelas ---- */
   function _renderClass() {
     _renderLeaderboard();
-    // Hitung per siswa: setoran biasa, muroja'ah, tasmi'
-    const userStats = {};
-    masterSiswa.forEach(s => {
-      const setoranSiswa = dataSetoran.filter(d => d.nama === s.nama);
-      const tasmi   = setoranSiswa.filter(d => d.tambahan === "Tasmi'").length;
-      const muroja  = setoranSiswa.filter(d => d.tambahan === "Muroja'ah").length;
-      const biasa   = setoranSiswa.length - tasmi - muroja;
-      const total   = setoranSiswa.length;
-      const info    = getSiswaTahfidhInfo(s.nama);
-      const tier    = TIER_WEIGHT[info.ket || ''] || 0;
-      userStats[s.nama] = { biasa, muroja, tasmi, total, tier };
+
+    // Hitung poin efektif per siswa — sama persis dengan logika leaderboard
+    const COLOR_TIER = {
+      "Tasmi'"     : '#6366f1',   // ungu  (tertinggi)
+      "Muroja'ah"  : '#f59e0b',   // kuning-oren
+      "Belum Khatam": '#2da55f',  // hijau
+      ''            : '#9ca3af'   // abu   (belum setoran)
+    };
+
+    const rows = masterSiswa.map(s => {
+      const info      = getSiswaTahfidhInfo(s.nama);
+      const ket       = info.ket || '';
+      const effective = getEffectivePoints(s.nama);
+      return { nama: s.nama, effective, ket };
     });
-    // Urut: tier pencapaian dulu (Tasmi' > Muroja'ah > Belum Khatam), lalu total setoran
-    const sorted = Object.entries(userStats)
-      .sort((a, b) => b[1].tier - a[1].tier || b[1].total - a[1].total)
+
+    // Urut: poin efektif turun (otomatis Tasmi' > Muroja'ah > Belum Khatam)
+    const sorted = rows
+      .sort((a, b) => b.effective - a.effective)
       .slice(0, 10);
+
     const emptyEl = document.getElementById('cvClassEmpty');
-    const cv = document.getElementById('cvClass');
-    const isEmpty = !sorted.length || sorted.every(x => x[1].total === 0);
+    const cv      = document.getElementById('cvClass');
+    const isEmpty = !sorted.length || sorted.every(x => x.effective === 0);
     if (emptyEl) emptyEl.style.display = isEmpty ? 'flex' : 'none';
-    if (cv) cv.style.display = isEmpty ? 'none' : '';
-    if (isEmpty) { if (_charts.class) { try{_charts.class.destroy();}catch(e){} delete _charts.class; } return; }
-    const newLabels  = sorted.map(x => x[0].length > 16 ? x[0].slice(0,15)+'…' : x[0]);
-    const dataBiasa  = sorted.map(x => x[1].biasa);
-    const dataMuroja = sorted.map(x => x[1].muroja);
-    const dataTasmi  = sorted.map(x => x[1].tasmi);
+    if (cv)      cv.style.display      = isEmpty ? 'none' : '';
+    if (isEmpty) {
+      if (_charts.class) { try{_charts.class.destroy();}catch(e){} delete _charts.class; }
+      return;
+    }
+
+    const newLabels = sorted.map(x => x.nama.length > 16 ? x.nama.slice(0,15)+'…' : x.nama);
+    const dataPoints = sorted.map(x => x.effective);
+    const bgColors   = sorted.map(x => COLOR_TIER[x.ket] || COLOR_TIER['']);
+
     const classConfig = {
-      type:'bar',
-      data:{
+      type: 'bar',
+      data: {
         labels: newLabels,
-        datasets:[
-          { label:'Setoran',    data:dataBiasa,  backgroundColor:'#2da55f', borderRadius:0, borderSkipped:false, stack:'s' },
-          { label:"Muroja'ah",  data:dataMuroja, backgroundColor:'#f59e0b', borderRadius:0, borderSkipped:false, stack:'s' },
-          { label:"Tasmi'",     data:dataTasmi,  backgroundColor:'#6366f1', borderRadius:6, borderSkipped:false, stack:'s' }
-        ]
+        datasets: [{
+          label: 'Poin Efektif',
+          data:  dataPoints,
+          backgroundColor: bgColors,
+          borderRadius: 6,
+          borderSkipped: false
+        }]
       },
-      options:{
-        indexAxis:'y', responsive:true, maintainAspectRatio:false,
-        plugins:{
-          legend:{ display:true, position:'top', labels:{ boxWidth:12, font:{size:11}, padding:12 } },
-          tooltip:{
-            callbacks:{
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
               label: c => {
-                const val = c.parsed.x;
-                if (!val) return null;
-                return ` ${c.dataset.label}: ${val}`;
-              },
-              afterBody: (items) => {
-                const idx = items[0]?.dataIndex;
-                const total = sorted[idx]?.[1]?.total ?? 0;
-                return [`Total: ${total} setoran`];
+                const u = sorted[c.dataIndex];
+                const label = u.ket || 'Belum Setoran';
+                return [`Poin: ${u.effective}`, `Pencapaian: ${label}`];
               }
             }
           }
         },
-        scales:{
-          x:{ stacked:true, beginAtZero:true, ticks:{ stepSize:1, font:{size:10} }, grid:{ color:'rgba(0,0,0,0.05)' } },
-          y:{ stacked:true, ticks:{ font:{size:10}, padding:4 }, grid:{display:false} }
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: { font: { size: 10 } },
+            grid: { color: 'rgba(0,0,0,0.05)' }
+          },
+          y: {
+            ticks: { font: { size: 10 }, padding: 4 },
+            grid: { display: false }
+          }
         }
       }
     };
+
+    // Legend manual — tampilkan di bawah judul
+    const legendEl = document.getElementById('cvClassLegend');
+    if (legendEl) {
+      const items = [
+        { color: '#6366f1', label: "Tasmi'" },
+        { color: '#f59e0b', label: "Muroja'ah" },
+        { color: '#2da55f', label: 'Belum Khatam' },
+        { color: '#9ca3af', label: 'Belum Setoran' }
+      ];
+      legendEl.innerHTML = items.map(it =>
+        `<span style="display:inline-flex;align-items:center;gap:4px;margin-right:10px;font-size:var(--fxs);color:var(--g7);">
+           <span style="width:10px;height:10px;border-radius:3px;background:${it.color};flex-shrink:0;"></span>${it.label}
+         </span>`
+      ).join('');
+    }
+
     if (_charts.class) {
       _charts.class.data.labels = newLabels;
-      _charts.class.data.datasets[0].data = dataBiasa;
-      _charts.class.data.datasets[1].data = dataMuroja;
-      _charts.class.data.datasets[2].data = dataTasmi;
+      _charts.class.data.datasets[0].data = dataPoints;
+      _charts.class.data.datasets[0].backgroundColor = bgColors;
       _charts.class.update('none');
     } else {
       _initChart('class', 'cvClass', classConfig);
@@ -5280,11 +5329,14 @@ function _renderAIInsight() {
 
 /* ---- updateStatsPage — dipanggil goPage saat buka pg3 ---- */
 function updateStatsPage() {
-  // Filter berdasarkan kelas aktif tab Pribadi
   const siswaDiKelas = activeKelasPersonal === 'SEMUA'
     ? masterSiswa.map(s => s.nama)
     : masterSiswa.filter(s => (s.kelas || 'Umum').trim() === activeKelasPersonal).map(s => s.nama);
-  const ds = dataSetoran.filter(d => siswaDiKelas.includes(d.nama));
+  // Terapkan filter siswa individual jika dipilih
+  const namaFilter = (activePersonalSiswa && activePersonalSiswa !== 'SEMUA')
+    ? [activePersonalSiswa]
+    : siswaDiKelas;
+  const ds = dataSetoran.filter(d => namaFilter.includes(d.nama));
   document.getElementById('statTotalSetoran').textContent = ds.length;
   const avgAyat = ds.length > 0
     ? ds.reduce((a,b) => {
@@ -5299,16 +5351,14 @@ function updateStatsPage() {
   ds.forEach(s => sc[s.surat] = (sc[s.surat]||0) + 1);
   const fav = Object.entries(sc).sort((a,b) => b[1]-a[1])[0];
   document.getElementById('statFavSurat').textContent = fav ? fav[0] : '-';
-  // Khatam Count: hanya siswa dengan ket Muroja'ah atau Tasmi' yang dihitung khatam.
-  // Belum Khatam — walaupun setoran sudah sampai An-Naba' — tidak dihitung.
+  // Khatam Count
   let totalKhatam = 0;
-  siswaDiKelas.forEach(nama => {
+  namaFilter.forEach(nama => {
     const info = getSiswaTahfidhInfo(nama);
     if (info.ket === "Tasmi'") totalKhatam += 1;
     else if (info.ket === "Muroja'ah") totalKhatam += (info.jumlahKhatam || 1);
   });
   document.getElementById('statKhatam').textContent = totalKhatam + 'x';
-  ST.rerender();
 }
 
 /* ==============================
@@ -5622,12 +5672,43 @@ function setKelasViewer(k){
 _kelasHandlers['setKelasViewer'] = setKelasViewer;
 
 let activeKelasPersonal = 'SEMUA';
+let activePersonalSiswa = 'SEMUA'; // 'SEMUA' atau nama siswa
+
 function setKelasPersonal(k) {
   activeKelasPersonal = k;
+  activePersonalSiswa = 'SEMUA'; // reset pilihan siswa saat kelas berubah
   renderKelasChips('kelasChipsPersonal', 'kelasFilterPersonal', activeKelasPersonal, 'setKelasPersonal', 'master');
+  _rebuildPersonalSiswaSelect();
   ST.rerender();
 }
 _kelasHandlers['setKelasPersonal'] = setKelasPersonal;
+
+function _rebuildPersonalSiswaSelect() {
+  const sel = document.getElementById('personalSiswaSelect');
+  if (!sel) return;
+  // Daftar siswa sesuai kelas
+  const daftarSiswa = activeKelasPersonal === 'SEMUA'
+    ? masterSiswa
+    : masterSiswa.filter(s => (s.kelas || 'Umum').trim() === activeKelasPersonal);
+  sel.innerHTML = '<option value="SEMUA">— Semua Siswa —</option>';
+  daftarSiswa.forEach((s, i) => {
+    const opt = document.createElement('option');
+    opt.value = s.nama;
+    opt.text  = `${i+1}. ${s.nama}`;
+    sel.appendChild(opt);
+  });
+  sel.value = activePersonalSiswa;
+  // Jika nilai tidak ada (karena pindah kelas), reset ke SEMUA
+  if (!sel.value) { sel.value = 'SEMUA'; activePersonalSiswa = 'SEMUA'; }
+  syncCsdTrigger('personalSiswaSelect');
+}
+
+function onPersonalSiswaChange() {
+  const sel = document.getElementById('personalSiswaSelect');
+  activePersonalSiswa = sel?.value || 'SEMUA';
+  syncCsdTrigger('personalSiswaSelect');
+  ST.rerender();
+}
 
 let activeKelasRekap = 'SEMUA';
 function setKelasRekap(k) {
