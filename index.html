@@ -3167,8 +3167,8 @@ span > .fai, div > .fai { vertical-align: middle; }
         </div>
         <!-- Pilih siswa -->
         <div style="margin-bottom:12px;">
-          <button type="button" class="csd-trigger" id="personalSiswaTrigger" onclick="openCsdSiswa('personalSiswaSelect')" style="font-size:var(--fmd);">
-            <span id="personalSiswaLabel">— Semua Siswa —</span>
+          <button type="button" class="csd-trigger placeholder" id="personalSiswaSelectTrigger" onclick="_rebuildPersonalSiswaSelect();openCsdSiswa('personalSiswaSelect');" style="font-size:var(--fmd);">
+            <span id="personalSiswaSelectLabel">— Semua Siswa —</span>
             <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
           </button>
           <select id="personalSiswaSelect" style="display:none;" onchange="onPersonalSiswaChange();"></select>
@@ -4116,7 +4116,7 @@ function goPage(i){
     if(i===0) updateDashboard();
     if(i===1) renderDdSiswa();
     if(i===2){ renderSiswaCards(); updateStatsAbsensi(); }
-    if(i===3) updateStatsPage();
+    if(i===3) { updateStatsPage(); ST.rerender(); }
     if(i===5) renderDsSiswa();
   }, 320);
 }
@@ -4925,8 +4925,8 @@ const ST = (() => {
     if (!_updateChart('weekly', labels, weeklyConfig.data.datasets)) {
       _initChart('weekly', 'cvWeekly', weeklyConfig);
     }
-    // Update stat detail cards juga
-    updateStatsPage();
+    // Sync stat detail cards
+    _updateStatCards(namaFilter);
   }
 
   /* ---- Kelas ---- */
@@ -5327,15 +5327,8 @@ function _renderAIInsight() {
     </div>`;
 }
 
-/* ---- updateStatsPage — dipanggil goPage saat buka pg3 ---- */
-function updateStatsPage() {
-  const siswaDiKelas = activeKelasPersonal === 'SEMUA'
-    ? masterSiswa.map(s => s.nama)
-    : masterSiswa.filter(s => (s.kelas || 'Umum').trim() === activeKelasPersonal).map(s => s.nama);
-  // Terapkan filter siswa individual jika dipilih
-  const namaFilter = (activePersonalSiswa && activePersonalSiswa !== 'SEMUA')
-    ? [activePersonalSiswa]
-    : siswaDiKelas;
+/* ---- _updateStatCards — update angka kartu statistik detail ---- */
+function _updateStatCards(namaFilter) {
   const ds = dataSetoran.filter(d => namaFilter.includes(d.nama));
   document.getElementById('statTotalSetoran').textContent = ds.length;
   const avgAyat = ds.length > 0
@@ -5351,7 +5344,6 @@ function updateStatsPage() {
   ds.forEach(s => sc[s.surat] = (sc[s.surat]||0) + 1);
   const fav = Object.entries(sc).sort((a,b) => b[1]-a[1])[0];
   document.getElementById('statFavSurat').textContent = fav ? fav[0] : '-';
-  // Khatam Count
   let totalKhatam = 0;
   namaFilter.forEach(nama => {
     const info = getSiswaTahfidhInfo(nama);
@@ -5359,6 +5351,17 @@ function updateStatsPage() {
     else if (info.ket === "Muroja'ah") totalKhatam += (info.jumlahKhatam || 1);
   });
   document.getElementById('statKhatam').textContent = totalKhatam + 'x';
+}
+
+/* ---- updateStatsPage — dipanggil goPage saat buka pg3 ---- */
+function updateStatsPage() {
+  const siswaDiKelas = activeKelasPersonal === 'SEMUA'
+    ? masterSiswa.map(s => s.nama)
+    : masterSiswa.filter(s => (s.kelas || 'Umum').trim() === activeKelasPersonal).map(s => s.nama);
+  const namaFilter = (activePersonalSiswa && activePersonalSiswa !== 'SEMUA')
+    ? [activePersonalSiswa]
+    : siswaDiKelas;
+  _updateStatCards(namaFilter);
 }
 
 /* ==============================
@@ -5687,9 +5690,10 @@ function _rebuildPersonalSiswaSelect() {
   const sel = document.getElementById('personalSiswaSelect');
   if (!sel) return;
   // Daftar siswa sesuai kelas
-  const daftarSiswa = activeKelasPersonal === 'SEMUA'
+  const daftarSiswa = (activeKelasPersonal === 'SEMUA'
     ? masterSiswa
-    : masterSiswa.filter(s => (s.kelas || 'Umum').trim() === activeKelasPersonal);
+    : masterSiswa.filter(s => (s.kelas || 'Umum').trim() === activeKelasPersonal))
+    .slice().sort((a, b) => a.nama.localeCompare(b.nama, 'id'));
   sel.innerHTML = '<option value="SEMUA">— Semua Siswa —</option>';
   daftarSiswa.forEach((s, i) => {
     const opt = document.createElement('option');
