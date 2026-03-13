@@ -4842,7 +4842,14 @@ function _buildKhatamL(nf) {
 }
 
 // Helper: apakah sudah khatam (semua surat juz30, ayat penuh, stat L)
+// — Muroja'ah & Tasmi' otomatis khatam
 function _isKhatam(nf) {
+  // Cek status ket: Muroja'ah atau Tasmi' sudah pasti khatam
+  const names = (nf && nf.length) ? nf : masterSiswa.map(s => s.nama);
+  if (names.some(n => {
+    const ket = getSiswaTahfidhInfo(n).ket;
+    return ket === "Muroja'ah" || ket === "Tasmi'";
+  })) return true;
   const { juz30, suratKhatamL } = _buildKhatamL(nf);
   return juz30.every(s => suratKhatamL[s.nm]);
 }
@@ -4887,6 +4894,10 @@ const BADGES = [
     id: 'khatam_1', icon: '🎓', name: 'Khatam Pertama',
     desc: 'Selesai Juz Amma lengkap (sampai An-Naba\', ayat penuh, Lancar)',
     progress: (nf) => {
+      if (_isKhatam(nf)) {
+        const juz30 = ALL_SURAT.filter(s => s.juz === 30);
+        return { val: juz30.length, max: juz30.length, label: `${juz30.length}/${juz30.length} surat` };
+      }
       const { juz30, suratKhatamL } = _buildKhatamL(nf);
       const done = juz30.filter(s => suratKhatamL[s.nm]).length;
       return { val: done, max: juz30.length, label: `${done}/${juz30.length} surat` };
@@ -7575,7 +7586,7 @@ async function simpanPencapaianAwal(){
       } else {
         rentang = `${partialAyat}-${s.a}`;     // dari ayat X sampai akhir
       }
-      stat = 'KL'; // partial → Kurang Lancar (belum selesai)
+      stat = 'L'; // partial → catat sampai ayat ini saja, cukup L
     } else {
       rentang = `1-${s.a}`;                    // surat penuh
       stat = 'L';
