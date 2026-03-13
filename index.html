@@ -4582,7 +4582,7 @@ function getSiswaJuzProgress(nama, ket) {
     const start = parseInt(parts[0]) || 1;
     const end   = parseInt(parts.length > 1 ? parts[1] : parts[0]) || 0;
     if (!suratMaxAyat[s.surat] || end > suratMaxAyat[s.surat]) suratMaxAyat[s.surat] = end;
-    // arahHafalan hanya ada di record simpanPencapaianAwal, tidak ada di setoran biasa
+    // Data awal nas-naba partial: ayat sebelum start belum disetorkan
     const isNasNabaPartial = s.arahHafalan === 'nas-naba' && start > 1;
     if (isNasNabaPartial) {
       if (!suratNasNabaStart[s.surat] || start < suratNasNabaStart[s.surat])
@@ -4590,8 +4590,7 @@ function getSiswaJuzProgress(nama, ket) {
     }
     const suratObj = juzList.find(x => x.nm === s.surat);
     if (suratObj && end >= suratObj.a && s.stat === 'L') {
-      // Ayat sebelum start belum disetorkan → surat ini belum khatam
-      if (isNasNabaPartial) return;
+      if (isNasNabaPartial) return; // ayat 1..(start-1) belum disetorkan → belum khatam
       suratKhatamL[s.surat] = true;
     }
   });
@@ -4623,9 +4622,9 @@ function getSiswaJuzProgress(nama, ket) {
     if (suratKhatamL[s.nm]) { linearAyat += s.a; khatamCount++; }
   }
   // Surat frontier: posisi ayat dari max yang dicapai, khatam hanya kalau suratKhatamL
-  // Untuk nas-naba partial: ayat yang disetorkan = totalAyat - (start-1)
   let frontierAyat = Math.min(suratMaxAyat[fs.nm] || 0, fs.a);
   if (suratNasNabaStart[fs.nm]) {
+    // Untuk nas-naba partial: hanya ayat start..akhir yang disetorkan
     frontierAyat = fs.a - suratNasNabaStart[fs.nm] + 1;
   }
   linearAyat += frontierAyat;
@@ -4678,31 +4677,25 @@ function onJuzChange(){
 }
 
 /**
- * Ambil riwayat siswa dengan data-awal di-deduplicate per batch (per tanggal).
- * Setiap batch data awal hanya diwakili 1 record: record partial (frontier),
- * yaitu surat yang rentangnya tidak mencakup seluruh ayat surat tersebut.
- * Jika semua penuh, ambil record pertama dalam batch.
- * Identifier data-awal: record punya field arahHafalan ('naba-nas'/'nas-naba'/'manual').
+ * Deduplicate riwayat: setiap batch data-awal (per tgl+arahHafalan) → 1 record (frontier).
+ * Identifier data-awal: record punya field arahHafalan.
  */
 function _getDedupeRiwayat(nama) {
   const all = dataSetoran.filter(s => s.nama === nama);
   const result = [];
-  const seenDataAwalTgl = new Set();
+  const seenDataAwal = new Set();
   for (const r of all) {
-    const isDataAwal = !!r.arahHafalan; // hanya ada di record simpanPencapaianAwal
-    if (isDataAwal) {
+    if (r.arahHafalan) { // record dari simpanPencapaianAwal
       const key = r.tgl + '|' + r.arahHafalan;
-      if (seenDataAwalTgl.has(key)) continue;
-      seenDataAwalTgl.add(key);
-      // Cari record partial (frontier) dari batch ini
+      if (seenDataAwal.has(key)) continue;
+      seenDataAwal.add(key);
+      // Ambil record partial (frontier) — start>1 atau end<total ayat surat
       const batch = all.filter(x => x.arahHafalan === r.arahHafalan && x.tgl === r.tgl);
       const frontier = batch.find(b => {
-        const suratObj = ALL_SURAT.find(sx => sx.nm === b.surat);
-        if (!suratObj) return false;
-        const pts   = (b.rentang || '').split('-');
-        const start = parseInt(pts[0]) || 1;
-        const end   = parseInt(pts[pts.length - 1]) || 0;
-        return start > 1 || end < suratObj.a; // partial
+        const obj = ALL_SURAT.find(sx => sx.nm === b.surat);
+        if (!obj) return false;
+        const pts = (b.rentang||'').split('-');
+        return parseInt(pts[0])||1 > 1 || parseInt(pts[pts.length-1])||0 < obj.a;
       }) || batch[0];
       result.push(frontier);
     } else {
@@ -4710,6 +4703,17 @@ function _getDedupeRiwayat(nama) {
     }
   }
   return result;
+}
+
+/** Label ringkas untuk record data-awal: "An-Naba' ayat 26" */
+function _dataAwalLabel(r) {
+  if (!r.arahHafalan) return null;
+  const pts = (r.rentang||'').split('-');
+  const start = parseInt(pts[0])||1;
+  const end   = parseInt(pts[pts.length-1])||0;
+  // naba-nas: hafal sampai ayat end; nas-naba: mulai dari ayat start
+  const ayat = r.arahHafalan === 'nas-naba' ? start : end;
+  return ayat ? r.surat + ' ayat ' + ayat : r.surat;
 }
 
 // Tampilkan riwayat hafalan terakhir siswa
@@ -4755,30 +4759,48 @@ function showSiswaHafalanHistory(nama){
       <span style="font-weight:800; color:var(--g8); font-size:var(--fmd);">📚 Riwayat — ${nama}</span>
       <span class="bdg bg" style="font-size:var(--fxs);">${totalHafal} surat hafal</span>
     </div>
-    <div style="display:flex; align-items:center; gap:8px; padding:7px 10px; background:#fff; border-radius:8px; border:1px solid var(--brd); margin-bottom:6px;">
-      <span style="font-size:var(--flg);">🕌</span>
-      <div style="flex:1; min-width:0;">
-        <div style="font-weight:700; font-size:var(--fmd); color:var(--txt);">${terakhir.surat}</div>
-        <div style="font-size:var(--fxs); color:var(--mut);">Ayat ${terakhir.rentang||'—'} ${tglLabel}</div>
-      </div>
-      <span class="bdg ${terakhir.stat==='L'?'bg':'bgd'}" style="flex-shrink:0; font-size:var(--fxs);">${terakhir.stat==='L'?'Lancar':'Kurang Lancar'}</span>
-    </div>
-    ${riwayat.length > 1 ? `<details style="margin-top:2px;">
-      <summary style="cursor:pointer; font-size:var(--fxs); color:var(--g7); font-weight:700; padding:3px 0;">Lihat ${riwayat.length-1} setoran lainnya ▼</summary>
-      <div style="margin-top:6px; display:flex; flex-direction:column; gap:5px;">
-        ${riwayat.slice(1).map(r => {
-          const k = _setoranTglKey(r);
-          const d = k&&k!=='0000-00-00' ? new Date(k+'T00:00:00').toLocaleDateString('id-ID',{day:'numeric',month:'long'}) : '';
-          return `<div style="display:flex; align-items:center; gap:8px; padding:5px 8px; background:#fff; border-radius:6px; border:1px solid var(--brd);">
+    ${(() => {
+      const lbl0 = _dataAwalLabel(terakhir);
+      const topCard = lbl0
+        ? `<div style="display:flex; align-items:center; gap:8px; padding:7px 10px; background:#fff; border-radius:8px; border:1px solid var(--brd); margin-bottom:6px;">
+            <span style="font-size:var(--flg);">🕌</span>
             <div style="flex:1; min-width:0;">
-              <span style="font-weight:600; font-size:var(--fsm);">${r.surat}</span>
-              <span style="font-size:var(--fxs); color:var(--mut);"> • ayat ${r.rentang||'—'}${d?' • '+d:''}</span>
+              <div style="font-weight:700; font-size:var(--fmd); color:var(--txt);">${lbl0}</div>
+              <div style="font-size:var(--fxs); color:var(--mut);">Data Awal ${tglLabel}</div>
             </div>
-            <span class="bdg ${r.stat==='L'?'bg':'bgd'}" style="font-size:var(--fxs);">${r.stat==='L'?'L':'KL'}</span>
+          </div>`
+        : `<div style="display:flex; align-items:center; gap:8px; padding:7px 10px; background:#fff; border-radius:8px; border:1px solid var(--brd); margin-bottom:6px;">
+            <span style="font-size:var(--flg);">🕌</span>
+            <div style="flex:1; min-width:0;">
+              <div style="font-weight:700; font-size:var(--fmd); color:var(--txt);">${terakhir.surat}</div>
+              <div style="font-size:var(--fxs); color:var(--mut);">Ayat ${terakhir.rentang||'—'} ${tglLabel}</div>
+            </div>
+            <span class="bdg ${terakhir.stat==='L'?'bg':'bgd'}" style="flex-shrink:0; font-size:var(--fxs);">${terakhir.stat==='L'?'Lancar':'Kurang Lancar'}</span>
           </div>`;
-        }).join('')}
-      </div>
-    </details>` : ''}
+      const detailHtml = riwayat.length > 1 ? `<details style="margin-top:2px;">
+        <summary style="cursor:pointer; font-size:var(--fxs); color:var(--g7); font-weight:700; padding:3px 0;">Lihat ${riwayat.length-1} setoran lainnya ▼</summary>
+        <div style="margin-top:6px; display:flex; flex-direction:column; gap:5px;">
+          ${riwayat.slice(1).map(r => {
+            const k = _setoranTglKey(r);
+            const d = k&&k!=='0000-00-00' ? new Date(k+'T00:00:00').toLocaleDateString('id-ID',{day:'numeric',month:'long'}) : '';
+            const lbl = _dataAwalLabel(r);
+            return lbl
+              ? `<div style="padding:5px 8px; background:#fff; border-radius:6px; border:1px solid var(--brd);">
+                  <span style="font-weight:600; font-size:var(--fsm);">${lbl}</span>
+                  ${d ? `<span style="font-size:var(--fxs); color:var(--mut);"> • ${d}</span>` : ''}
+                </div>`
+              : `<div style="display:flex; align-items:center; gap:8px; padding:5px 8px; background:#fff; border-radius:6px; border:1px solid var(--brd);">
+                  <div style="flex:1; min-width:0;">
+                    <span style="font-weight:600; font-size:var(--fsm);">${r.surat}</span>
+                    <span style="font-size:var(--fxs); color:var(--mut);"> • ayat ${r.rentang||'—'}${d?' • '+d:''}</span>
+                  </div>
+                  <span class="bdg ${r.stat==='L'?'bg':'bgd'}" style="font-size:var(--fxs);">${r.stat==='L'?'L':'KL'}</span>
+                </div>`;
+          }).join('')}
+        </div>
+      </details>` : '';
+      return topCard + detailHtml;
+    })()}
   `;
 }
 
@@ -5087,8 +5109,7 @@ function _buildKhatamL(nf) {
     const end   = parseInt(parts.length > 1 ? parts[1] : parts[0]) || 0;
     const suratObj = juz30.find(x => x.nm === s.surat);
     if (suratObj && end >= suratObj.a && s.stat === 'L') {
-      // Data-awal nas-naba partial: ayat sebelum start belum disetorkan → belum khatam
-      if (s.arahHafalan === 'nas-naba' && start > 1) return;
+      if (s.arahHafalan === 'nas-naba' && start > 1) return; // nas-naba partial → belum khatam
       suratKhatamL[s.surat] = true;
     }
   });
@@ -7747,6 +7768,9 @@ function setMpaArah(arah){
   document.getElementById('mpaAyatHelper').style.display = 'none';
   document.getElementById('mpaAyatSampai').innerHTML = '<option value="">Ayat</option>';
   syncCsdTrigger('mpaAyatSampai');
+  // Tampilkan jumlah khatam hanya saat Muroja'ah (naba-nas)
+  const khatamRow = document.getElementById('mpaJumlahKhatamRow');
+  if(khatamRow) khatamRow.style.display = (arah === 'naba-nas') ? 'block' : 'none';
   updateMpaCount();
 }
 
@@ -7815,17 +7839,7 @@ function getTglFromInput(){
   return `${parseInt(d)}/${parseInt(m)}/${y}`;
 }
 
-function setMpaKet(val, btn){
-  document.getElementById('mpaKet').value = val;
-  document.querySelectorAll('.mpa-ket-btn').forEach(b => b.classList.remove('on'));
-  if(btn) btn.classList.add('on');
-  // Toggle jumlah khatam row
-  const khatamRow = document.getElementById('mpaJumlahKhatamRow');
-  if(khatamRow) khatamRow.style.display = (val === "Muroja'ah") ? 'block' : 'none';
-  // Toggle info Tasmi'
-  const tasmiInfo = document.getElementById('mpaTasmiInfo');
-  if(tasmiInfo) tasmiInfo.style.display = (val === "Tasmi'") ? 'block' : 'none';
-}
+// setMpaKet dihapus — ket di-derive otomatis dari arahHafalan
 
 function changeKhatamCount(delta) {
   const input = document.getElementById('mpaJumlahKhatam');
@@ -7843,17 +7857,12 @@ function setMpaStat(val, btn){
 }
 
 function resetMpaKet(){
-  document.getElementById('mpaKet').value = '';
-  document.querySelectorAll('.mpa-ket-btn').forEach(b => b.classList.remove('on'));
-  const khatamRow = document.getElementById('mpaJumlahKhatamRow');
-  const tasmiInfo = document.getElementById('mpaTasmiInfo');
-  if(khatamRow) khatamRow.style.display = 'none';
-  if(tasmiInfo) tasmiInfo.style.display = 'none';
+  // Reset jumlahKhatam
   const input = document.getElementById('mpaJumlahKhatam');
   const display = document.getElementById('mpaKhatamDisplay');
   if(input) input.value = '1';
   if(display) display.textContent = '1';
-  // Reset stat ke L
+  // Reset stat frontier ke L
   document.getElementById('mpaStatVal').value = 'L';
   document.querySelectorAll('.mpa-stat-btn').forEach(b => b.classList.remove('on'));
   const btnL = document.getElementById('mpaStatBtnL');
@@ -7883,12 +7892,25 @@ async function simpanPencapaianAwal(){
   }
 
   const tgl = getTglFromInput();
-  const mpaKetVal = document.getElementById('mpaKet').value || '';
-  const mpaStatSelected = document.getElementById('mpaStatVal')?.value || 'L';
+  const arahHafalanVal = mpaMode === 'cepat' ? mpaArah : 'manual';
+
+  // Ket otomatis dari arah hafalan dan surat yang dipilih:
+  // nas-naba → Belum Khatam | naba-nas → Muroja'ah
+  // manual + ada surat luar Juz 30 → Tasmi', else → Muroja'ah
+  let mpaKetVal;
+  if (arahHafalanVal === 'nas-naba') {
+    mpaKetVal = 'Belum Khatam';
+  } else if (arahHafalanVal === 'naba-nas') {
+    mpaKetVal = "Muroja'ah";
+  } else {
+    // mode manual — Tasmi' jika ada surat di luar Juz 30
+    const hasLuarJuz30 = indices.some(i => ALL_SURAT[i] && ALL_SURAT[i].juz !== 30);
+    mpaKetVal = hasLuarJuz30 ? "Tasmi'" : "Muroja'ah";
+  }
+
   const mpaJumlahKhatam = mpaKetVal === "Muroja'ah"
     ? (parseInt(document.getElementById('mpaJumlahKhatam')?.value) || 1)
     : null;
-  const arahHafalanVal = mpaMode === 'cepat' ? mpaArah : 'manual';
 
   // Determine partial ayat for the boundary surat (Mode Cepat only)
   let partialIdx = null;
@@ -7905,20 +7927,33 @@ async function simpanPencapaianAwal(){
     }
   }
 
+  // Surat frontier (boundary) mendapat stat dari pilihan user,
+  // surat lainnya otomatis L karena sudah terbukti hafal penuh.
+  // Mode cepat: frontier = surat yg dipilih di dropdown (partialIdx atau boundaryIdx penuh)
+  // Mode manual: tidak ada konsep frontier tunggal → semua L
+  let frontierSuratNm = null;
+  if(mpaMode === 'cepat'){
+    const sv = document.getElementById('mpaSuratSampai').value;
+    if(sv !== '') frontierSuratNm = SURAT_JUZ30[parseInt(sv)].nm;
+  }
+
+  const mpaStatSelected = document.getElementById('mpaStatVal')?.value || 'L';
+
   const newRecords = toInsert.map((i, offset) => {
     const s = isManualMode ? ALL_SURAT[i] : SURAT_JUZ30[i];
+    const isFrontier = s.nm === frontierSuratNm;
     let rentang, stat;
     if(mpaMode === 'cepat' && i === partialIdx){
-      // Partial surat — record up to specified ayat
+      // Partial surat (selalu merupakan frontier)
       if(mpaArah === 'naba-nas'){
-        rentang = `1-${partialAyat}`;          // dari ayat 1 sampai ayat X
+        rentang = `1-${partialAyat}`;
       } else {
-        rentang = `${partialAyat}-${s.a}`;     // dari ayat X sampai akhir
+        rentang = `${partialAyat}-${s.a}`;
       }
-      stat = mpaStatSelected; // L atau KL sesuai pilihan user
+      stat = mpaStatSelected;
     } else {
       rentang = `1-${s.a}`;                    // surat penuh
-      stat = mpaStatSelected;                  // L atau KL sesuai pilihan user
+      stat = isFrontier ? mpaStatSelected : 'L'; // frontier pakai pilihan, lain otomatis L
     }
     return {
       id: Date.now() + offset,
@@ -8284,15 +8319,33 @@ function getSiswaTahfidhInfo(nama) {
   const setorans = dataSetoran.filter(s => s.nama === nama);
   if (!setorans.length) return { ket: '', lastSurat: null, lastJuz: null, jumlahSurat: 0, totalSetoran: 0, jumlahKhatam: null };
   
-  // Best keterangan (highest priority across all setorans)
+  // Tasmi' otomatis: jika ada setoran surat di luar Juz 30
+  const hasLuarJuz30 = setorans.some(s => {
+    const obj = ALL_SURAT.find(x => x.nm === s.surat);
+    return obj && obj.juz !== 30;
+  });
+  if (hasLuarJuz30) {
+    const lastSurat = setorans[0]?.surat || null;
+    const suratObj = lastSurat ? ALL_SURAT.find(s => s.nm === lastSurat) : null;
+    const suratSet = new Set(setorans.map(s => s.surat).filter(Boolean));
+    return { ket: "Tasmi'", lastSurat, lastJuz: suratObj?.juz||null,
+             lastSuratNum: suratObj?.n||null, jumlahSurat: suratSet.size,
+             totalSetoran: setorans.length, jumlahKhatam: null };
+  }
+
+  // Best keterangan dari tambahan + arahHafalan (fallback)
   let bestKet = '';
   let bestJumlahKhatam = null;
   setorans.forEach(s => {
+    // Prioritas 1: baca tambahan (untuk setoran biasa & data awal baru)
     const raw = (s.tambahan || s.ket || '').replace('-','').trim();
-    if ((KET_PRIORITY[raw] || 0) > (KET_PRIORITY[bestKet] || 0)) {
-      bestKet = raw;
+    if ((KET_PRIORITY[raw] || 0) > (KET_PRIORITY[bestKet] || 0)) bestKet = raw;
+    // Prioritas 2: fallback dari arahHafalan (data lama yang tambahan='Data Awal')
+    if (!raw || raw === 'Data Awal') {
+      const ketFromArah = s.arahHafalan === 'naba-nas' ? "Muroja'ah"
+                        : s.arahHafalan === 'nas-naba' ? 'Belum Khatam' : '';
+      if ((KET_PRIORITY[ketFromArah] || 0) > (KET_PRIORITY[bestKet] || 0)) bestKet = ketFromArah;
     }
-    // Ambil jumlahKhatam dari record Muroja'ah pertama (= terbaru karena setorans sudah sorted)
     if (raw === "Muroja'ah" && s.jumlahKhatam && bestJumlahKhatam === null) {
       bestJumlahKhatam = s.jumlahKhatam;
     }
@@ -8712,9 +8765,12 @@ document.addEventListener('keydown', function(e) {
         <div class="surat-check-grid" id="suratCheckGrid"></div>
       </div>
 
-      <!-- Stat Hafalan (L / KL) -->
+      <!-- Hidden field ket (di-derive otomatis) -->
+      <input type="hidden" id="mpaKet" value="">
+
+      <!-- Stat surat frontier (L / KL) -->
       <div style="margin-top:14px;">
-        <label class="flbl">Status Setoran</label>
+        <label class="flbl">Status surat terakhir</label>
         <div style="display:flex; gap:8px; margin-top:4px;">
           <button type="button" class="mpa-stat-btn on L" id="mpaStatBtnL" onclick="setMpaStat('L',this)">
             <span style="font-size:1.1em;">✅</span>
@@ -8726,50 +8782,21 @@ document.addEventListener('keydown', function(e) {
           </button>
         </div>
         <input type="hidden" id="mpaStatVal" value="L">
+        <div style="font-size:var(--fxs); color:var(--mut); margin-top:4px;">Surat lainnya otomatis Lancar</div>
       </div>
 
-      <!-- Keterangan Setoran -->
-      <div style="margin-top:14px;">
-        <label class="flbl">Keterangan Status Hafalan</label>
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-top:4px;" id="mpaKetGrid">
-          <button type="button" class="mpa-ket-btn" id="mpaKetBtnBelum" onclick="setMpaKet('Belum Khatam',this)">
-            <span style="font-size:1.2em;">📖</span>
-            <span style="font-weight:700;">Belum Khatam</span>
-            <span class="ket-desc">Masih dalam proses hafalan Juz Amma</span>
-          </button>
-          <button type="button" class="mpa-ket-btn" id="mpaKetBtnMuroja" onclick="setMpaKet(&quot;Muroja'ah&quot;,this)">
-            <span style="font-size:1.2em;">🔁</span>
-            <span style="font-weight:700;">Muroja'ah</span>
-            <span class="ket-desc">Sudah khatam, mengulang setoran An-Naba'→An-Nas</span>
-          </button>
-          <button type="button" class="mpa-ket-btn" id="mpaKetBtnTasmi" onclick="setMpaKet(&quot;Tasmi'&quot;,this)">
-            <span style="font-size:1.2em;">🎤</span>
-            <span style="font-weight:700;">Tasmi'</span>
-            <span class="ket-desc">Khatam & disema' guru, lanjut surat luar Juz Amma</span>
-          </button>
-        </div>
-        <input type="hidden" id="mpaKet" value="">
-
-        <!-- Jumlah Khatam — tampil saat Muroja'ah dipilih -->
-        <div id="mpaJumlahKhatamRow" style="display:none; margin-top:8px; background:#eff6ff; border:1.5px solid #bfdbfe; border-radius:var(--rs); padding:10px 12px;">
-          <label class="flbl" style="color:#1e40af; margin-bottom:6px;">Sudah khatam Juz Amma berapa kali?</label>
-          <div style="display:flex; align-items:center; gap:10px;">
-            <button type="button" onclick="changeKhatamCount(-1)" style="width:34px;height:34px;border-radius:50%;border:1.5px solid #bfdbfe;background:#fff;font-size:var(--flg);font-weight:800;cursor:pointer;color:#1e40af;display:flex;align-items:center;justify-content:center;flex-shrink:0;">−</button>
-            <div style="text-align:center; flex:1;">
-              <div id="mpaKhatamDisplay" style="font-size:var(--f2xl);font-weight:800;color:#1e40af;line-height:1;">1</div>
-              <div style="font-size:var(--fxs);color:#1e40af;margin-top:2px;">kali khatam</div>
-            </div>
-            <button type="button" onclick="changeKhatamCount(1)" style="width:34px;height:34px;border-radius:50%;border:1.5px solid #bfdbfe;background:#fff;font-size:var(--flg);font-weight:800;cursor:pointer;color:#1e40af;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</button>
+      <!-- Jumlah Khatam — muncul otomatis saat arah naba-nas (Muroja'ah) -->
+      <div id="mpaJumlahKhatamRow" style="display:none; margin-top:14px; background:#eff6ff; border:1.5px solid #bfdbfe; border-radius:var(--rs); padding:10px 12px;">
+        <label class="flbl" style="color:#1e40af; margin-bottom:6px;">Sudah khatam Juz Amma berapa kali?</label>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <button type="button" onclick="changeKhatamCount(-1)" style="width:34px;height:34px;border-radius:50%;border:1.5px solid #bfdbfe;background:#fff;font-size:var(--flg);font-weight:800;cursor:pointer;color:#1e40af;display:flex;align-items:center;justify-content:center;flex-shrink:0;">−</button>
+          <div style="text-align:center; flex:1;">
+            <div id="mpaKhatamDisplay" style="font-size:var(--f2xl);font-weight:800;color:#1e40af;line-height:1;">1</div>
+            <div style="font-size:var(--fxs);color:#1e40af;margin-top:2px;">kali khatam</div>
           </div>
-          <input type="hidden" id="mpaJumlahKhatam" value="1">
+          <button type="button" onclick="changeKhatamCount(1)" style="width:34px;height:34px;border-radius:50%;border:1.5px solid #bfdbfe;background:#fff;font-size:var(--flg);font-weight:800;cursor:pointer;color:#1e40af;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</button>
         </div>
-
-        <!-- Info Tasmi' — tampil saat Tasmi' dipilih -->
-        <div id="mpaTasmiInfo" style="display:none; margin-top:8px; background:#fefce8; border:1.5px solid #fde68a; border-radius:var(--rs); padding:9px 12px; font-size:var(--fsm); color:#78350f; line-height:1.55;">
-          🎤 <strong>Tasmi'</strong> — Siswa sudah khatam Juz Amma dan hafalannya telah didengar (disema') oleh guru dari <strong>An-Naba' sampai An-Nas</strong>, serta telah <strong>melanjutkan hafalan ke surat-surat di luar Juz Amma</strong>.
-        </div>
-
-        <div style="font-size:var(--fxs); color:var(--mut); margin-top:6px;">Opsional — kosongkan jika belum ditentukan</div>
+        <input type="hidden" id="mpaJumlahKhatam" value="1">
       </div>
 
       <!-- Tanggal -->
