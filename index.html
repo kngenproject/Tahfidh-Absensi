@@ -4637,16 +4637,20 @@ function getSiswaJuzProgress(nama, ket) {
   }
   // Surat frontier: posisi ayat dari max yang dicapai, khatam hanya kalau suratKhatamL
   let frontierAyat = Math.min(suratMaxAyat[fs.nm] || 0, fs.a);
+  let frontierAyatDisplay = frontierAyat; // untuk label display
   if (suratNasNabaStart[fs.nm]) {
     // Untuk nas-naba partial: hanya ayat start..akhir yang disetorkan
+    // frontierAyat = jumlah ayat (untuk kalkulasi %)
+    // frontierAyatDisplay = posisi ayat mulai (untuk label, misal "ayat 26/40")
     frontierAyat = fs.a - suratNasNabaStart[fs.nm] + 1;
+    frontierAyatDisplay = suratNasNabaStart[fs.nm];
   }
   linearAyat += frontierAyat;
   if (suratKhatamL[fs.nm]) khatamCount++;
 
   // Belum khatam → max 99%, 100% hanya untuk Muroja'ah & Tasmi'
   const pct = Math.min(Math.floor((linearAyat / totalAyat) * 100), 99);
-  return { pct, frontierNm: fs.nm, frontierAyat, frontierTotal: fs.a, khatamCount, totalSurat };
+  return { pct, frontierNm: fs.nm, frontierAyat, frontierAyatDisplay, frontierTotal: fs.a, khatamCount, totalSurat };
 }
 
 // Isi select surat berdasar juz aktif
@@ -5004,7 +5008,7 @@ function updateProgressRing(){
     if (prog.frontierNm) {
       const ayatLabel = prog.frontierAyat >= prog.frontierTotal
         ? `khatam (${prog.frontierTotal} ayat)`
-        : `ayat ${prog.frontierAyat}/${prog.frontierTotal}`;
+        : `ayat ${prog.frontierAyatDisplay ?? prog.frontierAyat}/${prog.frontierTotal}`;
       sub = `🔁 → ${prog.frontierNm} • ${ayatLabel}`;
     } else {
       sub = `🔁 Muroja'ah`;
@@ -5020,7 +5024,7 @@ function updateProgressRing(){
   }
   const ayatLabel = prog.frontierAyat >= prog.frontierTotal
     ? `khatam (${prog.frontierTotal} ayat)`
-    : `ayat ${prog.frontierAyat}/${prog.frontierTotal}`;
+    : `ayat ${prog.frontierAyatDisplay ?? prog.frontierAyat}/${prog.frontierTotal}`;
   applyRing(prog.pct, `← ${prog.frontierNm} • ${ayatLabel}`, `${prog.khatamCount}/${prog.totalSurat}`);
 }
 
