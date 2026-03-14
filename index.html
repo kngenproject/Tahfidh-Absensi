@@ -1987,8 +1987,7 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
   .modal-pencapaian { align-items: center; padding: 20px; }
   .mpa-sheet { border-radius: 20px; max-width: 560px; animation: modal-in .28s ease; }
 
-  .csd-overlay { align-items: center; padding: 20px; }
-  .csd-sheet   { border-radius: 20px; max-width: 520px; }
+  .csd-sheet   { width: min(320px, calc(100vw - 32px)); max-height: 60vh; }
 
   .edit-card  { max-width: 460px; padding: 24px 22px; }
   .edit-sheet { border-radius: 20px; max-width: 640px; padding: 18px 20px; }
@@ -2007,8 +2006,7 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
 @media (min-width: 1024px) {
   .modal-pencapaian { padding: 30px; }
   .mpa-sheet        { max-width: 600px; }
-  .csd-overlay      { padding: 30px; }
-  .csd-sheet        { max-width: 540px; max-height: 72vh; }
+  .csd-sheet        { width: min(340px, calc(100vw - 48px)); max-height: 65vh; }
 
   .edit-card  { max-width: 500px; padding: 28px 26px; box-shadow: 0 8px 32px rgba(0,0,0,.14); }
   .edit-sheet { max-width: 720px; padding: 20px 24px; border-radius: 20px; }
@@ -2054,7 +2052,7 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
   .edit-card  { max-width: 560px; }
   .edit-sheet { max-width: 800px; padding: 22px 28px; }
   .mpa-sheet  { max-width: 680px; }
-  .csd-sheet  { max-width: 600px; }
+  .csd-sheet  { width: 360px; }
 
   .s4  { gap: 16px; }
   .sc  { padding: 14px 10px; border-radius: var(--r); }
@@ -2532,48 +2530,43 @@ span > .fai, div > .fai { vertical-align: middle; }
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: rgba(0,0,0,.45);
-  align-items: flex-end;
-  justify-content: center;
+  background: transparent;
 }
-.csd-overlay.show { display: flex; }
+.csd-overlay.show { display: block; }
 
-/* ── Sheet ── */
+/* ── Sheet (popover) ── */
 .csd-sheet {
   background: #fff;
-  border-radius: 20px 20px 0 0;
-  width: 100%;
-  max-height: 82vh;
+  border-radius: 14px;
+  width: min(300px, calc(100vw - 16px));
+  max-height: 52vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 -2px 20px rgba(0,0,0,.12);
-  animation: slideUp .22s ease;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-shadow: 0 6px 28px rgba(0,0,0,.16), 0 1px 4px rgba(0,0,0,.08);
+  animation: csdPopIn .16s ease;
+  position: absolute;
+  overflow: hidden;
+}
+@keyframes csdPopIn {
+  from { opacity: 0; transform: scale(.94) translateY(-6px); }
+  to   { opacity: 1; transform: scale(1)  translateY(0); }
 }
 
-/* ── Drag handle ── */
-.csd-sheet::before {
-  content: '';
-  display: block;
-  width: 36px;
-  height: 4px;
-  background: #e0e5e2;
-  border-radius: 2px;
-  margin: 10px auto 0;
-  flex-shrink: 0;
-}
+/* ── Drag handle — disembunyikan (popover mode) ── */
+.csd-sheet::before { display: none; }
 
 /* ── Header ── */
 .csd-header {
-  padding: 10px 16px 0;
+  padding: 10px 12px 8px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  border-bottom: 1px solid var(--brd);
 }
 .csd-title {
-  font-weight: 800;
-  font-size: var(--fxl);
+  font-weight: 700;
+  font-size: var(--fmd);
   color: var(--g9);
   letter-spacing: -.1px;
 }
@@ -2582,8 +2575,8 @@ span > .fai, div > .fai { vertical-align: middle; }
   border: none;
   color: var(--mut);
   cursor: pointer;
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2593,34 +2586,9 @@ span > .fai, div > .fai { vertical-align: middle; }
 }
 .csd-close:active { background: var(--brd); color: var(--txt); }
 
-/* ── Search box ── */
-.csd-search-wrap {
-  padding: 10px 12px 6px;
-  flex-shrink: 0;
-}
-.csd-search {
-  width: 100%;
-  padding: 9px 14px 9px 36px;
-  border: 1.5px solid var(--brd);
-  border-radius: 10px;
-  font-size: var(--fmd);
-  color: var(--txt);
-  background: var(--surf2);
-  outline: none;
-  box-sizing: border-box;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 512 512'%3E%3Cpath fill='%236b7c72' d='M416 208c0 45.4-14.9 87.3-40 120.9L502.6 457c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0L340.9 376c-33.6 25.1-75.5 40-120.9 40C100.3 416 0 315.7 0 192S100.3-32 220-32s220 100.3 220 220zm-220 176a176 176 0 1 0 0-352 176 176 0 1 0 0 352z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: 11px center;
-}
-.csd-search:focus { border-color: var(--g5); background-color: #fff; }
-
-/* ── Divider ── */
-.csd-divider {
-  height: 1px;
-  background: var(--brd);
-  margin: 0 12px;
-  flex-shrink: 0;
-}
+/* ── Search & divider — disembunyikan ── */
+.csd-search-wrap { display: none !important; }
+.csd-divider     { display: none !important; }
 
 /* ── Scrollable body ── */
 .csd-body {
@@ -8191,18 +8159,50 @@ function openCsd(targetId, title) {
       _csdItems.push({ value: child.value, label: child.text, group: null });
     }
   }
-  // Clear search
+  // Clear search (tetap di-render, cuma tersembunyi via CSS)
   const searchInput = document.getElementById('csdSearchInput');
   if (searchInput) searchInput.value = '';
   renderCsdItems();
-  document.getElementById('csdOverlay').classList.add('show');
-  // Auto-focus search on non-touch devices (tablet/PC)
-  if (searchInput && window.matchMedia('(hover:hover)').matches) {
-    requestAnimationFrame(() => searchInput.focus());
+  const overlay = document.getElementById('csdOverlay');
+  const sheet   = overlay.querySelector('.csd-sheet');
+  const trigger = document.getElementById(targetId + 'Trigger');
+  // Sembunyikan sheet dulu agar tidak flash di posisi salah
+  if (sheet) sheet.style.visibility = 'hidden';
+  overlay.classList.add('show');
+  // Posisikan setelah browser render (dimensi sheet sudah tersedia)
+  requestAnimationFrame(() => {
+    if (sheet && trigger) _positionCsdSheet(sheet, trigger);
+    if (sheet) sheet.style.visibility = '';
+  });
+}
+
+function _positionCsdSheet(sheet, trigger) {
+  const rect = trigger.getBoundingClientRect();
+  const vw   = window.innerWidth;
+  const vh   = window.innerHeight;
+  const sw   = sheet.offsetWidth  || 300;
+  const sh   = sheet.offsetHeight || Math.min(vh * 0.52, 320);
+  const GAP  = 6;
+
+  // Horizontal: rata kiri trigger, geser ke kiri jika keluar layar
+  let left = rect.left;
+  if (left + sw > vw - 8) left = rect.right - sw;
+  if (left < 8) left = 8;
+
+  // Vertikal: coba di bawah trigger, kalau tidak muat geser ke atas
+  let top = rect.bottom + GAP;
+  if (top + sh > vh - 8) {
+    top = rect.top - sh - GAP;
+    if (top < 8) top = 8;
   }
+
+  sheet.style.left = left + 'px';
+  sheet.style.top  = top  + 'px';
 }
 // Alias lama supaya kode lain tidak rusak
-function openCsdSiswa(targetId) { openCsd(targetId, '👤 Pilih Siswa'); }
+function openCsdSiswa(targetId) {
+  openCsd(targetId, '👤 Pilih Siswa');
+}
 
 // Sync label trigger setelah select diupdate secara programatik
 function syncCsdTrigger(selectId) {
@@ -8247,12 +8247,7 @@ function renderCsdItems() {
     ? regularItems.filter(it => it.label.toLowerCase().includes(q) || (it.group||'').toLowerCase().includes(q))
     : regularItems;
 
-  // Hide search bar for very short lists (≤5 items, no groups)
-  const searchWrap = document.getElementById('csdSearchWrap');
-  if (searchWrap) {
-    const hasGroups = regularItems.some(it => it.group);
-    searchWrap.style.display = (regularItems.length > 5 || hasGroups) ? '' : 'none';
-  }
+  // Search selalu tersembunyi via CSS — tidak perlu logika show/hide
 
   if (!filtered.length && !specialItems.length) {
     body.innerHTML = '<div class="csd-empty">Tidak ada pilihan</div>';
