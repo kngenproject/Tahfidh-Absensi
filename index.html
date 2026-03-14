@@ -2540,6 +2540,68 @@ span > .fai, div > .fai { vertical-align: middle; }
 .grb-admin { background: linear-gradient(135deg,#e6b830,#f9a825); color: #2a1800; }
 .grb-guru { background: var(--g1); color: var(--g7); }
 
+/* ── School Setup Overlay ── */
+#schoolSetupOverlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: #0c4a2a;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  opacity: 0; pointer-events: none; transition: opacity .3s;
+}
+#schoolSetupOverlay.show { opacity: 1; pointer-events: all; }
+.ss-card {
+  background: #fff; border-radius: 20px;
+  padding: 28px 24px; width: 100%; max-width: 400px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.2);
+}
+.ss-logo {
+  text-align: center; font-size: 48px; margin-bottom: 8px;
+}
+.ss-title {
+  text-align: center; font-size: var(--fxl); font-weight: 800;
+  color: var(--g9); margin-bottom: 4px;
+}
+.ss-sub {
+  text-align: center; font-size: var(--fsm); color: var(--mut);
+  margin-bottom: 20px;
+}
+.ss-tabs {
+  display: flex; background: var(--bg); border-radius: 10px;
+  padding: 3px; margin-bottom: 20px; gap: 3px;
+}
+.ss-tab {
+  flex: 1; padding: 8px; border: none; border-radius: 8px;
+  background: transparent; font-size: var(--fsm); font-weight: 600;
+  cursor: pointer; color: var(--mut); transition: all .2s;
+}
+.ss-tab.on { background: #fff; color: var(--g9); box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+.ss-form { display: flex; flex-direction: column; gap: 12px; }
+.ss-form input {
+  width: 100%; padding: 11px 12px; border: 1.5px solid var(--brd);
+  border-radius: var(--rs); font-size: var(--fmd); outline: none;
+  transition: border-color .2s;
+}
+.ss-form input:focus { border-color: var(--g6); }
+.ss-kode {
+  font-size: var(--f2xl); font-weight: 900; letter-spacing: 6px;
+  color: var(--g8); text-align: center; padding: 14px;
+  background: var(--g0); border-radius: var(--rs); border: 2px dashed var(--g4);
+  user-select: all;
+}
+.ss-pending {
+  text-align: center; padding: 20px 0;
+}
+.ss-pending-icon { font-size: 48px; margin-bottom: 12px; }
+.ss-err { color: var(--red); font-size: var(--fsm); text-align: center; display: none; }
+
+/* ── Kenaikan Kelas ── */
+.kk-header-kelas {
+  font-size: var(--fsm); font-weight: 800; color: var(--g8);
+  padding: 10px 0 4px; border-bottom: 2px solid var(--g4);
+  margin-bottom: 6px;
+}
+
+
 /* ── Invite Codes ── */
 .code-item {
   padding: 11px 12px; border-radius: 10px; border: 1.5px solid var(--brd);
@@ -3662,6 +3724,109 @@ span > .fai, div > .fai { vertical-align: middle; }
         <span class="aver">Versi 2.3.5</span>
       </div>
 
+      <!-- ── Info Sekolah ── -->
+      <div class="card" id="cardInfoSekolah">
+        <div class="chd">🏫 Info Sekolah</div>
+        <div class="cbd">
+          <div id="infoSekolahNama" style="font-size:var(--flg);font-weight:800;color:var(--g9);margin-bottom:4px;">—</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
+            <span style="font-size:var(--fsm);color:var(--mut);">Tahun Ajaran:</span>
+            <span id="infoSekolahTahun" style="font-size:var(--fsm);font-weight:700;color:var(--g7);">—</span>
+            <span style="font-size:var(--fsm);color:var(--mut);">• Role:</span>
+            <span id="infoSekolahRole" style="font-size:var(--fsm);font-weight:700;color:var(--g7);">—</span>
+          </div>
+          <!-- Kode sekolah — hanya admin -->
+          <div id="infoKodeSekolahRow" style="display:none;margin-bottom:10px;">
+            <div style="font-size:var(--fsm);color:var(--mut);margin-bottom:6px;">Kode undangan untuk guru:</div>
+            <div id="infoKodeSekolah" class="ss-kode" onclick="navigator.clipboard.writeText(this.textContent);showToast('Kode disalin!','success');">—</div>
+            <div style="font-size:var(--fxs);color:var(--mut);margin-top:4px;">Tap kode untuk salin</div>
+          </div>
+          <!-- Ganti tahun ajaran — admin only -->
+          <div id="gantiTahunRow" style="display:none;">
+            <label class="flbl">Ganti Tahun Ajaran</label>
+            <div style="display:flex;gap:8px;margin-top:6px;">
+              <input type="text" id="inputTahunBaru" placeholder="2025/2026"
+                style="flex:1;padding:9px 10px;border:1.5px solid var(--brd);border-radius:var(--rs);font-size:var(--fmd);">
+              <button class="btn bp bsm" onclick="gantiTahunAjaran()">Simpan</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Manajemen Guru (admin only) ── -->
+      <div class="card" id="cardManajemenGuru" style="display:none;">
+        <div class="chd">👨‍🏫 Manajemen Guru</div>
+        <div class="cbd">
+          <!-- Pending approval -->
+          <div id="guruPendingSection" style="display:none;">
+            <div style="font-size:var(--fsm);font-weight:700;color:var(--red);margin-bottom:8px;">
+              ⏳ Menunggu Persetujuan
+            </div>
+            <div id="guruPendingList"></div>
+          </div>
+          <!-- Daftar guru aktif -->
+          <div style="font-size:var(--fsm);font-weight:700;color:var(--mut);margin:10px 0 8px;">
+            Guru Aktif
+          </div>
+          <div id="guruAktifList"></div>
+        </div>
+      </div>
+
+      <!-- ── Kenaikan Kelas (admin only) ── -->
+      <div class="card" id="cardKenaikanKelas" style="display:none;">
+        <div class="chd">🎓 Kenaikan Kelas</div>
+        <div class="cbd">
+          <div style="font-size:var(--fsm);color:var(--mut);margin-bottom:12px;line-height:1.6;">
+            Upload Excel berisi nama siswa + kelas baru. Sistem akan mencocokkan otomatis. Edit individual hanya untuk pengecualian.
+          </div>
+
+          <!-- Step 1: Tahun ajaran + upload Excel -->
+          <div id="kkStep1">
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
+              <span style="font-size:var(--fsm);color:var(--mut);white-space:nowrap;">Tahun ajaran baru:</span>
+              <input type="text" id="kkTahunBaru" placeholder="2025/2026"
+                style="flex:1;min-width:110px;padding:7px 10px;border:1.5px solid var(--brd);border-radius:var(--rs);font-size:var(--fmd);">
+            </div>
+            <div style="font-size:var(--fxs);color:var(--mut);margin-bottom:10px;">
+              Format Excel: kolom <b>Nama</b> + kolom <b>Kelas</b>. Siswa tidak ada di file → tetap di kelas lama. Tulis <b>Lulus</b> di kolom kelas untuk menandai lulus.
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn bp bsm" style="flex:1;" onclick="document.getElementById('kkFileInput').click()">
+                📂 Upload Excel Kelas Baru
+              </button>
+              <button class="btn bo bsm" style="flex:1;" onclick="kkDownloadTemplate()">
+                ⬇️ Download Template
+              </button>
+            </div>
+            <input type="file" id="kkFileInput" accept=".xlsx,.xls,.csv" style="display:none"
+              onchange="kkParseExcel(this)">
+          </div>
+
+          <!-- Step 2: Preview hasil mapping -->
+          <div id="kkStep2" style="display:none;margin-top:14px;">
+            <div id="kkPreviewInfo" style="font-size:var(--fsm);color:var(--mut);margin-bottom:8px;"></div>
+
+            <!-- Filter tampilan -->
+            <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;" id="kkFilterRow">
+              <button class="fchip on" onclick="kkFilterPreview('semua',this)">Semua</button>
+              <button class="fchip" onclick="kkFilterPreview('berubah',this)">Naik Kelas</button>
+              <button class="fchip" onclick="kkFilterPreview('lulus',this)">Lulus</button>
+              <button class="fchip" onclick="kkFilterPreview('sama',this)">Tetap</button>
+              <button class="fchip" onclick="kkFilterPreview('notfound',this)">⚠️ Tidak cocok</button>
+            </div>
+
+            <div id="kkPreviewTable" style="max-height:50vh;overflow-y:auto;border:1px solid var(--brd);border-radius:8px;"></div>
+
+            <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--brd);display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn bo bsm" style="flex:1;" onclick="kkReset()">🔄 Upload Ulang</button>
+              <button class="btn bp" style="flex:2;" id="kkBtnEksekusi" onclick="kkEksekusi()">
+                🎓 Proses Kenaikan Kelas
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="card">
         <div class="chd"><svg class="fai" viewBox="0 0 576 512" aria-hidden="true"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>Fitur Aplikasi</div>
         <ul class="flist">
@@ -3869,14 +4034,13 @@ firebase.initializeApp(firebaseConfig);
 const fbDb   = firebase.firestore();
 const fbAuth = firebase.auth();
 
-// ── Isolasi data per akun: semua koleksi berada di bawah users/{uid}/ ──
-// Gunakan userCol('nama') sebagai pengganti userCol('nama')
-function userCol(name) {
-  if (!currentUser) throw new Error('userCol: belum login');
-  return fbDb.collection('users').doc(currentUser.uid).collection(name);
+// ── Isolasi data per sekolah: semua koleksi di bawah schools/{schoolId}/ ──
+function schoolCol(name) {
+  if (!currentSchoolId) throw new Error('schoolCol: belum ada schoolId');
+  return fbDb.collection('schools').doc(currentSchoolId).collection(name);
 }
 
-// ── Isolasi localStorage per akun: prefix semua key dengan uid ──
+// ── localStorage: prefix per uid (cache pribadi per akun) ──
 const ls = {
   _p() { return currentUser ? currentUser.uid + ':' : 'guest:'; },
   get(key)      { return localStorage.getItem(this._p() + key); },
@@ -3896,11 +4060,13 @@ fbDb.enablePersistence({ synchronizeTabs: true }).catch(err => {
 });
 
 // Global user state
-let currentUser   = null;
-let currentGuru   = { nama: 'Admin', username: 'admin', role: 'admin', status: 'aktif', kelasDiajar: [] };
-let isAdmin = true;
+let currentUser      = null;
+let currentSchoolId  = null;  // ID sekolah aktif
+let currentMember    = null;  // { nama, email, role, kelasDiajar, status }
+let currentGuru      = { nama: 'Admin', username: 'admin', role: 'admin', status: 'aktif', kelasDiajar: [] };
+let isAdmin          = false;
 let tahunAjaranAktif = '';
-let fbListeners   = [];
+let fbListeners      = [];
 
 const _kelasHandlers = {};
 let activeDashboardSiswa  = 'SEMUA';
@@ -4038,44 +4204,71 @@ function _updateHeaderUser(user) {
 fbAuth.onAuthStateChanged(async (user) => {
   const loginPage = document.getElementById('loginPage');
   if(user) {
-    // User logged in
     currentUser = { uid: user.uid, email: user.email, displayName: user.displayName, isAnonymous: false };
-    currentGuru = { nama: user.displayName || user.email, username: user.email, role: 'admin', status: 'aktif', kelasDiajar: [] };
-    isAdmin = true;
-
     _updateHeaderUser(user);
     if(loginPage) loginPage.classList.add('hide');
 
-    // Start app only if not yet started
     if(!window._appStarted) {
       window._appStarted = true;
-      await startApp();
+      await _initSchool();
     }
   } else {
-    // User logged out — bersihkan data di memori agar tidak bocor ke akun berikutnya
-    currentUser = null;
+    // Logout — bersihkan semua state
+    currentUser = null; currentSchoolId = null; currentMember = null;
     window._appStarted = false;
+    isAdmin = false;
     masterSiswa = []; dataSetoran = []; dataAbsensi = [];
     userPoints = {}; userStreaks = {}; _tambahanPerSiswa = {};
     _updateHeaderUser(null);
+    // Sembunyikan school setup overlay jika tampil
+    document.getElementById('schoolSetupOverlay')?.classList.remove('show');
     if(loginPage) {
       loginPage.classList.remove('hide');
-      // Reset form
-      lpSetLoading(false);
-      lpSwitchTab('masuk');
-      lpClearErr();
+      lpSetLoading(false); lpSwitchTab('masuk'); lpClearErr();
     }
   }
 });
 
-
-// Muat konfigurasi tahun ajaran dari Firestore (atau localStorage sebagai fallback)
-async function loadConfig() {
-  // Coba baca doc config/app; jika tidak ada pakai localStorage
+// ── Inisialisasi sekolah setelah login ──
+async function _initSchool() {
   try {
-    const snap = await userCol('config').doc('app').get({ source: 'server' });
-    tahunAjaranAktif = (snap.exists && snap.data().tahunAjaran)
-      ? snap.data().tahunAjaran
+    // Cek apakah user sudah terdaftar di sebuah sekolah
+    const metaDoc = await fbDb.collection('userMeta').doc(currentUser.uid).get();
+    if(metaDoc.exists && metaDoc.data().schoolId) {
+      const sid = metaDoc.data().schoolId;
+      const memberDoc = await fbDb.collection('schools').doc(sid).collection('members').doc(currentUser.uid).get();
+      if(memberDoc.exists) {
+        const m = memberDoc.data();
+        if(m.status === 'pending') {
+          // Menunggu approval admin
+          schoolSetupShowPending(m.schoolNama || '');
+          return;
+        }
+        // Aktif — lanjut ke app
+        currentSchoolId = sid;
+        currentMember   = { ...m, uid: currentUser.uid };
+        isAdmin         = m.role === 'admin';
+        currentGuru     = { nama: m.nama, username: currentUser.email, role: m.role, status: 'aktif', kelasDiajar: m.kelasDiajar || [] };
+        document.getElementById('schoolSetupOverlay')?.classList.remove('show');
+        await startApp();
+        return;
+      }
+    }
+    // Belum punya sekolah — tampilkan setup
+    schoolSetupShow();
+  } catch(e) {
+    console.warn('[School] _initSchool error:', e);
+    schoolSetupShow();
+  }
+}
+
+
+// Muat konfigurasi tahun ajaran dari school info (atau localStorage sebagai fallback)
+async function loadConfig() {
+  try {
+    const snap = await fbDb.collection('schools').doc(currentSchoolId).get();
+    tahunAjaranAktif = (snap.exists && snap.data().tahunAjaranAktif)
+      ? snap.data().tahunAjaranAktif
       : (ls.get('tahunAjaranAktif') || '');
   } catch(e) {
     tahunAjaranAktif = ls.get('tahunAjaranAktif') || '';
@@ -4159,17 +4352,17 @@ async function fetchAllData(){
 
   try {
     // Siswa — paksa dari server agar hapus di Firebase Console langsung terefleksi
-    const snapSiswa = await userCol('siswa').where('status','==','aktif').get(FROM_SERVER);
+    const snapSiswa = await schoolCol('siswa').where('status','==','aktif').get(FROM_SERVER);
     masterSiswa = snapSiswa.docs.map(d => ({ fbId: d.id, ...d.data() }));
 
     // Setoran
-    const snapSetoran = await userCol('setoran')
+    const snapSetoran = await schoolCol('setoran')
       .where('tahunAjaran','==', tahunAjaranAktif).get(FROM_SERVER);
     dataSetoran = _sortSetoran(snapSetoran.docs.map(d => ({ fbId: d.id, ...d.data() })));
 
     // Absensi hari ini
     const todayKey = _localDateKey();
-    const snapAbsen = await userCol('absensiHarian').doc(todayKey).get(FROM_SERVER);
+    const snapAbsen = await schoolCol('absensiHarian').doc(todayKey).get(FROM_SERVER);
     if(snapAbsen.exists){
       const d = snapAbsen.data();
       // Coba baca dari field 'data' (object by nama) dulu, lalu fallback ke 'siswa' (array)
@@ -4191,7 +4384,7 @@ async function fetchAllData(){
     }
 
     // Points
-    const snapPoints = await userCol('points').get(FROM_SERVER);
+    const snapPoints = await schoolCol('points').get(FROM_SERVER);
     userPoints = {}; userStreaks = {};
     snapPoints.docs.forEach(d => {
       userPoints[d.id] = d.data().total || 0;
@@ -4203,11 +4396,11 @@ async function fetchAllData(){
     showToast('Tidak bisa ke server, pakai data cache', 'warning', 3000);
     // Fallback ke cache Firestore offline (bukan localStorage)
     try {
-      const snapSiswa = await userCol('siswa').where('status','==','aktif').get({ source: 'cache' });
+      const snapSiswa = await schoolCol('siswa').where('status','==','aktif').get({ source: 'cache' });
       masterSiswa = snapSiswa.docs.map(d => ({ fbId: d.id, ...d.data() }));
-      const snapSetoran = await userCol('setoran').where('tahunAjaran','==', tahunAjaranAktif).get({ source: 'cache' });
+      const snapSetoran = await schoolCol('setoran').where('tahunAjaran','==', tahunAjaranAktif).get({ source: 'cache' });
       dataSetoran = _sortSetoran(snapSetoran.docs.map(d => ({ fbId: d.id, ...d.data() })));
-      const snapPoints = await userCol('points').get({ source: 'cache' });
+      const snapPoints = await schoolCol('points').get({ source: 'cache' });
       snapPoints.docs.forEach(d => {
         userPoints[d.id] = d.data().total || 0;
         userStreaks[d.id] = d.data().streak || 0;
@@ -4339,19 +4532,525 @@ function initAppUI(){
 
 
 // ── Admin: Guru Management ────────────────────────────────────
-/* ── Guru Tab Switch ── */
 
+// Render info sekolah + panel guru saat masuk tab settings
+async function renderSettingsSekolah() {
+  if (!currentSchoolId || !currentMember) return;
 
-/* ── Generate Username dari Nama ── */
+  // Info sekolah
+  try {
+    const snap = await fbDb.collection('schools').doc(currentSchoolId).get();
+    const info = snap.data() || {};
+    const el = document.getElementById('infoSekolahNama');
+    if (el) el.textContent = info.nama || '—';
+    const elTahun = document.getElementById('infoSekolahTahun');
+    if (elTahun) elTahun.textContent = info.tahunAjaranAktif || '—';
+    const elRole = document.getElementById('infoSekolahRole');
+    if (elRole) elRole.textContent = isAdmin ? '👑 Admin' : '👨‍🏫 Guru';
 
+    if (isAdmin) {
+      // Tampilkan kode sekolah
+      const kodeRow = document.getElementById('infoKodeSekolahRow');
+      const kodeEl  = document.getElementById('infoKodeSekolah');
+      if (kodeRow) kodeRow.style.display = 'block';
+      if (kodeEl)  kodeEl.textContent = info.kode || '—';
+      // Tampilkan input ganti tahun
+      const gantiRow = document.getElementById('gantiTahunRow');
+      if (gantiRow) gantiRow.style.display = 'block';
+      const inputTahun = document.getElementById('inputTahunBaru');
+      if (inputTahun) inputTahun.value = info.tahunAjaranAktif || '';
+      // Tampilkan panel manajemen guru
+      const cardGuru = document.getElementById('cardManajemenGuru');
+      if (cardGuru) cardGuru.style.display = 'block';
+      // Tampilkan panel kenaikan kelas
+      const cardKK = document.getElementById('cardKenaikanKelas');
+      if (cardKK) cardKK.style.display = 'block';
+      // Pre-fill tahun ajaran baru (tambah 1 tahun)
+      const kkInput = document.getElementById('kkTahunBaru');
+      if (kkInput && !kkInput.value) {
+        const ta = info.tahunAjaranAktif || '';
+        const next = ta.replace(/(\d{4})\/(\d{4})/, (_, a, b) => `${+a+1}/${+b+1}`);
+        kkInput.value = next || '';
+      }
+      await renderGuruList();
+    }
+  } catch(e) {
+    console.warn('[Settings] renderSettingsSekolah:', e);
+  }
+}
 
-/* ── Generate Password Acak ── */
+// Tampilkan daftar guru pending + aktif
+async function renderGuruList() {
+  if (!isAdmin || !currentSchoolId) return;
+  try {
+    const snap = await fbDb.collection('schools').doc(currentSchoolId)
+      .collection('members').get();
+    const members = snap.docs.map(d => ({ uid: d.id, ...d.data() }))
+      .filter(m => m.uid !== currentUser.uid); // kecuali diri sendiri
 
+    const pending = members.filter(m => m.status === 'pending');
+    const aktif   = members.filter(m => m.status === 'aktif');
 
-/* ── Salin semua akun ke clipboard ── */
+    // Pending
+    const pendingSection = document.getElementById('guruPendingSection');
+    const pendingList    = document.getElementById('guruPendingList');
+    if (pendingSection) pendingSection.style.display = pending.length ? 'block' : 'none';
+    if (pendingList) pendingList.innerHTML = pending.map(m => `
+      <div class="guru-item" style="margin-bottom:8px;">
+        <div class="guru-item-ava" style="background:var(--yel);color:#2a1800;">${m.nama.charAt(0).toUpperCase()}</div>
+        <div class="guru-item-info">
+          <div class="guru-item-nama">${m.nama}</div>
+          <div class="guru-item-meta">${m.email || ''}</div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn bp bsm" onclick="approveGuru('${m.uid}','aktif')">✅</button>
+          <button class="btn bd bsm" onclick="approveGuru('${m.uid}','tolak')">❌</button>
+        </div>
+      </div>`).join('');
 
+    // Aktif
+    const aktifList = document.getElementById('guruAktifList');
+    if (aktifList) aktifList.innerHTML = aktif.length ? aktif.map(m => {
+      const kelasList = getKelasUnik('master');
+      const kelasOptions = kelasList.map(k =>
+        `<option value="${k}" ${(m.kelasDiajar||[]).includes(k)?'selected':''}>${k}</option>`
+      ).join('');
+      return `
+      <div class="guru-item" style="margin-bottom:10px;flex-wrap:wrap;gap:6px;">
+        <div class="guru-item-ava">${m.nama.charAt(0).toUpperCase()}</div>
+        <div class="guru-item-info">
+          <div class="guru-item-nama">${m.nama}</div>
+          <div class="guru-item-meta">${m.email || ''}</div>
+          <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center;">
+            <select onchange="updateGuruRole('${m.uid}',this.value)"
+              style="padding:4px 8px;border:1.5px solid var(--brd);border-radius:6px;font-size:var(--fsm);">
+              <option value="guru" ${m.role==='guru'?'selected':''}>👨‍🏫 Guru</option>
+              <option value="waliKelas" ${m.role==='waliKelas'?'selected':''}>📋 Wali Kelas</option>
+              <option value="admin" ${m.role==='admin'?'selected':''}>👑 Admin</option>
+            </select>
+            ${m.role==='waliKelas' ? `
+            <select multiple id="kd_${m.uid}"
+              onchange="updateGuruKelas('${m.uid}',this)"
+              style="padding:4px 6px;border:1.5px solid var(--brd);border-radius:6px;font-size:var(--fxs);min-width:90px;max-height:80px;">
+              ${kelasOptions}
+            </select>
+            <span style="font-size:var(--fxs);color:var(--mut);">Tahan pilih banyak</span>` : ''}
+          </div>
+        </div>
+        <button class="btn bd bsm" onclick="hapusGuru('${m.uid}','${m.nama}')" style="align-self:flex-start;">🗑</button>
+      </div>`}).join('')
+      : '<div style="font-size:var(--fsm);color:var(--mut);text-align:center;padding:12px;">Belum ada guru lain</div>';
 
-/* ── Import Guru Massal ── */
+  } catch(e) {
+    console.warn('[Guru] renderGuruList:', e);
+  }
+}
+
+// Approve / tolak guru pending
+async function approveGuru(uid, action) {
+  if (!isAdmin || !currentSchoolId) return;
+  try {
+    const ref = fbDb.collection('schools').doc(currentSchoolId).collection('members').doc(uid);
+    if (action === 'aktif') {
+      await ref.update({ status: 'aktif' });
+      showToast('Guru disetujui ✅', 'success');
+    } else {
+      await ref.delete();
+      await fbDb.collection('userMeta').doc(uid).delete();
+      showToast('Permintaan ditolak', 'info');
+    }
+    await renderGuruList();
+  } catch(e) {
+    showToast('Gagal: ' + e.message, 'error');
+  }
+}
+
+// Update role guru
+async function updateGuruRole(uid, role) {
+  if (!isAdmin || !currentSchoolId) return;
+  try {
+    await fbDb.collection('schools').doc(currentSchoolId).collection('members').doc(uid)
+      .update({ role, kelasDiajar: role === 'waliKelas' ? [] : [] });
+    showToast('Role diperbarui', 'success');
+    await renderGuruList();
+  } catch(e) { showToast('Gagal: ' + e.message, 'error'); }
+}
+
+// Update kelas yang diajar wali kelas
+async function updateGuruKelas(uid, selectEl) {
+  if (!isAdmin || !currentSchoolId) return;
+  const kelas = [...selectEl.selectedOptions].map(o => o.value);
+  try {
+    await fbDb.collection('schools').doc(currentSchoolId).collection('members').doc(uid)
+      .update({ kelasDiajar: kelas });
+    showToast('Kelas diperbarui', 'success');
+  } catch(e) { showToast('Gagal: ' + e.message, 'error'); }
+}
+
+// Hapus guru dari sekolah
+async function hapusGuru(uid, nama) {
+  if (!isAdmin) return;
+  if (!confirm(`Hapus ${nama} dari sekolah ini?`)) return;
+  try {
+    await fbDb.collection('schools').doc(currentSchoolId).collection('members').doc(uid).delete();
+    await fbDb.collection('userMeta').doc(uid).delete();
+    showToast(`${nama} dihapus`, 'success');
+    await renderGuruList();
+  } catch(e) { showToast('Gagal: ' + e.message, 'error'); }
+}
+
+// Ganti tahun ajaran aktif
+async function gantiTahunAjaran() {
+  if (!isAdmin) return;
+  const val = document.getElementById('inputTahunBaru')?.value.trim();
+  if (!val) return showToast('Isi tahun ajaran dulu', 'warning');
+  try {
+    await fbDb.collection('schools').doc(currentSchoolId).update({ tahunAjaranAktif: val });
+    tahunAjaranAktif = val;
+    ls.set('tahunAjaranAktif', val);
+    document.getElementById('infoSekolahTahun') && (document.getElementById('infoSekolahTahun').textContent = val);
+    showToast(`Tahun ajaran diubah ke ${val}`, 'success');
+  } catch(e) {
+    showToast('Gagal: ' + e.message, 'error');
+  }
+}
+
+/* ==============================
+   KENAIKAN KELAS — Excel Import
+============================== */
+
+// State: array hasil mapping { fbId, nama, kelasLama, kelasBaru, status }
+// status: 'naik' | 'lulus' | 'sama' | 'notfound' (nama di Excel tapi tidak ada di sistem)
+let _kkData    = [];   // semua siswa dari Firestore + hasil mapping
+let _kkExcel   = [];   // hasil parse Excel { nama, kelasBaru }
+let _kkFilter  = 'semua';
+
+// ── Download template Excel ──
+function kkDownloadTemplate() {
+  if (!masterSiswa.length) {
+    // Buat template kosong
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([
+      ['Nama', 'Kelas'],
+      ['Contoh: Ahmad Fauzi', '3B'],
+      ['Contoh: Budi Santoso', 'Lulus'],
+    ]);
+    ws['!cols'] = [{ wch: 30 }, { wch: 12 }];
+    XLSX.utils.book_append_sheet(wb, ws, 'Kenaikan Kelas');
+    XLSX.writeFile(wb, 'template_kenaikan_kelas.xlsx');
+    return;
+  }
+  // Isi dengan data siswa saat ini
+  const wb = XLSX.utils.book_new();
+  const rows = [['Nama', 'Kelas Lama', 'Kelas Baru']];
+  const sorted = [...masterSiswa].sort((a, b) =>
+    (a.kelas || '').localeCompare(b.kelas || '', 'id') ||
+    a.nama.localeCompare(b.nama, 'id')
+  );
+  sorted.forEach(s => rows.push([s.nama, s.kelas || 'Umum', '']));
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{ wch: 30 }, { wch: 14 }, { wch: 14 }];
+  XLSX.utils.book_append_sheet(wb, ws, 'Kenaikan Kelas');
+  XLSX.writeFile(wb, 'template_kenaikan_kelas.xlsx');
+  showToast('Template didownload. Isi kolom Kelas Baru lalu upload kembali.', 'success', 4000);
+}
+
+// ── Parse Excel yang diupload ──
+function kkParseExcel(input) {
+  const f = input.files[0];
+  if (!f) return;
+  const tahunBaru = document.getElementById('kkTahunBaru')?.value.trim();
+  if (!tahunBaru) {
+    showToast('Isi tahun ajaran baru dulu', 'warning');
+    input.value = ''; return;
+  }
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const wb  = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+      const ws  = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+
+      // Auto-detect kolom nama & kelas baru
+      let colNama = -1, colKelasBaru = -1, startRow = 0;
+      for (let i = 0; i < Math.min(5, rows.length); i++) {
+        const cells = rows[i].map(c => (c || '').toString().toLowerCase().trim());
+        const ni = cells.findIndex(c => /^(nama|name|siswa|murid|santri)/.test(c));
+        // Cari "kelas baru" dulu, fallback ke "kelas"
+        const kbi = cells.findIndex(c => /kelas.baru|new.class|pindah/.test(c));
+        const ki  = cells.findIndex(c => /^(kelas|class|rombel)/.test(c));
+        if (ni >= 0) {
+          colNama     = ni;
+          colKelasBaru = kbi >= 0 ? kbi : ki >= 0 ? ki : -1;
+          startRow    = i + 1;
+          break;
+        }
+      }
+      if (colNama < 0) { colNama = 0; colKelasBaru = 1; startRow = 1; }
+
+      // Baca Excel
+      _kkExcel = [];
+      for (let i = startRow; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || row.every(c => !c)) continue;
+        const nama      = (row[colNama]      || '').toString().trim();
+        const kelasBaru = colKelasBaru >= 0 ? (row[colKelasBaru] || '').toString().trim() : '';
+        if (!nama) continue;
+        _kkExcel.push({ nama, kelasBaru });
+      }
+
+      if (!_kkExcel.length) {
+        showToast('Tidak ada data yang terbaca dari Excel', 'error');
+        input.value = ''; return;
+      }
+
+      // Muat siswa dari Firestore lalu mapping
+      kkBuildMapping(tahunBaru);
+    } catch(err) {
+      showToast('Gagal membaca file: ' + err.message, 'error');
+    }
+    input.value = '';
+  };
+  r.readAsArrayBuffer(f);
+}
+
+// ── Bangun mapping siswa berdasarkan hasil Excel ──
+async function kkBuildMapping(tahunBaru) {
+  showSyncing();
+  try {
+    const snap  = await schoolCol('siswa').where('status', '==', 'aktif').get();
+    const semua = snap.docs.map(d => ({ fbId: d.id, ...d.data() }));
+
+    // Index Excel by nama lowercase
+    const excelMap = {};
+    _kkExcel.forEach(x => { excelMap[x.nama.toLowerCase()] = x.kelasBaru; });
+
+    // Mapping tiap siswa
+    _kkData = semua.map(s => {
+      const kelasLama = (s.kelas || 'Umum').trim();
+      const kelasBaru = excelMap[s.nama.toLowerCase()] ?? null;
+      let status;
+      if (kelasBaru === null) {
+        status   = 'sama';          // tidak ada di Excel → tetap
+      } else if (/^lulus$/i.test(kelasBaru)) {
+        status   = 'lulus';
+      } else if (kelasBaru === '' || kelasBaru === kelasLama) {
+        status   = 'sama';
+      } else {
+        status   = 'naik';
+      }
+      return { fbId: s.fbId, nama: s.nama, kelasLama, kelasBaru, status };
+    });
+
+    // Cek nama di Excel yang tidak cocok dengan siswa manapun
+    const siswaNama = new Set(semua.map(s => s.nama.toLowerCase()));
+    const notFound  = _kkExcel.filter(x => !siswaNama.has(x.nama.toLowerCase()));
+
+    // Tampilkan preview
+    kkRenderPreview(tahunBaru, notFound);
+
+    document.getElementById('kkStep1').style.display = 'none';
+    document.getElementById('kkStep2').style.display = 'block';
+    document.getElementById('kkBtnEksekusi').dataset.tahunBaru = tahunBaru;
+
+  } catch(e) {
+    showToast('Gagal: ' + e.message, 'error');
+  } finally {
+    showSyncDone();
+  }
+}
+
+// ── Render tabel preview ──
+function kkRenderPreview(tahunBaru, notFound = []) {
+  const naik    = _kkData.filter(x => x.status === 'naik').length;
+  const lulus   = _kkData.filter(x => x.status === 'lulus').length;
+  const sama    = _kkData.filter(x => x.status === 'sama').length;
+  const nf      = notFound.length;
+
+  document.getElementById('kkPreviewInfo').innerHTML =
+    `Tahun ajaran baru: <b>${tahunBaru}</b> &nbsp;|&nbsp; ` +
+    `<span style="color:var(--g6)">▲ ${naik} naik kelas</span> &nbsp;` +
+    `<span style="color:var(--g8)">🎓 ${lulus} lulus</span> &nbsp;` +
+    `<span style="color:var(--mut)">${sama} tetap</span>` +
+    (nf ? ` &nbsp;<span style="color:var(--red)">⚠️ ${nf} tidak cocok di Excel</span>` : '');
+
+  kkRenderTable();
+}
+
+// ── Render tabel sesuai filter aktif ──
+function kkRenderTable() {
+  const filtered = _kkFilter === 'semua'    ? _kkData
+    : _kkFilter === 'berubah' ? _kkData.filter(x => x.status === 'naik')
+    : _kkFilter === 'lulus'   ? _kkData.filter(x => x.status === 'lulus')
+    : _kkFilter === 'sama'    ? _kkData.filter(x => x.status === 'sama')
+    : _kkData.filter(x => x.status === 'notfound');
+
+  if (!filtered.length) {
+    document.getElementById('kkPreviewTable').innerHTML =
+      '<div style="padding:16px;text-align:center;color:var(--mut);">Tidak ada data</div>';
+    return;
+  }
+
+  // Semua kelas yang ada untuk dropdown
+  const kelasAda = [...new Set(_kkData.map(x => x.kelasLama))].sort();
+  const opsiKelas = kelasAda.map(k => `<option value="${k}">${k}</option>`).join('');
+
+  const rows = filtered.map((item, i) => {
+    const bg = i % 2 === 0 ? '' : 'background:var(--surf2)';
+    const statusBadge = item.status === 'naik'
+      ? `<span class="bdg bg" style="font-size:var(--fxs);">▲ Naik</span>`
+      : item.status === 'lulus'
+      ? `<span class="bdg" style="font-size:var(--fxs);background:var(--g8);color:#fff;">🎓 Lulus</span>`
+      : `<span class="bdg bgr" style="font-size:var(--fxs);">Tetap</span>`;
+
+    const kelasBaruDisplay = item.status === 'lulus' ? 'Lulus'
+      : item.kelasBaru || item.kelasLama;
+
+    return `<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:6px;align-items:center;padding:6px 10px;${bg}">
+      <span style="font-size:var(--fsm);font-weight:600;">${item.nama}</span>
+      <span style="font-size:var(--fxs);color:var(--mut);">${item.kelasLama}</span>
+      <span style="font-size:var(--fxs);color:var(--g5);">→</span>
+      <div style="display:flex;gap:4px;align-items:center;">
+        <select data-fbid="${item.fbId}"
+          onchange="kkEditItem(this)"
+          style="padding:3px 5px;border:1.5px solid var(--brd);border-radius:6px;font-size:var(--fxs);font-weight:700;background:var(--surf2);">
+          <option value="__sama__" ${item.status==='sama'?'selected':''}>— Tetap —</option>
+          ${opsiKelas}
+          <option value="__lulus__" ${item.status==='lulus'?'selected':''}>🎓 Lulus</option>
+        </select>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('kkPreviewTable').innerHTML = rows;
+
+  // Set nilai dropdown sesuai state
+  filtered.forEach(item => {
+    const selEl = document.querySelector(`[data-fbid="${item.fbId}"]`);
+    if (!selEl) return;
+    if (item.status === 'sama')   selEl.value = '__sama__';
+    else if (item.status === 'lulus') selEl.value = '__lulus__';
+    else selEl.value = item.kelasBaru || '__sama__';
+  });
+}
+
+// ── Filter tombol preview ──
+function kkFilterPreview(filter, btn) {
+  _kkFilter = filter;
+  document.querySelectorAll('#kkFilterRow .fchip').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  kkRenderTable();
+}
+
+// ── Edit individual dari dropdown di preview ──
+function kkEditItem(selectEl) {
+  const fbId = selectEl.dataset.fbid;
+  const val  = selectEl.value;
+  const item = _kkData.find(x => x.fbId === fbId);
+  if (!item) return;
+  if (val === '__sama__') {
+    item.kelasBaru = item.kelasLama;
+    item.status    = 'sama';
+  } else if (val === '__lulus__') {
+    item.kelasBaru = 'Lulus';
+    item.status    = 'lulus';
+  } else {
+    item.kelasBaru = val;
+    item.status    = val === item.kelasLama ? 'sama' : 'naik';
+  }
+  // Update info summary
+  const tahunBaru = document.getElementById('kkBtnEksekusi')?.dataset.tahunBaru || '';
+  kkRenderPreview(tahunBaru);
+}
+
+// ── Reset ke step 1 ──
+function kkReset() {
+  _kkData  = []; _kkExcel = []; _kkFilter = 'semua';
+  document.getElementById('kkStep2').style.display = 'none';
+  document.getElementById('kkStep1').style.display = 'block';
+  document.getElementById('kkPreviewTable').innerHTML = '';
+}
+
+// ── Eksekusi kenaikan kelas ──
+async function kkEksekusi() {
+  if (!isAdmin) return;
+  const tahunBaru = document.getElementById('kkBtnEksekusi')?.dataset.tahunBaru
+    || document.getElementById('kkTahunBaru')?.value.trim();
+  if (!tahunBaru) return showToast('Tahun ajaran baru tidak ditemukan', 'warning');
+
+  const akanNaik  = _kkData.filter(x => x.status === 'naik');
+  const akanLulus = _kkData.filter(x => x.status === 'lulus');
+  const akanSama  = _kkData.filter(x => x.status === 'sama');
+
+  const konfirmasi =
+    `Proses Kenaikan Kelas:\n\n` +
+    `• ${akanNaik.length} siswa naik kelas\n` +
+    `• ${akanLulus.length} siswa lulus\n` +
+    `• ${akanSama.length} siswa tetap di kelas yang sama\n\n` +
+    `Tahun ajaran aktif → ${tahunBaru}\n\nLanjutkan?`;
+  if (!confirm(konfirmasi)) return;
+
+  const btn = document.getElementById('kkBtnEksekusi');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Memproses...'; }
+
+  try {
+    const akanDiproses = [...akanNaik, ...akanLulus];
+    if (akanDiproses.length) {
+      const chunks = [];
+      for (let i = 0; i < akanDiproses.length; i += 400)
+        chunks.push(akanDiproses.slice(i, i + 400));
+      for (const chunk of chunks) {
+        const batch = fbDb.batch();
+        chunk.forEach(item => {
+          const ref = schoolCol('siswa').doc(item.fbId);
+          if (item.status === 'lulus') {
+            batch.update(ref, {
+              status: 'lulus', kelasLulusDari: item.kelasLama,
+              tahunLulus: tahunBaru,
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+          } else {
+            batch.update(ref, {
+              kelas: item.kelasBaru,
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+          }
+        });
+        await batch.commit();
+      }
+    }
+
+    // Update tahun ajaran aktif
+    await fbDb.collection('schools').doc(currentSchoolId)
+      .update({ tahunAjaranAktif: tahunBaru });
+    tahunAjaranAktif = tahunBaru;
+    ls.set('tahunAjaranAktif', tahunBaru);
+
+    // Refresh lokal
+    const snapSiswa = await schoolCol('siswa').where('status', '==', 'aktif').get();
+    masterSiswa = snapSiswa.docs.map(d => ({ fbId: d.id, ...d.data() }));
+    ls.set('db_master_siswa', JSON.stringify(masterSiswa));
+
+    // Reset UI
+    kkReset();
+    document.getElementById('infoSekolahTahun') &&
+      (document.getElementById('infoSekolahTahun').textContent = tahunBaru);
+    renderDdSiswa && renderDdSiswa();
+    updateStrip && updateStrip();
+    renderSiswaCards && renderSiswaCards();
+
+    showToast(
+      `🎓 Selesai! ${akanNaik.length} naik, ${akanLulus.length} lulus. TA: ${tahunBaru}`,
+      'success', 5000
+    );
+  } catch(e) {
+    showToast('Gagal: ' + e.message, 'error');
+    console.error('[KK]', e);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🎓 Proses Kenaikan Kelas'; }
+  }
+}
+
 
 
 
@@ -4680,7 +5379,7 @@ function goPage(i){
     if(i===1) renderDdSiswa();
     if(i===2){ renderSiswaCards(); updateStatsAbsensi(); }
     if(i===3) { updateStatsPage(); ST.rerender(); }
-    if(i===5) renderDsSiswa();
+    if(i===5) { renderDsSiswa(); renderSettingsSekolah(); }
   }, 320);
 }
 
@@ -5165,15 +5864,15 @@ function setKelasDashboard(k){
 _kelasHandlers['setKelasDashboard'] = setKelasDashboard;
 
 function updateDashboardSiswaDropdown(){
-  // Render kelas chips
+  // Render kelas chips (sudah respek role via getKelasUnik)
   renderKelasChips('kelasChipsDashboard','kelasFilterDashboard', activeDashboardKelas, 'setKelasDashboard', 'master');
   const sel = document.getElementById('dashboardSiswaSelect');
   const prev = sel.value;
   sel.innerHTML = '<option value="SEMUA">— Semua Siswa —</option>';
-  // Filter siswa sesuai kelas aktif
+  const masterF = _getMasterFiltered();
   const siswaDitampil = activeDashboardKelas === 'SEMUA'
-    ? masterSiswa
-    : masterSiswa.filter(s => (s.kelas||'Umum').trim() === activeDashboardKelas);
+    ? masterF
+    : masterF.filter(s => (s.kelas||'Umum').trim() === activeDashboardKelas);
   const grouped = {};
   siswaDitampil.forEach(s => {
     const k = (s.kelas || 'Umum').trim();
@@ -5199,9 +5898,10 @@ function updateDashboardSiswaDropdown(){
 }
 
 function getFilteredSetoran(){
-  let data = dataSetoran;
+  const masterF = _getMasterFiltered();
+  let data = dataSetoran.filter(s => masterF.some(m => m.nama === s.nama));
   if(activeDashboardKelas !== 'SEMUA'){
-    const kelasSiswa = new Set(masterSiswa.filter(s=>(s.kelas||'Umum').trim()===activeDashboardKelas).map(s=>s.nama));
+    const kelasSiswa = new Set(masterF.filter(s=>(s.kelas||'Umum').trim()===activeDashboardKelas).map(s=>s.nama));
     data = data.filter(s => kelasSiswa.has(s.nama));
   }
   if(activeDashboardSiswa !== 'SEMUA') data = data.filter(s => s.nama === activeDashboardSiswa);
@@ -6331,32 +7031,51 @@ function importMasterData(input){
 }
 
 function tampilkanPreviewImport(list, errors, colNama, colKelas, startRow){
-  // Hitung duplikat dengan data yang sudah ada
   const existingNama = new Set(masterSiswa.map(s => s.nama.toLowerCase()));
   const baru = list.filter(s => !existingNama.has(s.nama.toLowerCase()));
   const duplikat = list.length - baru.length;
 
-  // Info deteksi
+  // Cek apakah file punya kolom kelas
+  const adaKolom = colKelas >= 0;
   const colNamaHuruf = String.fromCharCode(65 + colNama);
-  const colKelasHuruf = colKelas >= 0 ? String.fromCharCode(65 + colKelas) : '—';
+  const colKelasHuruf = adaKolom ? String.fromCharCode(65 + colKelas) : '—';
+
+  // Bangun daftar kelas unik yang sudah ada untuk dropdown default
+  const kelasAda = _getKelasFiltered();
+  const kelasOpsi = kelasAda.length
+    ? kelasAda.map(k => `<option value="${k}">${k}</option>`).join('')
+    : '<option value="1A">1A</option>';
+
   document.getElementById('importPreviewInfo').innerHTML =
     `<b>Terdeteksi:</b> Kolom nama = <b>${colNamaHuruf}</b>, kelas = <b>${colKelasHuruf}</b>, mulai baris <b>${startRow+1}</b><br>` +
     `Ditemukan <b>${list.length}</b> siswa &bull; ` +
     `<span style="color:var(--g6)">${baru.length} baru</span>` +
-    (duplikat ? ` &bull; <span style="color:var(--amber)">${duplikat} sudah ada (dilewati)</span>` : '');
+    (duplikat ? ` &bull; <span style="color:var(--yel)">${duplikat} sudah ada (dilewati)</span>` : '') +
+    `<br><span style="color:var(--mut)">Angkatan: <b>${tahunAjaranAktif||'—'}</b></span>` +
+    (!adaKolom ? `
+      <div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span style="font-size:var(--fsm);">File tidak punya kolom kelas. Masukkan ke kelas:</span>
+        <select id="importDefaultKelas"
+          style="padding:5px 8px;border:1.5px solid var(--brd);border-radius:6px;font-size:var(--fmd);font-weight:700;">
+          ${kelasOpsi}
+          <option value="1A">1A (baru)</option>
+          <option value="1B">1B</option>
+          <option value="1C">1C</option>
+          <option value="1D">1D</option>
+        </select>
+      </div>` : '<input type="hidden" id="importDefaultKelas" value="">');
 
-  // Render daftar
   const html = baru.length === 0
     ? '<div style="padding:16px;text-align:center;color:var(--mut);">Semua siswa sudah ada di daftar.</div>'
-    : baru.map((s, i) =>
-        `<div style="display:flex;justify-content:space-between;padding:7px 10px;${i%2===0?'':'background:var(--surf2)'}">
+    : baru.map((s, i) => {
+        const kelas = adaKolom ? s.kelas : '<i style="color:var(--mut)">sesuai pilihan</i>';
+        return `<div style="display:flex;justify-content:space-between;padding:7px 10px;${i%2===0?'':'background:var(--surf2)'}">
           <span style="font-weight:600">${s.nama}</span>
-          <span style="color:var(--mut);font-size:var(--fsm)">${s.kelas}</span>
-        </div>`
-      ).join('');
+          <span style="color:var(--mut);font-size:var(--fsm)">${kelas}</span>
+        </div>`;
+      }).join('');
   document.getElementById('importPreviewList').innerHTML = html;
 
-  // Peringatan error parsing
   const warnEl = document.getElementById('importPreviewWarn');
   if(errors.length){
     warnEl.style.display = 'block';
@@ -6377,15 +7096,23 @@ async function konfirmasiImport(){
   document.getElementById('btnKonfirmasiImport').disabled = true;
   document.getElementById('btnKonfirmasiImport').textContent = '⏳ Menyimpan...';
 
+  // Ambil kelas default dari input (diset di preview)
+  const defaultKelas = document.getElementById('importDefaultKelas')?.value.trim() || '1A';
+
   try {
     const chunks = [];
     for(let i = 0; i < newSiswa.length; i += 400) chunks.push(newSiswa.slice(i, i+400));
     for(const chunk of chunks){
       const batch = fbDb.batch();
       chunk.forEach(s => {
-        const ref = userCol('siswa').doc();
+        // Jika file tidak punya kolom kelas, pakai defaultKelas (kelas 1)
+        const kelas = (s.kelas && s.kelas !== 'Umum') ? s.kelas : defaultKelas;
+        const ref = schoolCol('siswa').doc();
         batch.set(ref, {
-          nama: s.nama, kelas: s.kelas || 'Umum', status: 'aktif',
+          nama: s.nama,
+          kelas,
+          angkatan: tahunAjaranAktif,  // tahun pertama masuk
+          status: 'aktif',
           tahunMasuk: tahunAjaranAktif,
           createdBy: currentUser.uid,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -6394,7 +7121,7 @@ async function konfirmasiImport(){
       await batch.commit();
     }
     // Refresh masterSiswa lokal langsung tanpa full fetch
-    const snapSiswa = await userCol('siswa').where('status','==','aktif').get();
+    const snapSiswa = await schoolCol('siswa').where('status','==','aktif').get();
     masterSiswa = snapSiswa.docs.map(d => ({ fbId: d.id, ...d.data() }));
     ls.set('db_master_siswa', JSON.stringify(masterSiswa));
     renderDdSiswa && renderDdSiswa();
@@ -6420,8 +7147,17 @@ function closeImportPreview(e){
 // ── Tambah siswa manual ──────────────────────────────────────
 function openTambahSiswaManual(){
   document.getElementById('manualSiswaNama').value = '';
-  document.getElementById('manualSiswaKelas').value = '';
   document.getElementById('manualSiswaError').style.display = 'none';
+  const lbl = document.getElementById('manualAngkatanLabel');
+  if (lbl) lbl.textContent = tahunAjaranAktif || '—';
+  // Isi dropdown kelas
+  const kelasAda = _getKelasFiltered();
+  const sel = document.getElementById('manualSiswaKelas');
+  sel.innerHTML = kelasAda.map(k => `<option value="${k}">${k}</option>`).join('') ||
+    '<option value="1A">1A</option>';
+  // Default ke kelas 1
+  const kelas1 = kelasAda.find(k => /^1/.test(k)) || kelasAda[0] || '1A';
+  sel.value = kelas1;
   document.getElementById('tambahSiswaManualOverlay').classList.add('show');
   setTimeout(() => document.getElementById('manualSiswaNama').focus(), 100);
 }
@@ -6434,7 +7170,7 @@ function closeTambahSiswaManual(e){
 
 async function simpanSiswaManual(){
   const nama = document.getElementById('manualSiswaNama').value.trim();
-  const kelas = document.getElementById('manualSiswaKelas').value.trim() || 'Umum';
+  const kelas = document.getElementById('manualSiswaKelas').value.trim() || '1A';
   const errEl = document.getElementById('manualSiswaError');
   errEl.style.display = 'none';
   if(!nama){ errEl.textContent = 'Nama tidak boleh kosong'; errEl.style.display = 'block'; return; }
@@ -6442,14 +7178,15 @@ async function simpanSiswaManual(){
     errEl.textContent = 'Siswa dengan nama ini sudah ada'; errEl.style.display = 'block'; return;
   }
   try {
-    await userCol('siswa').doc().set({
-      nama, kelas, status: 'aktif',
+    await schoolCol('siswa').doc().set({
+      nama, kelas,
+      angkatan: tahunAjaranAktif,
+      status: 'aktif',
       tahunMasuk: tahunAjaranAktif,
       createdBy: currentUser.uid,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    // Refresh masterSiswa lokal langsung
-    const snapSiswa = await userCol('siswa').where('status','==','aktif').get();
+    const snapSiswa = await schoolCol('siswa').where('status','==','aktif').get();
     masterSiswa = snapSiswa.docs.map(d => ({ fbId: d.id, ...d.data() }));
     ls.set('db_master_siswa', JSON.stringify(masterSiswa));
     renderDdSiswa && renderDdSiswa();
@@ -6478,14 +7215,56 @@ function updateStrip(){
 /* ==============================
    KELAS FILTER STATE
 ============================== */
+/* ==============================
+   ROLE-BASED ACCESS HELPERS
+   Semua filtering siswa berdasarkan role melewati fungsi ini
+============================== */
+
+// Kembalikan daftar kelas yang boleh diakses oleh user saat ini
+// Admin & guru (role='guru'): semua kelas
+// Wali kelas (role='waliKelas'): hanya kelasDiajar
+function _getKelasDiizinkan() {
+  if (!currentMember) return null; // null = semua
+  const role = currentMember.role;
+  if (role === 'admin' || role === 'guru') return null; // null = semua
+  // waliKelas
+  const kd = currentMember.kelasDiajar || [];
+  return kd.length ? kd : null;
+}
+
+// Kembalikan masterSiswa yang sudah difilter sesuai role
+function _getMasterFiltered() {
+  const izin = _getKelasDiizinkan();
+  if (!izin) return masterSiswa; // semua kelas
+  return masterSiswa.filter(s => izin.includes((s.kelas || 'Umum').trim()));
+}
+
+// Kembalikan kelas unik yang boleh diakses user saat ini
+function _getKelasFiltered() {
+  const izin = _getKelasDiizinkan();
+  const semua = [...new Set(masterSiswa.map(s => (s.kelas||'Umum').trim()))].sort();
+  if (!izin) return semua;
+  return semua.filter(k => izin.includes(k));
+}
+
+// Inisialisasi activeKelas ke kelas pertama yang diizinkan jika SEMUA tidak tersedia
+function _initActiveKelas(current, setter) {
+  const izin = _getKelasDiizinkan();
+  if (!izin) return current; // bebas, kembalikan apa adanya
+  if (current !== 'SEMUA' && izin.includes(current)) return current;
+  // Set ke kelas pertama yang diizinkan
+  const first = izin[0] || 'SEMUA';
+  if (setter) setter(first);
+  return first;
+}
+
 function getKelasUnik(source){
   if(source === 'viewer'){
     if(!vData.length || !vCols.tambahan) return [];
     const set = new Set(vData.map(r => (r[vCols.tambahan]||'').toString().trim()).filter(Boolean));
     return [...set].sort();
   }
-  const set = new Set(masterSiswa.map(s => (s.kelas||'Umum').trim()).filter(Boolean));
-  return [...set].sort();
+  return _getKelasFiltered();
 }
 
 function renderKelasChips(containerId, filterId, activeKelas, onClickFn, source){
@@ -6495,12 +7274,14 @@ function renderKelasChips(containerId, filterId, activeKelas, onClickFn, source)
   if(!container || !filterDiv) return;
   if(kelas.length <= 1){ filterDiv.style.display = 'none'; return; }
   filterDiv.style.display = 'block';
-  // Resolve fungsi — support string nama fungsi maupun fungsi langsung
   const fn = typeof onClickFn === 'function' ? onClickFn
            : (window[onClickFn] || _kelasHandlers[onClickFn]);
   if(!fn){ console.warn('renderKelasChips: fn tidak ditemukan:', onClickFn); return; }
   container.innerHTML = '';
-  ['SEMUA', ...kelas].forEach(k => {
+  // Wali kelas tidak dapat chip "Semua Kelas" — harus pilih salah satu kelasnya
+  const showSemua = !_getKelasDiizinkan();
+  const chips = showSemua ? ['SEMUA', ...kelas] : kelas;
+  chips.forEach(k => {
     const btn = document.createElement('button');
     btn.className = 'fchip' + (activeKelas === k ? ' on' : '');
     btn.textContent = k === 'SEMUA' ? 'Semua Kelas' : k;
@@ -6545,10 +7326,10 @@ _kelasHandlers['setKelasPersonal'] = setKelasPersonal;
 function _rebuildPersonalSiswaSelect() {
   const sel = document.getElementById('personalSiswaSelect');
   if (!sel) return;
-  // Daftar siswa sesuai kelas
+  const masterF = _getMasterFiltered();
   const daftarSiswa = (activeKelasPersonal === 'SEMUA'
-    ? masterSiswa
-    : masterSiswa.filter(s => (s.kelas || 'Umum').trim() === activeKelasPersonal))
+    ? masterF
+    : masterF.filter(s => (s.kelas || 'Umum').trim() === activeKelasPersonal))
     .slice().sort((a, b) => a.nama.localeCompare(b.nama, 'id'));
   sel.innerHTML = '<option value="SEMUA">— Semua Siswa —</option>';
   daftarSiswa.forEach((s, i) => {
@@ -6582,9 +7363,14 @@ function renderDdSiswa(){
   const sel = document.getElementById('namaSiswa');
   sel.innerHTML = '<option value="">— Pilih Siswa —</option>';
   renderKelasChips('kelasChipsTahfidh','kelasFilterTahfidh', activeKelasTahfidh, 'setKelasTahfidh', 'master');
+  // Wali kelas: init ke kelas pertama yang diizinkan jika SEMUA tidak tersedia
+  if (_getKelasDiizinkan() && activeKelasTahfidh === 'SEMUA') {
+    activeKelasTahfidh = _getKelasDiizinkan()[0] || 'SEMUA';
+  }
+  const masterF = _getMasterFiltered();
   const filtered = activeKelasTahfidh === 'SEMUA'
-    ? masterSiswa
-    : masterSiswa.filter(s => (s.kelas||'Umum').trim() === activeKelasTahfidh);
+    ? masterF
+    : masterF.filter(s => (s.kelas||'Umum').trim() === activeKelasTahfidh);
   const grouped = {};
   filtered.forEach(s => {
     const k = (s.kelas||'Umum').trim();
@@ -6686,7 +7472,7 @@ function simpanSetoran(){
   const fbRec = { ...rec };
   delete fbRec.id; // use Firestore auto-id
   fbRec.inputAt = firebase.firestore.FieldValue.serverTimestamp();
-  userCol('setoran').add(fbRec).then(docRef => {
+  schoolCol('setoran').add(fbRec).then(docRef => {
     // Simpan fbId ke record lokal supaya delete bisa pakai fbId
     const localIdx = dataSetoran.findIndex(x => x.id === rec.id);
     if(localIdx >= 0) {
@@ -6694,7 +7480,7 @@ function simpanSetoran(){
       ls.set('db_setoran', JSON.stringify(dataSetoran));
     }
     // Update points in Firestore
-    return userCol('points').doc(nama).set({
+    return schoolCol('points').doc(nama).set({
       total: userPoints[nama],
       streak: userStreaks[nama] || 0,
       lastActive: today
@@ -7040,7 +7826,7 @@ window.delSetoran = function(id, fbId){
   // Firestore delete (use fbId if available)
   const docId = rec?.fbId;
   if(docId){
-    userCol('setoran').doc(docId).delete().catch(err => console.warn('[FB] delSetoran:', err));
+    schoolCol('setoran').doc(docId).delete().catch(err => console.warn('[FB] delSetoran:', err));
   }
   showToast('Data dihapus','success');
 };
@@ -7050,7 +7836,7 @@ window.hapusSemuaSetoran = function(){
   if(!confirm(`Hapus ${dataSetoran.length} riwayat setoran? Ini akan menghapus dari server juga!`)) return;
   // Delete all from Firestore
   const batch = fbDb.batch();
-  dataSetoran.forEach(s => { if(s.fbId) batch.delete(userCol('setoran').doc(s.fbId)); });
+  dataSetoran.forEach(s => { if(s.fbId) batch.delete(schoolCol('setoran').doc(s.fbId)); });
   batch.commit().then(() => {
     showToast('Semua riwayat dihapus dari server', 'success');
   }).catch(err => showToast('Error: ' + err.message, 'error'));
@@ -7081,17 +7867,24 @@ function renderSiswaCards(){
   _inRenderSiswaCards = true;
   try {
   const c = document.getElementById('siswaCards');
-  document.getElementById('jmlSiswaAbsen').textContent = masterSiswa.length;
-  if(!masterSiswa.length){
-    c.innerHTML = '<div class="empty"><div class="eico">📤</div><h3>Import siswa dulu di tab Tahfidh</h3><p>Data siswa akan otomatis muncul di sini</p></div>';
+  const masterF = _getMasterFiltered();
+  document.getElementById('jmlSiswaAbsen').textContent = masterF.length;
+  if(!masterF.length){
+    c.innerHTML = masterSiswa.length
+      ? '<div class="empty"><div class="eico">🔒</div><h3>Tidak ada siswa di kelas Anda</h3><p>Hubungi admin untuk mengubah penugasan kelas</p></div>'
+      : '<div class="empty"><div class="eico">📤</div><h3>Import siswa dulu di tab Tahfidh</h3><p>Data siswa akan otomatis muncul di sini</p></div>';
     document.getElementById('kelasFilterAbsen').style.display = 'none';
     _inRenderSiswaCards = false; return;
+  }
+  // Wali kelas: init ke kelas pertama yang diizinkan
+  if (_getKelasDiizinkan() && activeKelasAbsen === 'SEMUA') {
+    activeKelasAbsen = _getKelasDiizinkan()[0] || 'SEMUA';
   }
   syncAbsensiWithMaster();
   renderKelasChips('kelasChipsAbsen','kelasFilterAbsen', activeKelasAbsen, 'setKelasAbsen', 'master');
   const filtered = activeKelasAbsen === 'SEMUA'
-    ? masterSiswa
-    : masterSiswa.filter(s => (s.kelas||'Umum').trim() === activeKelasAbsen);
+    ? masterF
+    : masterF.filter(s => (s.kelas||'Umum').trim() === activeKelasAbsen);
   const stMap = {Hadir:'bg', Ijin:'bgd', Sakit:'bt', Alpha:'br'};
   const kelas = getKelasUnik('master');
   let html = '';
@@ -7194,7 +7987,7 @@ window.setStatusAbsen = function(btnOrNama, status){
   const todayKey = _localDateKey();
   const entry = { status, waktu: now, kelas: siswa?.kelas || 'Umum',
     inputBy: currentUser?.uid || 'offline', inputByNama: currentGuru?.nama || 'Guru' };
-  userCol('absensiHarian').doc(todayKey).set({
+  schoolCol('absensiHarian').doc(todayKey).set({
     [`data.${nama}`]: entry,
     tanggal: todayKey,
     tahunAjaran: tahunAjaranAktif,
@@ -7203,10 +7996,12 @@ window.setStatusAbsen = function(btnOrNama, status){
 };
 
 function updateStatsAbsensi(){
-  document.getElementById('totHadir').textContent = dataAbsensi.filter(a => a.status === 'Hadir').length;
-  document.getElementById('totIjin').textContent = dataAbsensi.filter(a => a.status === 'Ijin').length;
-  document.getElementById('totSakit').textContent = dataAbsensi.filter(a => a.status === 'Sakit').length;
-  document.getElementById('totAlpha').textContent = dataAbsensi.filter(a => a.status === 'Alpha').length;
+  const namaDiizinkan = new Set(_getMasterFiltered().map(s => s.nama));
+  const absenF = dataAbsensi.filter(a => namaDiizinkan.has(a.nama));
+  document.getElementById('totHadir').textContent = absenF.filter(a => a.status === 'Hadir').length;
+  document.getElementById('totIjin').textContent  = absenF.filter(a => a.status === 'Ijin').length;
+  document.getElementById('totSakit').textContent = absenF.filter(a => a.status === 'Sakit').length;
+  document.getElementById('totAlpha').textContent = absenF.filter(a => a.status === 'Alpha').length;
 }
 
 function renderRiwAbsensi(){
@@ -7273,7 +8068,7 @@ async function simpanAbsensiHarian(){
   // Jika offline: Firestore antri → sinkron otomatis saat online kembali
   // Jika online: langsung tersimpan ke server
   const isOfflineNow = !navigator.onLine;
-  userCol('absensiHarian').doc(key).set(payload, { merge: true })
+  schoolCol('absensiHarian').doc(key).set(payload, { merge: true })
     .catch(err => console.warn('[FB] simpanAbsensiHarian:', err));
 
   const offlineNote = isOfflineNow ? ' (akan sinkron saat online)' : '';
@@ -7290,7 +8085,7 @@ async function bukaRiwayatAbsensi(){
   listEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--mut);">Memuat...</div>';
   try {
     // Ambil dari Firestore (max 60 dokumen, sort desc)
-    const snap = await userCol('absensiHarian').orderBy('tanggal','desc').limit(60).get();
+    const snap = await schoolCol('absensiHarian').orderBy('tanggal','desc').limit(60).get();
     if(snap.empty){
       listEl.innerHTML = '<div style="padding:30px;text-align:center;color:#bbb;">Belum ada riwayat absensi</div>';
       return;
@@ -7356,7 +8151,7 @@ async function bukaDetailAbsensi(key){
   const tabelEl = document.getElementById('detailAbsensiTabel');
   tabelEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--mut);">Memuat...</div>';
   try {
-    const doc = await userCol('absensiHarian').doc(key).get();
+    const doc = await schoolCol('absensiHarian').doc(key).get();
     if(!doc.exists){ tabelEl.innerHTML = '<div style="padding:20px;text-align:center;color:#bbb;">Data tidak ditemukan</div>'; return; }
     _detailAbsensiData = doc.data();
     const d = _detailAbsensiData;
@@ -7455,7 +8250,7 @@ async function hapusAbsensiTanggal(){
   const label = d?.tanggalStr || _detailAbsensiKey;
   if(!confirm(`Hapus data absensi "${label}"?`)) return;
   try {
-    await userCol('absensiHarian').doc(_detailAbsensiKey).delete();
+    await schoolCol('absensiHarian').doc(_detailAbsensiKey).delete();
     // Update cache
     let riwayat = JSON.parse(ls.get('cache_riwayat_absensi') || '[]');
     riwayat = riwayat.filter(r => r.tanggal !== _detailAbsensiKey);
@@ -7463,7 +8258,7 @@ async function hapusAbsensiTanggal(){
     tutupDetailAbsensi();
     showToast('Data absensi dihapus', 'success');
     // Refresh riwayat list
-    const snap = await userCol('absensiHarian').orderBy('tanggal','desc').limit(60).get();
+    const snap = await schoolCol('absensiHarian').orderBy('tanggal','desc').limit(60).get();
     renderRiwayatList(snap.docs.map(d2 => ({key: d2.id, ...d2.data()})));
   } catch(err){
     showToast('Gagal hapus: ' + err.message, 'error');
@@ -7703,13 +8498,13 @@ async function hapusSemuaDataSiswa(){
 
   try {
     // 1. Hapus semua dokumen siswa dari Firestore
-    const snapSiswa = await userCol('siswa').get();
+    const snapSiswa = await schoolCol('siswa').get();
     const batchSiswa = fbDb.batch();
     snapSiswa.docs.forEach(d => batchSiswa.delete(d.ref));
     if(snapSiswa.docs.length) await batchSiswa.commit();
 
     // 2. Hapus semua dokumen setoran dari Firestore
-    const snapSetoran = await userCol('setoran').get();
+    const snapSetoran = await schoolCol('setoran').get();
     const chunks = [];
     for(let i=0; i<snapSetoran.docs.length; i+=400) chunks.push(snapSetoran.docs.slice(i,i+400));
     for(const chunk of chunks){
@@ -7719,7 +8514,7 @@ async function hapusSemuaDataSiswa(){
     }
 
     // 3. Hapus semua dokumen absensi dari Firestore
-    const snapAbsen = await userCol('absensiHarian').get();
+    const snapAbsen = await schoolCol('absensiHarian').get();
     const chunksAbsen = [];
     for(let i=0; i<snapAbsen.docs.length; i+=400) chunksAbsen.push(snapAbsen.docs.slice(i,i+400));
     for(const chunk of chunksAbsen){
@@ -7729,7 +8524,7 @@ async function hapusSemuaDataSiswa(){
     }
 
     // 4. Hapus semua dokumen points dari Firestore
-    const snapPoints = await userCol('points').get();
+    const snapPoints = await schoolCol('points').get();
     const batchPts = fbDb.batch();
     snapPoints.docs.forEach(d => batchPts.delete(d.ref));
     if(snapPoints.docs.length) await batchPts.commit();
@@ -7829,9 +8624,10 @@ let activeJuzMpa = 30; // Filter juz di mode manual pencapaian
 function populateMpaSiswaDropdown(){
   const sel = document.getElementById('mpaSiswa');
   sel.innerHTML = '<option value="">— Pilih Siswa —</option>';
+  const masterF = _getMasterFiltered();
   const filtered = activeKelasMpa === 'SEMUA'
-    ? masterSiswa
-    : masterSiswa.filter(s => (s.kelas||'Umum').trim() === activeKelasMpa);
+    ? masterF
+    : masterF.filter(s => (s.kelas||'Umum').trim() === activeKelasMpa);
   const sorted = [...filtered].sort((a,b) => a.nama.localeCompare(b.nama,'id'));
   sorted.forEach(s => sel.add(new Option(s.nama, s.nama)));
   document.getElementById('mpaExistWarning').style.display = 'none';
@@ -8314,11 +9110,11 @@ async function simpanPencapaianAwal(){
         delete fbRec.id;
         // jumlahKhatam null → hapus dari dokumen agar tidak menyimpan null
         if(fbRec.jumlahKhatam === null) delete fbRec.jumlahKhatam;
-        batch.set(userCol('setoran').doc(), fbRec);
+        batch.set(schoolCol('setoran').doc(), fbRec);
       });
       await batch.commit();
     }
-    await userCol('points').doc(nama).set({
+    await schoolCol('points').doc(nama).set({
       total: userPoints[nama], streak: userStreaks[nama]||0
     }, { merge: true });
   })().catch(err => console.warn('[FB] simpanPencapaianAwal:', err));
@@ -8343,7 +9139,16 @@ window.openEditSiswa = function(fbId){
   if(!s) return;
   document.getElementById('editSiswaId').value = fbId;
   document.getElementById('editSiswaNama').value = s.nama || '';
-  document.getElementById('editSiswaKelas').value = s.kelas || '';
+
+  // Isi dropdown kelas — semua kelas yang ada + kelas siswa ini sendiri
+  const kelasAda = [...new Set([...getKelasUnik('master'), s.kelas || '1A'])].sort();
+  const sel = document.getElementById('editSiswaKelas');
+  sel.innerHTML = kelasAda.map(k => `<option value="${k}"${k===s.kelas?' selected':''}>${k}</option>`).join('');
+
+  // Tampilkan angkatan
+  const lblAngkatan = document.getElementById('editAngkatanLabel');
+  if (lblAngkatan) lblAngkatan.textContent = s.angkatan || s.tahunMasuk || '—';
+
   const statusEl = document.getElementById('editSiswaStatus');
   if(statusEl){ statusEl.value = s.status || 'aktif'; syncCsdTrigger('editSiswaStatus'); }
   const statusTetapEl = document.getElementById('editSiswaStatusTetap');
@@ -8360,7 +9165,7 @@ function closeEditSiswa(e){
 async function simpanEditSiswa(){
   const id = document.getElementById('editSiswaId').value;
   const nama = document.getElementById('editSiswaNama').value.trim();
-  const kelas = document.getElementById('editSiswaKelas').value.trim() || 'Umum';
+  const kelas = document.getElementById('editSiswaKelas').value.trim() || '1A';
   const status = document.getElementById('editSiswaStatus')?.value || 'aktif';
   const statusTetap = document.getElementById('editSiswaStatusTetap')?.value || '';
   if(!nama){ showToast('Nama tidak boleh kosong','warning'); return; }
@@ -8374,9 +9179,8 @@ async function simpanEditSiswa(){
     } else {
       updateData.statusTetap = firebase.firestore.FieldValue.delete();
     }
-    await userCol('siswa').doc(id).update(updateData);
-    // Refresh lokal
-    const snapSiswa = await userCol('siswa').where('status','==','aktif').get();
+    await schoolCol('siswa').doc(id).update(updateData);
+    const snapSiswa = await schoolCol('siswa').where('status','==','aktif').get();
     masterSiswa = snapSiswa.docs.map(d => ({ fbId: d.id, ...d.data() }));
     ls.set('db_master_siswa', JSON.stringify(masterSiswa));
     renderDdSiswa && renderDdSiswa();
@@ -8425,7 +9229,7 @@ window.hapusSiswa = async function(fbId){
   if(!s) return;
   if(!confirm(`Hapus siswa "${s.nama}"? Data setoran terkait tidak akan ikut dihapus.`)) return;
   try {
-    await userCol('siswa').doc(fbId).update({ status: 'arsip' });
+    await schoolCol('siswa').doc(fbId).update({ status: 'arsip' });
     masterSiswa = masterSiswa.filter(x => x.fbId !== fbId);
     ls.set('db_master_siswa', JSON.stringify(masterSiswa));
     renderDdSiswa && renderDdSiswa();
@@ -8991,6 +9795,214 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
+/* ==============================
+   SCHOOL SETUP FUNCTIONS
+============================== */
+
+// ── Tampilkan / sembunyikan overlay ──
+function schoolSetupShow(tab) {
+  const ov = document.getElementById('schoolSetupOverlay');
+  if (!ov) return;
+  ov.classList.add('show');
+  // Reset ke tab default
+  ssSwitchTab(tab || 'buat');
+  // Pastikan pending & logout button tersembunyi
+  const pend = document.getElementById('ssFormPending');
+  const tabs = document.getElementById('ssTabs');
+  const logoutBtn = document.getElementById('ssBtnLogout');
+  if (pend)      pend.style.display    = 'none';
+  if (tabs)      tabs.style.display    = 'flex';
+  if (logoutBtn) logoutBtn.style.display = 'block';
+}
+
+function schoolSetupShowPending(schoolNama) {
+  const ov  = document.getElementById('schoolSetupOverlay');
+  const pend = document.getElementById('ssFormPending');
+  const tabs = document.getElementById('ssTabs');
+  const fb   = document.getElementById('ssFormBuat');
+  const fg   = document.getElementById('ssFormGabung');
+  const info = document.getElementById('ssPendingInfo');
+  const logoutBtn = document.getElementById('ssBtnLogout');
+  if (!ov) return;
+  ov.classList.add('show');
+  if (fb)  fb.style.display  = 'none';
+  if (fg)  fg.style.display  = 'none';
+  if (tabs) tabs.style.display = 'none';
+  if (pend) pend.style.display = 'block';
+  if (logoutBtn) logoutBtn.style.display = 'block';
+  if (info && schoolNama) info.innerHTML =
+    `Permintaan bergabung ke <b>${schoolNama}</b> sudah dikirim.<br>Minta admin sekolah untuk menyetujui akunmu.`;
+}
+
+function ssSwitchTab(tab) {
+  const fb = document.getElementById('ssFormBuat');
+  const fg = document.getElementById('ssFormGabung');
+  const tb = document.getElementById('ssTabBuat');
+  const tg = document.getElementById('ssTabGabung');
+  if (!fb || !fg) return;
+  const isBuat = tab === 'buat';
+  fb.style.display = isBuat ? 'flex' : 'none';
+  fg.style.display = isBuat ? 'none' : 'flex';
+  tb?.classList.toggle('on', isBuat);
+  tg?.classList.toggle('on', !isBuat);
+  document.getElementById('ssErrBuat') && (document.getElementById('ssErrBuat').style.display = 'none');
+  document.getElementById('ssErrGabung') && (document.getElementById('ssErrGabung').style.display = 'none');
+}
+
+function _ssErr(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
+}
+
+function _ssSetLoading(btnId, loading) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.disabled = loading;
+  btn.style.opacity = loading ? '.6' : '1';
+}
+
+// ── Generate kode sekolah unik 6 karakter ──
+function _generateKode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({length: 6}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
+// ── Buat Sekolah Baru ──
+async function ssBuatSekolah() {
+  const nama      = document.getElementById('ssNamaSekolah')?.value.trim();
+  const namaAdmin = document.getElementById('ssNamaAdmin')?.value.trim();
+  const tahun     = document.getElementById('ssTahunAjaran')?.value.trim();
+  _ssErr('ssErrBuat', '');
+  if (!nama)      return _ssErr('ssErrBuat', 'Nama sekolah wajib diisi');
+  if (!namaAdmin) return _ssErr('ssErrBuat', 'Nama admin wajib diisi');
+  if (!tahun)     return _ssErr('ssErrBuat', 'Tahun ajaran wajib diisi');
+
+  _ssSetLoading('ssBtnBuat', true);
+  try {
+    // Buat kode unik — coba sampai tidak tabrakan
+    let kode, exists = true;
+    for (let i = 0; i < 10 && exists; i++) {
+      kode = _generateKode();
+      const chk = await fbDb.collection('schoolCodes').doc(kode).get();
+      exists = chk.exists;
+    }
+
+    const schoolRef = fbDb.collection('schools').doc();
+    const schoolId  = schoolRef.id;
+
+    const batch = fbDb.batch();
+
+    // Dokumen sekolah
+    batch.set(schoolRef, {
+      nama,
+      kode,
+      tahunAjaranAktif: tahun,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdBy: currentUser.uid
+    });
+
+    // Index kode → schoolId (untuk pencarian saat gabung)
+    batch.set(fbDb.collection('schoolCodes').doc(kode), { schoolId, nama });
+
+    // Daftarkan user sebagai admin member
+    batch.set(schoolRef.collection('members').doc(currentUser.uid), {
+      nama: namaAdmin,
+      email: currentUser.email,
+      role: 'admin',
+      kelasDiajar: [],
+      status: 'aktif',
+      joinedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // Simpan schoolId di userMeta untuk lookup cepat saat login
+    batch.set(fbDb.collection('userMeta').doc(currentUser.uid), {
+      schoolId, schoolNama: nama
+    });
+
+    await batch.commit();
+
+    // Update state lokal
+    currentSchoolId = schoolId;
+    currentMember   = { nama: namaAdmin, email: currentUser.email, role: 'admin', kelasDiajar: [], status: 'aktif', uid: currentUser.uid };
+    isAdmin         = true;
+    currentGuru     = { nama: namaAdmin, username: currentUser.email, role: 'admin', status: 'aktif', kelasDiajar: [] };
+    tahunAjaranAktif = tahun;
+    ls.set('tahunAjaranAktif', tahun);
+
+    // Tutup overlay & mulai app
+    document.getElementById('schoolSetupOverlay').classList.remove('show');
+    showToast(`🏫 Sekolah "${nama}" berhasil dibuat! Kode: ${kode}`, 'success', 5000);
+    await startApp();
+
+  } catch(e) {
+    console.error('[SS] ssBuatSekolah:', e);
+    _ssErr('ssErrBuat', 'Gagal: ' + e.message);
+  } finally {
+    _ssSetLoading('ssBtnBuat', false);
+  }
+}
+
+// ── Gabung Sekolah dengan Kode ──
+async function ssGabungSekolah() {
+  const kode     = document.getElementById('ssKodeGabung')?.value.trim().toUpperCase();
+  const namaGuru = document.getElementById('ssNamaGuru')?.value.trim();
+  _ssErr('ssErrGabung', '');
+  if (!kode || kode.length !== 6) return _ssErr('ssErrGabung', 'Masukkan kode sekolah 6 karakter');
+  if (!namaGuru)                   return _ssErr('ssErrGabung', 'Nama wajib diisi');
+
+  _ssSetLoading('ssBtnGabung', true);
+  try {
+    // Cari sekolah dari kode
+    const codeDoc = await fbDb.collection('schoolCodes').doc(kode).get();
+    if (!codeDoc.exists) return _ssErr('ssErrGabung', 'Kode sekolah tidak ditemukan');
+
+    const { schoolId, nama: schoolNama } = codeDoc.data();
+
+    // Cek apakah sudah member
+    const existingMember = await fbDb.collection('schools').doc(schoolId).collection('members').doc(currentUser.uid).get();
+    if (existingMember.exists) {
+      const st = existingMember.data().status;
+      if (st === 'pending') {
+        schoolSetupShowPending(schoolNama);
+        return;
+      }
+      // Sudah aktif — langsung masuk
+      const m = existingMember.data();
+      currentSchoolId  = schoolId;
+      currentMember    = { ...m, uid: currentUser.uid };
+      isAdmin          = m.role === 'admin';
+      currentGuru      = { nama: m.nama, username: currentUser.email, role: m.role, status: 'aktif', kelasDiajar: m.kelasDiajar || [] };
+      document.getElementById('schoolSetupOverlay').classList.remove('show');
+      await startApp();
+      return;
+    }
+
+    // Daftar sebagai pending member
+    const batch = fbDb.batch();
+    batch.set(fbDb.collection('schools').doc(schoolId).collection('members').doc(currentUser.uid), {
+      nama: namaGuru,
+      email: currentUser.email,
+      role: 'guru',
+      kelasDiajar: [],
+      status: 'pending',
+      schoolNama,
+      joinedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    batch.set(fbDb.collection('userMeta').doc(currentUser.uid), { schoolId, schoolNama });
+    await batch.commit();
+
+    schoolSetupShowPending(schoolNama);
+
+  } catch(e) {
+    console.error('[SS] ssGabungSekolah:', e);
+    _ssErr('ssErrGabung', 'Gagal: ' + e.message);
+  } finally {
+    _ssSetLoading('ssBtnGabung', false);
+  }
+}
+
 </script>
 
 <!-- Modal Pencapaian Awal -->
@@ -9184,8 +10196,13 @@ document.addEventListener('keydown', function(e) {
       <input type="text" id="manualSiswaNama" placeholder="Nama lengkap siswa" autocapitalize="words">
     </div>
     <div class="form-row">
-      <label>Kelas <span style="font-weight:400;color:var(--mut)">(opsional)</span></label>
-      <input type="text" id="manualSiswaKelas" placeholder="Contoh: 1A, Kelas 2, dll">
+      <label>Kelas</label>
+      <select id="manualSiswaKelas"
+        style="width:100%;padding:9px 10px;border:1.5px solid var(--brd);border-radius:var(--rs);font-size:var(--fmd);background:var(--surf2);">
+      </select>
+    </div>
+    <div style="font-size:var(--fxs);color:var(--mut);margin-top:2px;">
+      Angkatan: <b id="manualAngkatanLabel">—</b>
     </div>
     <div id="manualSiswaError" style="color:var(--red);font-size:var(--fsm);margin-top:6px;display:none;"></div>
     <div class="edit-actions" style="margin-top:14px;">
@@ -9206,7 +10223,12 @@ document.addEventListener('keydown', function(e) {
     </div>
     <div class="form-row">
       <label>Kelas</label>
-      <input type="text" id="editSiswaKelas" placeholder="Contoh: Kelas 1A">
+      <select id="editSiswaKelas"
+        style="width:100%;padding:9px 10px;border:1.5px solid var(--brd);border-radius:var(--rs);font-size:var(--fmd);background:var(--surf2);">
+      </select>
+    </div>
+    <div style="font-size:var(--fxs);color:var(--mut);margin-bottom:10px;">
+      Angkatan: <b id="editAngkatanLabel">—</b>
     </div>
     <div class="form-row" id="editSiswaStatusRow">
       <label>Status</label>
@@ -9314,6 +10336,60 @@ document.addEventListener('keydown', function(e) {
     </div>
     <div class="csd-divider"></div>
     <div class="csd-body" id="csdBody"></div>
+  </div>
+</div>
+
+<!-- ════════ SCHOOL SETUP OVERLAY ════════ -->
+<div id="schoolSetupOverlay">
+  <div class="ss-card">
+    <div class="ss-logo">🕌</div>
+    <div class="ss-title">TAMMA</div>
+    <div class="ss-sub" id="ssSubtitle">Tahfidh Juz Amma — Manajemen Sekolah</div>
+
+    <!-- Tabs -->
+    <div class="ss-tabs" id="ssTabs">
+      <button class="ss-tab on" id="ssTabBuat" onclick="ssSwitchTab('buat')">Buat Sekolah</button>
+      <button class="ss-tab"    id="ssTabGabung" onclick="ssSwitchTab('gabung')">Gabung Sekolah</button>
+    </div>
+
+    <!-- Form Buat Sekolah -->
+    <div id="ssFormBuat" class="ss-form">
+      <input type="text" id="ssNamaSekolah" placeholder="Nama Sekolah / Lembaga" autocapitalize="words">
+      <input type="text" id="ssNamaAdmin"   placeholder="Nama Anda (Admin)" autocapitalize="words">
+      <input type="text" id="ssTahunAjaran" placeholder="Tahun Ajaran (misal: 2024/2025)">
+      <div class="ss-err" id="ssErrBuat"></div>
+      <button class="btn bp bfull" id="ssBtnBuat" onclick="ssBuatSekolah()">
+        ✨ Buat Sekolah
+      </button>
+    </div>
+
+    <!-- Form Gabung Sekolah -->
+    <div id="ssFormGabung" class="ss-form" style="display:none;">
+      <input type="text" id="ssKodeGabung" placeholder="Kode Sekolah (6 karakter)"
+             maxlength="6" style="text-transform:uppercase;letter-spacing:4px;font-weight:700;text-align:center;"
+             oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
+      <input type="text" id="ssNamaGuru" placeholder="Nama Anda" autocapitalize="words">
+      <div class="ss-err" id="ssErrGabung"></div>
+      <button class="btn bp bfull" id="ssBtnGabung" onclick="ssGabungSekolah()">
+        🔗 Gabung Sekolah
+      </button>
+    </div>
+
+    <!-- Pending approval -->
+    <div id="ssFormPending" class="ss-pending" style="display:none;">
+      <div class="ss-pending-icon">⏳</div>
+      <div style="font-weight:800;font-size:var(--flg);color:var(--g9);margin-bottom:6px;">Menunggu Persetujuan</div>
+      <div style="font-size:var(--fsm);color:var(--mut);line-height:1.6;" id="ssPendingInfo">
+        Permintaan bergabung kamu sudah dikirim. Minta admin sekolah untuk menyetujui akunmu.
+      </div>
+      <button class="btn bo" style="margin-top:16px;width:100%;" onclick="fbAuth.signOut()">
+        Keluar / Ganti Akun
+      </button>
+    </div>
+
+    <button class="btn bo" style="width:100%;margin-top:12px;" onclick="fbAuth.signOut()" id="ssBtnLogout">
+      Keluar / Ganti Akun
+    </button>
   </div>
 </div>
 
