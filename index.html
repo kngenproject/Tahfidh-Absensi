@@ -2015,7 +2015,6 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
 
   .hdr-title { font-size: 16px; letter-spacing: .4px; }
   .hdr-ico   { width: 40px; height: 40px; font-size: 22px; }
-  .hdr-user  { max-width: 170px; }
 
   .chart-slot         { height: 340px; }
   .chart-slot.tall    { height: 440px; }
@@ -2489,25 +2488,8 @@ span > .fai, div > .fai { vertical-align: middle; }
 #syncStatus.error { background: var(--red); color: #fff; }
 #syncStatus.show { display: block; }
 
-/* ── User chip in header ── */
-.hdr-user {
-  display: flex; align-items: center; gap: 6px;
-  padding: 4px 8px 4px 4px; border-radius: 20px;
-  background: rgba(255,255,255,.15); cursor: pointer;
-  border: none; color: #fff; font-size:var(--fsm); font-weight: 700;
-  max-width: 130px;
-}
-.hdr-user:active { background: rgba(255,255,255,.25); }
-.hdr-avatar {
-  width: 26px; height: 26px; border-radius: 50%; object-fit: cover;
-  background: var(--g4); flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size:var(--fsm); font-weight: 800; color: #fff;
-}
-.hdr-user span {
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  max-width: 80px;
-}
+
+
 
 
 
@@ -3123,10 +3105,7 @@ span > .fai, div > .fai { vertical-align: middle; }
   <div class="hdr-right">
     <span class="hdr-date" id="tglHdr">—</span>
     <button id="btnInstall" onclick="installApp()" style="display:none;">⬇ Pasang</button>
-    <button class="hdr-user" id="btnHdrUser" onclick="goPage(5)" style="display:none;">
-      <div class="hdr-avatar" id="hdrAvatar">👤</div>
-      <span id="hdrUserName">Akun</span>
-    </button>
+
   </div>
 </div>
 <div id="netDot" title="Online"></div>
@@ -4019,33 +3998,22 @@ async function lpLogout() {
 }
 
 function _updateHeaderUser(user) {
-  const btn    = document.getElementById('btnHdrUser');
-  const avatar = document.getElementById('hdrAvatar');
-  const name   = document.getElementById('hdrUserName');
   const sAvatar = document.getElementById('settingsAvatar');
   const sName   = document.getElementById('settingsUserName');
   const sEmail  = document.getElementById('settingsUserEmail');
 
-  if(!user) {
-    if(btn) btn.style.display = 'none';
-    return;
-  }
-  if(btn) btn.style.display = 'flex';
+  if(!user) return;
 
   const displayName = user.displayName || user.email.split('@')[0];
-  const firstName   = displayName.split(' ')[0];
 
-  if(name)  name.textContent  = firstName;
-  if(sName) sName.textContent = displayName;
-  if(sEmail)sEmail.textContent= user.email;
+  if(sName)  sName.textContent  = displayName;
+  if(sEmail) sEmail.textContent = user.email;
 
   if(user.photoURL) {
     const img = `<img src="${user.photoURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
-    if(avatar)  avatar.innerHTML  = img;
     if(sAvatar) sAvatar.innerHTML = img;
   } else {
     const ic = displayName.charAt(0).toUpperCase();
-    if(avatar)  avatar.textContent  = ic;
     if(sAvatar) sAvatar.textContent = ic;
   }
 }
