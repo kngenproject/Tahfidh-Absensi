@@ -8,6 +8,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tamma">
+<meta name="description" content="Aplikasi Tahfidh Juz Amma — tracking setoran & absensi siswa">
+<link id="appleTouchIconLink" rel="apple-touch-icon" sizes="192x192">
 <!-- Gunakan versi spesifik agar konsisten dengan cache -->
 <!-- FA replaced with inline SVG -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -116,8 +119,6 @@ body {
   from { transform: scale(1);   opacity: 1; }
   to   { transform: scale(1.6); opacity: .6; }
 }
-#offline { display:none; }
-
 /* Toast */
 .toast {
   position:fixed; 
@@ -3026,7 +3027,6 @@ span > .fai, div > .fai { vertical-align: middle; }
   <symbol id="fai_undo" viewBox="0 0 512 512"><path d="M48.5 224H40c-13.3 0-24-10.7-24-24V72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L98.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L185 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8H48.5z"/></symbol>
 </svg>
 
-<div id="offline">📵 Offline</div>
 <div id="toast" class="toast"></div>
 
 <!-- Achievement Popup -->
@@ -3886,8 +3886,6 @@ const firebaseConfig = {
   appId: "1:602276018828:web:7ba0db5549a3f58cbe59a9"
 };
 
-const BOOTSTRAP_ADMIN_EMAIL = null;
-
 firebase.initializeApp(firebaseConfig);
 const fbDb   = firebase.firestore();
 const fbAuth = firebase.auth();
@@ -4136,15 +4134,7 @@ async function startApp() {
 
 
 
-function simpanUsername(){ showToast('Fitur username tidak tersedia', 'info'); }
-function simpanPassword(){ showToast('Fitur password tidak tersedia', 'info'); }
-function submitInviteCode(){ showToast('Tidak diperlukan kode undangan', 'info'); }
 // Fetch data dari Firestore (sekali saat load, bukan realtime)
-async function setupRealtimeListeners(){
-  fbListeners.forEach(u => u());
-  fbListeners = [];
-  await fetchAllData();
-}
 
 async function fetchAllData(){
   showSyncing();
@@ -4322,9 +4312,6 @@ function initAppUI(){
   document.dispatchEvent(new Event('firebase-ready'));
 }
 
-function showUserMenu(){}
-function closeUserMenu(){}
-
 // ──────────────────────────────────────────────────────────
 
 
@@ -4379,37 +4366,6 @@ function closeUserMenu(){}
 
 
 
-// ── Admin: Invite Codes ───────────────────────────────────────
-document.getElementById('newCodeType')?.addEventListener('change', function(){
-  const _mur=document.getElementById('maxUseRow'); if(_mur) _mur.style.display = this.value === 'limited' ? 'block' : 'none';
-});
-
-async function buatKodeUndangan(){
-  const _nci=document.getElementById('newCodeInput'); if(!_nci) return;
-  const kode = _nci.value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
-  if(kode.length < 4){ showToast('Kode minimal 4 karakter huruf/angka', 'warning'); return; }
-  const type = document.getElementById('newCodeType')?.value || 'unlimited';
-  const expiry = document.getElementById('newCodeExpiry')?.value || '';
-  const label  = (document.getElementById('newCodeLabel')?.value || '').trim();
-  const maxUse = parseInt(document.getElementById('newCodeMaxUse')?.value) || 5;
-  try {
-    const existing = await fbDb.collection('inviteCodes').doc(kode).get();
-    if(existing.exists){ showToast('Kode sudah ada, gunakan kode lain', 'warning'); return; }
-    await fbDb.collection('inviteCodes').doc(kode).set({
-      type, maxUse: type==='limited' ? maxUse : null,
-      expiresAt: expiry ? firebase.firestore.Timestamp.fromDate(new Date(expiry)) : null,
-      label: label || null,
-      active: true, usedCount: 0, usedBy: [],
-      createdBy: currentUser.uid,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    showToast(`Kode "${kode}" berhasil dibuat`, 'success');
-    const _ni=document.getElementById('newCodeInput'); if(_ni) _ni.value = '';
-    const _nl=document.getElementById('newCodeLabel'); if(_nl) _nl.value = '';
-    const _ne=document.getElementById('newCodeExpiry'); if(_ne) _ne.value = '';
-  } catch(e){ showToast('Gagal: ' + e.message, 'error'); }
-}
-
 
 
 
@@ -4424,37 +4380,77 @@ async function buatKodeUndangan(){
    PWA & INSTALL - Versi Offline Enhanced
 ============================== */
 (function(){
-  const ic="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzBjNGEyYSIvPjx0ZXh0IHg9IjI1NiIgeT0iMzIwIiBmb250LXNpemU9IjI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+8J+VjDwvdGV4dD48L3N2Zz4=";
-  const m={name:"Tamma-Tahfidh Juz Amma",short_name:"Tamma v2.3.5",start_url:".",display:"standalone",orientation:"portrait",background_color:"#0c4a2a",theme_color:"#0c4a2a",icons:[{src:ic,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}]};
-  document.head.appendChild(Object.assign(document.createElement('link'),{rel:'manifest',href:URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/json'}))}));
+  // Buat icon PNG via Canvas untuk kompatibilitas iOS & Lighthouse
+  function makePngIcon(size) {
+    try {
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      const ctx = c.getContext('2d');
+      const r = size * 0.22; // border-radius
+      // Background hijau rounded
+      ctx.beginPath();
+      ctx.moveTo(r, 0); ctx.lineTo(size - r, 0);
+      ctx.quadraticCurveTo(size, 0, size, r);
+      ctx.lineTo(size, size - r);
+      ctx.quadraticCurveTo(size, size, size - r, size);
+      ctx.lineTo(r, size); ctx.quadraticCurveTo(0, size, 0, size - r);
+      ctx.lineTo(0, r); ctx.quadraticCurveTo(0, 0, r, 0);
+      ctx.closePath();
+      ctx.fillStyle = '#0c4a2a';
+      ctx.fill();
+      // Emoji mushaf
+      ctx.font = `${size * 0.55}px serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('📖', size / 2, size * 0.52);
+      return c.toDataURL('image/png');
+    } catch(e) {
+      return 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzBjNGEyYSIvPjx0ZXh0IHg9IjI1NiIgeT0iMzIwIiBmb250LXNpemU9IjI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+8J+VjDwvdGV4dD48L3N2Zz4=';
+    }
+  }
+
+  const ic192 = makePngIcon(192);
+  const ic512 = makePngIcon(512);
+
+  // Set apple-touch-icon secara dinamis
+  const appleLink = document.getElementById('appleTouchIconLink');
+  if (appleLink) appleLink.href = ic192;
+
+  const m = {
+    name: "Tamma — Tahfidh Juz Amma",
+    short_name: "Tamma",
+    description: "Aplikasi tracking setoran hafalan & absensi siswa",
+    start_url: "/",
+    display: "standalone",
+    orientation: "portrait",
+    background_color: "#0c4a2a",
+    theme_color: "#0c4a2a",
+    lang: "id",
+    icons: [
+      { src: ic192, sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: ic512, sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: ic512, sizes: "512x512", type: "image/png", purpose: "maskable" }
+    ]
+  };
+  document.head.appendChild(
+    Object.assign(document.createElement('link'), {
+      rel: 'manifest',
+      href: URL.createObjectURL(new Blob([JSON.stringify(m)], { type: 'application/json' }))
+    })
+  );
 })();
 
 /* ==============================
    OFFLINE / SW / CACHE STRATEGY
-   Semua data tersimpan localStorage.
-   CDN libs (XLSX, Chart) di-cache via SW.
-   HTML page juga di-cache via SW (cache-first).
+   CDN libs (XLSX, Chart, Firebase) → cache-first via SW
+   HTML page → network-first dengan cache fallback
+   Data → localStorage + Firestore offline persistence
 ============================== */
-// ⚠️ SERVICE WORKER DINONAKTIFKAN SEMENTARA UNTUK DEBUGGING
-// Unregister semua SW lama & hapus semua cache agar selalu ambil versi terbaru
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(regs => {
-    regs.forEach(reg => {
-      reg.unregister();
-      console.log('[SW] Unregistered:', reg.scope);
-    });
-  });
-  caches.keys().then(keys => {
-    keys.forEach(k => {
-      caches.delete(k);
-      console.log('[Cache] Deleted:', k);
-    });
-  });
-}
-
-if (false && 'serviceWorker' in navigator) {
-  const CACHE_NAME = 'tamma-v5';
+  // Versi cache: ganti angka ini setiap update besar agar SW lama ter-replace
+  const CACHE_NAME = 'tamma-v6';
   const CDN_URLS = [
+    location.href,   // precache HTML halaman ini
     'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
     'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js',
     'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js',
@@ -4462,22 +4458,20 @@ if (false && 'serviceWorker' in navigator) {
     'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js'
   ];
 
-  // Build SW code as string so it can be registered via blob URL.
-  // The HTML page itself is cached by the SW via a runtime cache-on-fetch strategy.
   const swCode = `
 const CACHE = '${CACHE_NAME}';
 const CDN = ${JSON.stringify(CDN_URLS)};
 
-// On install: pre-cache CDN libraries
+// Install: precache semua CDN + HTML
 self.addEventListener('install', evt => {
   evt.waitUntil(
-    caches.open(CACHE).then(cache =>
-      Promise.allSettled(CDN.map(u => cache.add(u).catch(()=>{})))
-    ).then(() => self.skipWaiting())
+    caches.open(CACHE)
+      .then(cache => Promise.allSettled(CDN.map(u => cache.add(u).catch(() => {}))))
+      .then(() => self.skipWaiting())
   );
 });
 
-// On activate: delete old caches
+// Activate: hapus cache lama
 self.addEventListener('activate', evt => {
   evt.waitUntil(
     caches.keys()
@@ -4487,40 +4481,43 @@ self.addEventListener('activate', evt => {
 });
 
 // Fetch strategy:
-//   CDN libs  → cache-first (always serve from cache if available)
-//   HTML page → network-first with cache fallback
-//   Other     → network-first with cache fallback
+//   CDN + HTML → cache-first (offline tetap jalan)
+//   Firebase API (firestore, auth) → network-only (jangan di-cache)
+//   Lainnya → network-first dengan cache fallback
 self.addEventListener('fetch', evt => {
   const url = evt.request.url;
-  const isCDN = url.includes('cdnjs.cloudflare.com') || url.includes('cdn.jsdelivr.net');
-  const isHTTP = url.startsWith('http');
+  if (!url.startsWith('http')) return; // skip blob:, data:, chrome-extension:
 
-  if (!isHTTP) return; // skip blob:, data:, chrome-extension: etc
+  const isCDNorPage = CDN.includes(url) ||
+    url.includes('cdnjs.cloudflare.com') ||
+    url.includes('cdn.jsdelivr.net') ||
+    url.includes('gstatic.com/firebasejs');
 
-  if (isCDN) {
-    // Cache-first for CDN libs
+  // Firebase Firestore/Auth API calls → jangan di-cache SW (Firestore punya offline-nya sendiri)
+  const isFirebaseAPI = url.includes('firestore.googleapis.com') ||
+    url.includes('identitytoolkit.googleapis.com') ||
+    url.includes('securetoken.googleapis.com');
+
+  if (isFirebaseAPI) return; // biarkan fetch berjalan normal
+
+  if (isCDNorPage) {
+    // Cache-first: CDN libs & HTML page
     evt.respondWith(
       caches.match(evt.request).then(cached => {
         if (cached) return cached;
         return fetch(evt.request).then(res => {
-          if (res.ok) {
-            const clone = res.clone();
-            caches.open(CACHE).then(c => c.put(evt.request, clone));
-          }
+          if (res.ok) caches.open(CACHE).then(c => c.put(evt.request, res.clone()));
           return res;
-        }).catch(() => cached); // last resort
+        }).catch(() => new Response('Offline', { status: 503 }));
       })
     );
   } else {
-    // Network-first for everything else (page, etc.)
+    // Network-first: resource lain
     evt.respondWith(
       fetch(evt.request).then(res => {
-        if (res.ok) {
-          const clone = res.clone();
-          caches.open(CACHE).then(c => c.put(evt.request, clone));
-        }
+        if (res.ok) caches.open(CACHE).then(c => c.put(evt.request, res.clone()));
         return res;
-      }).catch(() => caches.match(evt.request).then(c => c || new Response('Offline', {status: 503})))
+      }).catch(() => caches.match(evt.request).then(c => c || new Response('Offline', { status: 503 })))
     );
   }
 });
@@ -4530,23 +4527,20 @@ self.addEventListener('fetch', evt => {
     URL.createObjectURL(new Blob([swCode], { type: 'application/javascript' })),
     { scope: './' }
   ).then(reg => {
-    console.log('[SW] Registered, scope:', reg.scope);
-    // Force SW update check
-    reg.update();
+    console.log('[SW] Registered ✅, scope:', reg.scope, '| cache:', CACHE_NAME);
+    reg.update(); // cek update setiap halaman dibuka
   }).catch(err => {
     console.warn('[SW] Registration failed:', err);
   });
 }
 
 window.addEventListener('online', () => {
-  document.getElementById('offline').style.display = 'none';
   const dot = document.getElementById('netDot');
   if(dot){ dot.className = ''; dot.title = 'Online'; }
   if (typeof showToast === 'function') showToast('🟢 Kembali online', 'success');
   if (typeof fetchAllData === 'function') fetchAllData();
 });
 window.addEventListener('offline', () => {
-  document.getElementById('offline').style.display = 'none'; /* tetap sembunyikan teks lama */
   const dot = document.getElementById('netDot');
   if(dot){ dot.className = 'offline'; dot.title = 'Offline'; }
   if (typeof showToast === 'function') showToast('Mode offline — semua fitur tetap berjalan', 'info', 4000);
@@ -4746,6 +4740,8 @@ let dataAbsensi = JSON.parse(localStorage.getItem(`db_absensi_${_initTodayKey}`)
 let userPoints = JSON.parse(localStorage.getItem('db_points')) || {};
 let userStreaks = JSON.parse(localStorage.getItem('db_streaks')) || {};
 let lastActive = localStorage.getItem('db_last_active') || new Date().toDateString();
+// Simpan nilai tambahan terakhir per siswa (persist via localStorage)
+let _tambahanPerSiswa = JSON.parse(localStorage.getItem('_tambahanPerSiswa') || '{}');
 
 function checkDailyStreak(){
   const today = new Date().toDateString();
@@ -5066,6 +5062,11 @@ function _dataAwalLabel(r) {
 
 // Tampilkan riwayat hafalan terakhir siswa
 function showSiswaHafalanHistory(nama){
+  // Restore nilai tambahan terakhir untuk siswa ini
+  const savedTambahan = nama ? (_tambahanPerSiswa[nama] || '') : '';
+  const tambahanSel = document.getElementById('tambahan');
+  if (tambahanSel) { tambahanSel.value = savedTambahan; syncCsdTrigger('tambahan'); }
+
   const panel = document.getElementById('siswaHafalanHistory');
   if(!panel) return;
   if(!nama){ panel.style.display='none'; return; }
@@ -6700,6 +6701,11 @@ function simpanSetoran(){
       lastActive: today
     }, { merge: true });
   }).catch(err => console.warn('[FB] simpanSetoran:', err));
+  // Simpan nilai tambahan untuk siswa ini agar restore otomatis saat dipilih lagi
+  if (nama && tambahan && tambahan !== '-') {
+    _tambahanPerSiswa[nama] = tambahan;
+    localStorage.setItem('_tambahanPerSiswa', JSON.stringify(_tambahanPerSiswa));
+  }
   // Hitung ulang streak dari data aktual
   recalcStreak(nama);
   checkAchievements(nama);
@@ -7056,80 +7062,17 @@ window.hapusSemuaSetoran = function(){
 
 function resetForm(){
   document.querySelectorAll('.cat-salah').forEach(x => x.checked = false);
-  document.getElementById('tambahan').value = ''; syncCsdTrigger('tambahan');
+  // Restore tambahan sesuai siswa yang sedang dipilih (bukan di-clear)
+  const nama = document.getElementById('namaSiswa')?.value || '';
+  const savedTambahan = nama ? (_tambahanPerSiswa[nama] || '') : '';
+  const tambahanSel = document.getElementById('tambahan');
+  if (tambahanSel) { tambahanSel.value = savedTambahan; syncCsdTrigger('tambahan'); }
   renderAyatGrid();
 }
 
-function downloadSetoran(){
-  if(!dataSetoran.length){ showToast('Belum ada data','warning'); return; }
-  // Kelompokkan per kelas sebagai sheet berbeda
-  const wb = XLSX.utils.book_new();
-  const kelasUnik = [...new Set(dataSetoran.map(i => {
-    const s = masterSiswa.find(m=>m.nama===i.nama);
-    return (s?.kelas||i.kelas||'Umum').trim();
-  }))].sort();
-  kelasUnik.forEach(kelas => {
-    const kr = dataSetoran.filter(i => (masterSiswa.find(m=>m.nama===i.nama)?.kelas||i.kelas||'Umum').trim()===kelas);
-    const ws = XLSX.utils.aoa_to_sheet([
-      ['No','Tanggal','Nama','Surat','Rentang','Status','Jml Salah','Ket'],
-      ...kr.map((i,idx) => {
-        let ket = [];
-        if((i.jml||0)>0) ket.push(i.jml+' salah');
-        if(i.salah&&i.salah!=='-') ket.push(i.salah);
-        return [idx+1, i.tgl||'', i.nama||'', i.surat||'', i.rentang||'', i.stat||'', i.jml||0, ket.join('; ')||'-'];
-      })
-    ]);
-    XLSX.utils.book_append_sheet(wb, ws, kelas.slice(0,31));
-  });
-  XLSX.writeFile(wb, `setoran_juz30_${_localDateKey()}.xlsx`);
-  showToast('File berhasil diunduh','success');
-}
 
-function downloadLaporanGabungan(){
-  if (!masterSiswa.length && !dataSetoran.length) {
-    showToast('Tidak ada data untuk didownload','warning');
-    return;
-  }
-  const wb = XLSX.utils.book_new();
-  if (dataSetoran.length) {
-    const wsSetoran = XLSX.utils.json_to_sheet(dataSetoran.map(i => ({
-      'Tanggal': i.tgl,
-      'Nama Siswa': i.nama,
-      'Surat': i.surat,
-      'Rentang Ayat': i.rentang,
-      'Status': i.stat,
-      'Jml Salah': i.jml,
-      'Ayat Salah': i.salah,
-      'Kategori': i.kategori,
-      'Tambahan': i.tambahan
-    })));
-    wsSetoran['!cols'] = [{wch:12},{wch:25},{wch:20},{wch:14},{wch:8},{wch:10},{wch:20},{wch:20},{wch:16}];
-    XLSX.utils.book_append_sheet(wb, wsSetoran, "Setoran Juz 30");
-  } else {
-    const wsSetoran = XLSX.utils.aoa_to_sheet([['Tanggal','Nama Siswa','Surat','Rentang Ayat','Status','Jml Salah','Ayat Salah','Kategori','Tambahan']]);
-    XLSX.utils.book_append_sheet(wb, wsSetoran, "Setoran Juz 30");
-  }
-  const d = new Date();
-  const tglStr = d.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  const absenData = [
-    ['Nama', 'Kelas', 'Status', 'Waktu'],
-    ...dataAbsensi.map(a => [a.nama, a.kelas || 'Umum', a.status, a.waktu || '-'])
-  ];
-  const wsAbsen = XLSX.utils.aoa_to_sheet(absenData);
-  XLSX.utils.book_append_sheet(wb, wsAbsen, "Absensi");
-  const ringkasan = [
-    ['RINGKASAN ABSENSI'],
-    ['Tanggal', tglStr],
-    ['Total Siswa', masterSiswa.length],
-    ['Hadir', dataAbsensi.filter(a => a.status === 'Hadir').length],
-    ['Ijin', dataAbsensi.filter(a => a.status === 'Ijin').length],
-    ['Sakit', dataAbsensi.filter(a => a.status === 'Sakit').length],
-    ['Alpha', dataAbsensi.filter(a => a.status === 'Alpha').length]
-  ];
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(ringkasan), "Ringkasan");
-  XLSX.writeFile(wb, `laporan_ngaji_pro_${new Date().toISOString().slice(0, 10)}.xlsx`);
-  showToast('Laporan gabungan diunduh','success');
-}
+
+
 
 /* ==============================
    ABSENSI FUNCTIONS
@@ -8192,12 +8135,6 @@ function getMpaSelectedIndices(){
   }
 }
 
-// Ambil data surat dari indeks (cepat mode = SURAT_JUZ30 idx, manual mode = ALL_SURAT idx)
-function getMpaSuratByIndex(idx, isManual){
-  if(isManual) return ALL_SURAT[idx];
-  return SURAT_JUZ30[idx];
-}
-
 function getTglFromInput(){
   const raw = document.getElementById('mpaTanggal').value;
   if(!raw) return new Date().toLocaleDateString('id-ID');
@@ -8397,12 +8334,6 @@ async function simpanPencapaianAwal(){
 
   closePencapaian();
 }
-
-function showToastSafe(msg, type, duration){
-  if(typeof showToast === 'function') showToast(msg, type, duration);
-}
-
-
 
 
 /* ==============================
@@ -8880,17 +8811,6 @@ function renderProgressBeranda() {
 }
 
 /* ---- Rekap per Kelas (Statistik tab) ---- */
-/* ---- Rekap data builder + row renderer (dipanggil oleh ST._renderRekap) ---- */
-function _buildRekapData() {
-  const grouped = {};
-  masterSiswa.forEach(s => {
-    const k = (s.kelas || 'Umum').trim();
-    if (!grouped[k]) grouped[k] = [];
-    grouped[k].push(s);
-  });
-  return { grouped, kelasList: Object.keys(grouped).sort() };
-}
-
 function _renderRekapRows() {
   const container = document.getElementById('rekapKelasContainer');
   if (!container) return;
