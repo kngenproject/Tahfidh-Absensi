@@ -3042,7 +3042,6 @@ span > .fai, div > .fai { vertical-align: middle; }
 <div id="loginPage">
   <div class="lp-box">
     <div class="lp-logo">
-      <div class="lp-logo-ico">📖</div>
       <h1>TAMMA</h1>
       <p>Tahfidh Juz Amma &amp; Absensi Siswa</p>
     </div>
@@ -7057,8 +7056,7 @@ window.hapusSemuaSetoran = function(){
 
 function resetForm(){
   document.querySelectorAll('.cat-salah').forEach(x => x.checked = false);
-  // Tambahan (status) TIDAK direset — tetap sampai diubah manual
-  // document.getElementById('tambahan').value = ''; syncCsdTrigger('tambahan');
+  document.getElementById('tambahan').value = ''; syncCsdTrigger('tambahan');
   renderAyatGrid();
 }
 
