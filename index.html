@@ -5877,7 +5877,7 @@ function updateDashboardSiswaDropdown(){
   renderKelasChips('kelasChipsDashboard','kelasFilterDashboard', activeDashboardKelas, 'setKelasDashboard', 'master');
   const sel = document.getElementById('dashboardSiswaSelect');
   const prev = sel.value;
-  sel.innerHTML = '<option value="SEMUA">— Semua Siswa —</option>';
+  sel.innerHTML = '<option value="SEMUA">— Pilih Siswa —</option>';
   const masterF = _getMasterFiltered();
   const siswaDitampil = activeDashboardKelas === 'SEMUA'
     ? masterF
