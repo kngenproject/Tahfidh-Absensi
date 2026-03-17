@@ -5751,12 +5751,20 @@ function _getDedupeRiwayat(nama) {
 /** Label ringkas untuk record data-awal: "An-Naba' ayat 26" */
 function _dataAwalLabel(r) {
   if (!r.arahHafalan) return null;
+  // mode manual: tidak ada konsep frontier tunggal → tampilkan count saja
+  if (r.arahHafalan === 'manual') return null;
   const pts = (r.rentang||'').split('-');
   const start = parseInt(pts[0])||1;
   const end   = parseInt(pts[pts.length-1])||0;
-  // naba-nas: hafal sampai ayat end; nas-naba: mulai dari ayat start
-  const ayat = r.arahHafalan === 'nas-naba' ? start : end;
-  return ayat ? r.surat + ' ayat ' + ayat : r.surat;
+  const suratObj = ALL_SURAT.find(sx => sx.nm === r.surat);
+  if (r.arahHafalan === 'nas-naba') {
+    // Hanya tampilkan ayat jika partial (start > 1)
+    return start > 1 ? r.surat + ' ayat ' + start : r.surat;
+  } else {
+    // naba-nas: hafal sampai ayat end; hanya tampilkan ayat jika partial
+    const isPartial = suratObj && end < suratObj.a;
+    return isPartial ? r.surat + ' s/d ayat ' + end : r.surat;
+  }
 }
 
 // Tampilkan riwayat hafalan terakhir siswa
@@ -7570,12 +7578,39 @@ function renderTblSetoran(){
   renderSetoranPerTanggal();
 }
 
+/**
+ * Collapse batch data-awal dalam sebuah array rows.
+ * Setiap grup (nama + arahHafalan + tgl) → 1 row frontier.
+ * Row biasa (tanpa arahHafalan) dibiarkan apa adanya.
+ */
+function _dedupeRows(rows) {
+  const seen = new Set();
+  const out  = [];
+  for (const r of rows) {
+    if (!r.arahHafalan) { out.push(r); continue; }
+    const key = r.nama + '|' + r.arahHafalan + '|' + r.tgl;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const batch = rows.filter(x => x.arahHafalan === r.arahHafalan && x.nama === r.nama && x.tgl === r.tgl);
+    const frontier = batch.find(b => {
+      const obj = ALL_SURAT.find(sx => sx.nm === b.surat);
+      if (!obj) return false;
+      const pts = (b.rentang||'').split('-');
+      return parseInt(pts[0])||1 > 1 || parseInt(pts[pts.length-1])||0 < obj.a;
+    }) || batch[0];
+    out.push({ ...frontier, _batchCount: batch.length });
+  }
+  return out;
+}
+
 function renderSetoranPerTanggal(){
   const listEl = document.getElementById('listSetoranTanggal');
   const emptyEl = document.getElementById('emptySetoran');
   if(!listEl) return;
 
-  document.getElementById('totSetoran').textContent = dataSetoran.length;
+  // totSetoran: hitung efektif (collapse batch data awal → 1 per siswa/arahHafalan/tgl)
+  const _dedupeTotal = _dedupeRows(dataSetoran).length;
+  document.getElementById('totSetoran').textContent = _dedupeTotal;
 
   // Ambil semua kelas unik
   const kelasList = ['SEMUA', ...new Set(
@@ -7627,10 +7662,11 @@ function renderSetoranPerTanggal(){
 
   listEl.innerHTML = keys.map(key => {
     const rows = byDate[key];
+    const deduped = _dedupeRows(rows); // collapse data-awal per siswa → 1 baris frontier
     const isToday = key === todayKey;
     const label = _setoranTglLabel(key);
-    const lancar = rows.filter(r => r.stat === 'L').length;
-    const kurang = rows.filter(r => r.stat === 'KL').length;
+    const lancar = deduped.filter(r => r.stat === 'L').length;
+    const kurang = deduped.filter(r => r.stat === 'KL').length;
     // Kumpulkan kelas unik di tanggal ini
     const kelasSet = [...new Set(rows.map(i => {
       const s = masterSiswa.find(m => m.nama === i.nama);
@@ -7638,14 +7674,16 @@ function renderSetoranPerTanggal(){
     }))].sort();
     const namaList = [...new Set(rows.map(r => r.nama))];
     const namaPreview = namaList.slice(0,3).join(', ') + (namaList.length > 3 ? ` +${namaList.length-3}` : '');
-    const suratList = [...new Set(rows.map(r => r.surat).filter(Boolean))];
-    const suratPreview = suratList.slice(0,3).join(', ') + (suratList.length > 3 ? ` +${suratList.length-3}` : '');
+    // Preview surat: untuk data-awal tampilkan label frontier saja (misal "At-Takwir ayat 20")
+    const suratLabels = deduped.map(r => _dataAwalLabel(r) || r.surat).filter(Boolean);
+    const suratSet = [...new Set(suratLabels)];
+    const suratPreview = suratSet.slice(0,3).join(', ') + (suratSet.length > 3 ? ` +${suratSet.length-3}` : '');
     return `<div onclick="bukaDetailSetoran('${key}')" style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--brd);cursor:pointer;background:${isToday?'var(--g0)':'#fff'};">
       <div style="flex:1;min-width:0;">
         <div style="font-weight:700;font-size:var(--fsm);">${isToday?'🟢 ':''}<span>${label}</span></div>
         <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin-top:2px;">
           ${kelasSet.map(k=>`<span style="background:var(--g1);color:var(--g8);padding:1px 6px;border-radius:10px;font-size:var(--fxs);font-weight:700;">${k}</span>`).join('')}
-          <span style="font-size:var(--fxs);color:var(--mut);">${rows.length} setoran · <span style="color:var(--g6)">L ${lancar}</span>${kurang?` · <span style="color:#c07f00">KL ${kurang}</span>`:''}</span>
+          <span style="font-size:var(--fxs);color:var(--mut);">${deduped.length} setoran · <span style="color:var(--g6)">L ${lancar}</span>${kurang?` · <span style="color:#c07f00">KL ${kurang}</span>`:''}</span>
         </div>
         ${namaPreview ? `<div style="font-size:var(--fxs);color:var(--mut);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">👤 ${namaPreview}</div>` : ''}
         ${suratPreview ? `<div style="font-size:var(--fxs);color:var(--tel);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">📖 ${suratPreview}</div>` : ''}
@@ -7706,11 +7744,13 @@ function renderDetailSetoran(){
     });
   }
 
-  const sub = `${filtered.length} setoran · L ${filtered.filter(r=>r.stat==='L').length} · KL ${filtered.filter(r=>r.stat==='KL').length}`;
+  // Collapse data-awal batch → 1 baris per siswa per arahHafalan
+  const deduped = _dedupeRows(filtered);
+  const sub = `${deduped.length} setoran · L ${deduped.filter(r=>r.stat==='L').length} · KL ${deduped.filter(r=>r.stat==='KL').length}`;
   document.getElementById('detailSetoranSub').textContent = sub;
 
   const tabelEl = document.getElementById('detailSetoranTabel');
-  if(!filtered.length){ tabelEl.innerHTML = '<div style="padding:20px;text-align:center;color:#bbb;">Tidak ada data</div>'; _inRenderDetailSetoran = false; return; }
+  if(!deduped.length){ tabelEl.innerHTML = '<div style="padding:20px;text-align:center;color:#bbb;">Tidak ada data</div>'; _inRenderDetailSetoran = false; return; }
 
   tabelEl.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:var(--fmd);">
     <thead>
@@ -7723,12 +7763,24 @@ function renderDetailSetoran(){
       </tr>
     </thead>
     <tbody>
-      ${filtered.map((i,idx) => {
+      ${deduped.map((i,idx) => {
         const kl = (i.stat||'')==='KL';
         const kelas = (masterSiswa.find(m=>m.nama===i.nama)?.kelas || i.kelas || 'Umum').trim();
+        // Data awal: tampilkan label frontier ("At-Takwir ayat 20") + jumlah surat di batch
+        const dataAwalLbl = _dataAwalLabel(i);
+        // Untuk mode manual (arahHafalan='manual'), tidak ada label frontier — tampilkan count saja
+        const isDataAwal = !!i.arahHafalan;
+        const isManualAwal = i.arahHafalan === 'manual';
+        const suratCell = isDataAwal
+          ? `<div style="font-weight:600;">${dataAwalLbl || (i._batchCount ? `${i._batchCount} surat dipilih` : i.surat||'—')}</div>
+             <div style="font-size:var(--fxs);color:var(--mut);">${i._batchCount ? i._batchCount+' surat · ' : ''}${i.tambahan||'Data Awal'}</div>`
+          : `<div style="font-weight:600;">${i.surat||'—'}</div>
+             <div style="color:#888;font-size:var(--fsm);">${i.rentang||''}</div>`;
         let ket = [];
-        if((i.jml||0)>0) ket.push(`<span style="color:#b91c1c">${i.jml} salah${i.kategori&&i.kategori!=='-'?' · '+i.kategori:''}</span>`);
-        if(i.salah&&i.salah!=='-') ket.push(`<span style="color:#e67e22">${i.salah}</span>`);
+        if(!dataAwalLbl){
+          if((i.jml||0)>0) ket.push(`<span style="color:#b91c1c">${i.jml} salah${i.kategori&&i.kategori!=='-'?' · '+i.kategori:''}</span>`);
+          if(i.salah&&i.salah!=='-') ket.push(`<span style="color:#e67e22">${i.salah}</span>`);
+        }
         const canDel = isAdmin || !i.inputBy || i.inputBy==='offline' || i.inputBy===currentUser?.uid;
         const delBtn = canDel ? `<button class="bdel" onclick="delSetoran('${i.fbId||i.id}');bukaDetailSetoran('${_detailSetoranKey}')">✕</button>` : `<span style="color:#ddd;font-size:var(--fxs);">🔒</span>`;
         return `<tr style="border-bottom:1px solid var(--brd);background:${idx%2===0?'#fff':'var(--surf2)'}">
@@ -7736,11 +7788,10 @@ function renderDetailSetoran(){
             <div style="font-weight:700;font-size:var(--fmd);">${i.nama||'—'}</div>
             <div style="font-size:var(--fxs);color:var(--mut);">${kelas}${i.inputByNama?' · '+i.inputByNama:''}</div>
           </td>
-          <td style="padding:7px 6px;">
-            <div style="font-weight:600;">${i.surat||'—'}</div>
-            <div style="color:#888;font-size:var(--fsm);">${i.rentang||''}</div>
-          </td>
-          <td style="padding:7px 4px;text-align:center;"><span class="${kl?'bdg bgd':'bdg bg'}">${kl?'KL':'L'}</span></td>
+          <td style="padding:7px 6px;">${suratCell}</td>
+          <td style="padding:7px 4px;text-align:center;">${isDataAwal
+            ? `<span class="bdg" style="background:#e0f2fe;color:#0369a1;font-size:var(--fxs);">Awal</span>`
+            : `<span class="${kl?'bdg bgd':'bdg bg'}">${kl?'KL':'L'}</span>`}</td>
           <td style="padding:7px 6px;font-size:var(--fsm);">${ket.join('<br>')||'<span style="color:#ccc">—</span>'}</td>
           <td style="padding:7px 4px;">${delBtn}</td>
         </tr>`;
@@ -7757,23 +7808,32 @@ window.setDetailSetoranKelas = function(k){
 
 function exportSetoranTanggalExcel(){
   const key = _detailSetoranKey;
-  const rows = dataSetoran.filter(i => _setoranTglKey(i) === key);
+  const rawRows = dataSetoran.filter(i => _setoranTglKey(i) === key);
+  const rows = _dedupeRows(rawRows); // collapse batch data-awal → 1 baris
   const label = _setoranTglLabel(key);
   const ws = XLSX.utils.aoa_to_sheet([
     ['SETORAN TAHFIDH JUZ 30'],
     ['Tanggal', label],
     ['Total', rows.length],
     [],
-    ['No','Nama','Kelas','Surat','Rentang','Status','Jml Salah','Ket','Input Oleh'],
+    ['No','Nama','Kelas','Surat / Pencapaian','Rentang','Status','Jml Salah','Ket','Input Oleh'],
     ...rows.map((i,idx) => {
       const kelas = (masterSiswa.find(m=>m.nama===i.nama)?.kelas || i.kelas || 'Umum').trim();
+      // Kolom Surat: untuk data awal tampilkan label frontier + jumlah surat
+      const suratCol = i.arahHafalan
+        ? (_dataAwalLabel(i) || i.surat || '—') + (i._batchCount ? ` (${i._batchCount} surat)` : '')
+        : (i.surat || '—');
+      const rentangCol = i.arahHafalan ? (i.tambahan || 'Data Awal') : (i.rentang || '');
+      const statCol = i.arahHafalan ? 'Awal' : (i.stat || '');
       let ket = [];
-      if((i.jml||0)>0) ket.push(`${i.jml} salah${i.kategori&&i.kategori!=='-'?' ('+i.kategori+')':''}`);
-      if(i.salah&&i.salah!=='-') ket.push(i.salah);
-      return [idx+1, i.nama||'', kelas, i.surat||'', i.rentang||'', i.stat||'', i.jml||0, ket.join('; ')||'-', i.inputByNama||'-'];
+      if(!i.arahHafalan){
+        if((i.jml||0)>0) ket.push(`${i.jml} salah${i.kategori&&i.kategori!=='-'?' ('+i.kategori+')':''}`);
+        if(i.salah&&i.salah!=='-') ket.push(i.salah);
+      }
+      return [idx+1, i.nama||'', kelas, suratCol, rentangCol, statCol, i.arahHafalan?'':i.jml||0, ket.join('; ')||'-', i.inputByNama||'-'];
     })
   ]);
-  ws['!cols'] = [{wch:4},{wch:24},{wch:12},{wch:20},{wch:12},{wch:6},{wch:10},{wch:24},{wch:16}];
+  ws['!cols'] = [{wch:4},{wch:24},{wch:12},{wch:24},{wch:16},{wch:8},{wch:10},{wch:24},{wch:16}];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Setoran');
   XLSX.writeFile(wb, `setoran_${key}.xlsx`);
@@ -7782,7 +7842,8 @@ function exportSetoranTanggalExcel(){
 
 function exportSetoranTanggalPerKelas(){
   const key = _detailSetoranKey;
-  const rows = dataSetoran.filter(i => _setoranTglKey(i) === key);
+  const rawRows = dataSetoran.filter(i => _setoranTglKey(i) === key);
+  const rows = _dedupeRows(rawRows); // collapse batch data-awal → 1 baris per siswa
   const label = _setoranTglLabel(key);
   const kelasUnik = [...new Set(rows.map(i => {
     const s = masterSiswa.find(m=>m.nama===i.nama);
@@ -7792,18 +7853,27 @@ function exportSetoranTanggalPerKelas(){
   const wb = XLSX.utils.book_new();
   kelasUnik.forEach(kelas => {
     const kr = rows.filter(i => (masterSiswa.find(m=>m.nama===i.nama)?.kelas||i.kelas||'Umum').trim()===kelas);
+    const lancar = kr.filter(r => !r.arahHafalan && r.stat==='L').length;
+    const kurang = kr.filter(r => !r.arahHafalan && r.stat==='KL').length;
     const ws = XLSX.utils.aoa_to_sheet([
       [`SETORAN TAHFIDH — ${kelas}`],
       ['Tanggal', label], ['Total', kr.length],
-      ['Lancar', kr.filter(r=>r.stat==='L').length],
-      ['Kurang Lancar', kr.filter(r=>r.stat==='KL').length],
+      ['Lancar', lancar],
+      ['Kurang Lancar', kurang],
       [],
-      ['No','Nama','Surat','Rentang','Status','Jml Salah','Ket'],
+      ['No','Nama','Surat / Pencapaian','Rentang / Ket','Status','Jml Salah','Keterangan'],
       ...kr.map((i,idx) => {
+        const suratCol = i.arahHafalan
+          ? (_dataAwalLabel(i) || i.surat || '—') + (i._batchCount ? ` (${i._batchCount} surat)` : '')
+          : (i.surat || '—');
+        const rentangCol = i.arahHafalan ? (i.tambahan || 'Data Awal') : (i.rentang || '');
+        const statCol = i.arahHafalan ? 'Awal' : (i.stat || '');
         let ket = [];
-        if((i.jml||0)>0) ket.push(`${i.jml} salah`);
-        if(i.salah&&i.salah!=='-') ket.push(i.salah);
-        return [idx+1, i.nama||'', i.surat||'', i.rentang||'', i.stat||'', i.jml||0, ket.join('; ')||'-'];
+        if(!i.arahHafalan){
+          if((i.jml||0)>0) ket.push(`${i.jml} salah`);
+          if(i.salah&&i.salah!=='-') ket.push(i.salah);
+        }
+        return [idx+1, i.nama||'', suratCol, rentangCol, statCol, i.arahHafalan?'':i.jml||0, ket.join('; ')||'-'];
       })
     ]);
     XLSX.utils.book_append_sheet(wb, ws, kelas.slice(0,31));
@@ -7813,18 +7883,48 @@ function exportSetoranTanggalPerKelas(){
 }
 
 window.delSetoran = function(id, fbId){
-  // Ownership check
   const rec = dataSetoran.find(x => x.id == id || x.fbId == id);
   if(rec && !isAdmin && rec.inputBy && rec.inputBy !== 'offline' && rec.inputBy !== currentUser?.uid){
     showToast('Anda hanya bisa menghapus input Anda sendiri', 'warning'); return;
   }
+
+  // Jika record adalah bagian dari batch data awal, hapus seluruh batch
+  if(rec?.arahHafalan){
+    const batch = dataSetoran.filter(x =>
+      x.nama === rec.nama &&
+      x.arahHafalan === rec.arahHafalan &&
+      x.tgl === rec.tgl
+    );
+    const n = batch.length;
+    if(!confirm(`Hapus data awal ${rec.nama} (${n} surat)?`)) return;
+    const batchFbIds = batch.map(x => x.fbId).filter(Boolean);
+    // Local update — hapus semua record batch
+    const batchIds = new Set(batch.map(x => x.id));
+    const batchFbSet = new Set(batchFbIds);
+    dataSetoran = dataSetoran.filter(x => !batchIds.has(x.id) && !batchFbSet.has(x.fbId));
+    ls.set('db_setoran', JSON.stringify(dataSetoran));
+    renderTblSetoran();
+    // Firestore batch delete
+    if(batchFbIds.length){
+      (async()=>{
+        const chunks = [];
+        for(let i=0; i<batchFbIds.length; i+=400) chunks.push(batchFbIds.slice(i,i+400));
+        for(const chunk of chunks){
+          const fb = fbDb.batch();
+          chunk.forEach(fid => fb.delete(schoolCol('setoran').doc(fid)));
+          await fb.commit();
+        }
+      })().catch(err => console.warn('[FB] delDataAwalBatch:', err));
+    }
+    showToast(`Data awal ${rec.nama} dihapus (${n} surat)`, 'success');
+    return;
+  }
+
+  // Setoran biasa — hapus 1 record
   if(!confirm('Hapus data ini?')) return;
-  // Local update
-  const targetId = fbId || id;
   dataSetoran = dataSetoran.filter(x => x.id != id && x.fbId != id);
   ls.set('db_setoran', JSON.stringify(dataSetoran));
   renderTblSetoran();
-  // Firestore delete (use fbId if available)
   const docId = rec?.fbId;
   if(docId){
     schoolCol('setoran').doc(docId).delete().catch(err => console.warn('[FB] delSetoran:', err));
@@ -8632,6 +8732,7 @@ function populateMpaSiswaDropdown(){
   const sorted = [...filtered].sort((a,b) => a.nama.localeCompare(b.nama,'id'));
   sorted.forEach(s => sel.add(new Option(s.nama, s.nama)));
   document.getElementById('mpaExistWarning').style.display = 'none';
+  syncCsdTrigger('mpaSiswa'); // reset label trigger agar tidak stale saat modal dibuka ulang
 }
 
 function setKelasMpa(k){
@@ -8818,7 +8919,20 @@ function onMpaSuratChange(){
   // Show helpers
   ayatWrap.style.display = 'block';
   ayatHelper.style.display = 'flex';
-  document.getElementById('mpaAyatHelperTxt').textContent = `Sudah disetorkan: ${maxAyat} ayat`;
+  // Teks helper disesuaikan per arah: naba-nas = sampai ayat ke-X, nas-naba = mulai dari ayat X
+  if(mpaArah === 'nas-naba' && maxSetoran > 0){
+    // Untuk nas-naba, ambil start-ayat dari rentang (bukan end)
+    let minStart = maxAyat; // fallback
+    dataSetoran.filter(d => d.nama === nama && d.surat === s.nm).forEach(d => {
+      if(!d.rentang) return;
+      const parts = d.rentang.split('-');
+      const start = parseInt(parts[0]) || 0;
+      if(start > 0 && start < minStart) minStart = start;
+    });
+    document.getElementById('mpaAyatHelperTxt').textContent = `Setoran ada mulai ayat ${minStart}`;
+  } else {
+    document.getElementById('mpaAyatHelperTxt').textContent = `Sudah disetorkan: ${maxAyat} ayat`;
+  }
   updateQuickPreview();
 }
 
@@ -8933,9 +9047,8 @@ function getMpaSelectedIndices(){
 
 function getTglFromInput(){
   const raw = document.getElementById('mpaTanggal').value;
-  if(!raw) return new Date().toLocaleDateString('id-ID');
-  const [y,m,d] = raw.split('-');
-  return `${parseInt(d)}/${parseInt(m)}/${y}`;
+  // input type="date" sudah YYYY-MM-DD — langsung pakai supaya _setoranTglKey bisa baca
+  return raw || _localDateKey();
 }
 
 // setMpaKet dihapus — ket di-derive otomatis dari arahHafalan
@@ -9475,7 +9588,7 @@ function getSiswaTahfidhInfo(nama) {
     const suratSet = new Set(setorans.map(s => s.surat).filter(Boolean));
     return { ket: "Tasmi'", lastSurat, lastJuz: suratObj?.juz||null,
              lastSuratNum: suratObj?.n||null, jumlahSurat: suratSet.size,
-             totalSetoran: setorans.length, jumlahKhatam: null };
+             totalSetoran: _dedupeRows(setorans).length, jumlahKhatam: null };
   }
 
   // Best keterangan dari tambahan + arahHafalan (fallback)
@@ -9505,11 +9618,14 @@ function getSiswaTahfidhInfo(nama) {
   // Unique surat count
   const suratSet = new Set(setorans.map(s => s.surat).filter(Boolean));
 
+  // totalSetoran efektif: batch data awal dihitung 1× per input (bukan per surat)
+  const totalSetoran = _dedupeRows(setorans).length;
+
   // ── Terapkan statusTetap override jika diset (override ket saja, data lain tetap dihitung) ──
   const finalKet = statusTetap || bestKet;
   const finalJumlahKhatam = statusTetap ? null : bestJumlahKhatam;
 
-  return { ket: finalKet, lastSurat, lastJuz, lastSuratNum, jumlahSurat: suratSet.size, totalSetoran: setorans.length, jumlahKhatam: finalJumlahKhatam, isStatusTetap: !!statusTetap };
+  return { ket: finalKet, lastSurat, lastJuz, lastSuratNum, jumlahSurat: suratSet.size, totalSetoran, jumlahKhatam: finalJumlahKhatam, isStatusTetap: !!statusTetap };
 }
 
 function getKetBadgeHTML(ket, jumlahKhatam) {
