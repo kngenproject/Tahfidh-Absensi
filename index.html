@@ -8869,21 +8869,20 @@ function buildSuratCheckGrid(){
     const globalIdx = ALL_SURAT.indexOf(s);
     const isChecked = mpaChecked.has(globalIdx);
     const ayatVal = mpaManualAyat[globalIdx] ?? s.a;
-    return `<label class="surat-check-item ${isChecked ? 'checked' : ''}" id="sci_${globalIdx}" onclick="toggleSuratCheck(${globalIdx})">
-      <input type="checkbox" ${isChecked ? 'checked' : ''} onclick="event.preventDefault()" id="scb_${globalIdx}">
+    return `<div class="surat-check-item ${isChecked ? 'checked' : ''}" id="sci_${globalIdx}" onclick="toggleSuratCheck(${globalIdx})">
+      <input type="checkbox" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation(); toggleSuratCheck(${globalIdx})" id="scb_${globalIdx}">
       <span class="surat-num">${s.n}</span>
       <div style="flex:1;line-height:1.3;">
         ${s.nm}<br><span style="font-size:var(--fxs);color:var(--mut);font-weight:400;">${s.a} ayat</span>
-        <div class="sci-ayat-row">
+        <div class="sci-ayat-row" onclick="event.stopPropagation()">
           <span class="sci-ayat-lbl">s/d ayat</span>
           <select class="sci-ayat-inp" id="scia_${globalIdx}"
-            onclick="event.stopPropagation()"
             onchange="onSciAyatInput(${globalIdx},${s.a},this)">
             ${Array.from({length: s.a}, (_,k) => `<option value="${k+1}" ${ayatVal===k+1?'selected':''}>${k+1}</option>`).join('')}
           </select>
         </div>
       </div>
-    </label>`;
+    </div>`;
   }).join('');
 }
 
