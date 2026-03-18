@@ -2247,8 +2247,8 @@ span > .fai, div > .fai { vertical-align: middle; }
 }
 .surat-check-item.checked .sci-ayat-row { display: flex; }
 .sci-ayat-inp {
-  width: 48px;
-  padding: 2px 5px;
+  width: 58px;
+  padding: 2px 4px;
   border: 1.5px solid var(--g5);
   border-radius: 5px;
   font-size: var(--fsm);
@@ -2257,11 +2257,8 @@ span > .fai, div > .fai { vertical-align: middle; }
   background: #fff;
   text-align: center;
   outline: none;
-  appearance: textfield;
-  -moz-appearance: textfield;
+  cursor: pointer;
 }
-.sci-ayat-inp::-webkit-inner-spin-button,
-.sci-ayat-inp::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .sci-ayat-lbl {
   font-size: var(--fxs);
   color: var(--mut);
@@ -8879,12 +8876,11 @@ function buildSuratCheckGrid(){
         ${s.nm}<br><span style="font-size:var(--fxs);color:var(--mut);font-weight:400;">${s.a} ayat</span>
         <div class="sci-ayat-row">
           <span class="sci-ayat-lbl">s/d ayat</span>
-          <input type="number" class="sci-ayat-inp" id="scia_${globalIdx}"
-            value="${ayatVal}" min="1" max="${s.a}"
+          <select class="sci-ayat-inp" id="scia_${globalIdx}"
             onclick="event.stopPropagation()"
-            oninput="onSciAyatInput(${globalIdx},${s.a},this)"
-            onblur="onSciAyatInput(${globalIdx},${s.a},this)">
-          <span class="sci-ayat-lbl">/<b>${s.a}</b></span>
+            onchange="onSciAyatInput(${globalIdx},${s.a},this)">
+            ${Array.from({length: s.a}, (_,k) => `<option value="${k+1}" ${ayatVal===k+1?'selected':''}>${k+1}</option>`).join('')}
+          </select>
         </div>
       </div>
     </label>`;
@@ -8919,12 +8915,8 @@ function toggleSuratCheck(globalIdx){
 }
 
 function onSciAyatInput(globalIdx, maxAyat, inp){
-  let v = parseInt(inp.value);
-  if(isNaN(v) || v < 1) v = 1;
-  if(v > maxAyat) v = maxAyat;
+  const v = parseInt(inp.value) || maxAyat;
   mpaManualAyat[globalIdx] = v;
-  // Koreksi tampilan input jika melebihi batas
-  if(parseInt(inp.value) !== v) inp.value = v;
 }
 
 function mpaSelectAll(){
