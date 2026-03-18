@@ -1987,7 +1987,7 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
 /* ── Tablet (768px+): bottom-sheet jadi dialog tengah ── */
 @media (min-width: 768px) {
   .modal-pencapaian { align-items: center; padding: 20px; }
-  .mpa-sheet { border-radius: 20px; max-width: 860px; width: 100%; animation: modal-in .28s ease; max-height: 88vh; }
+  .mpa-sheet { border-radius: 20px; max-width: 860px; width: 100%; animation: modal-in .28s ease; max-height: 88vh; height: 88vh; }
   .mpa-body { overflow-y: hidden; padding: 0; display: flex; flex-direction: column; flex: 1; min-height: 0; }
   .mpa-cols { flex-direction: row; align-items: stretch; gap: 0; flex: 1; min-height: 0; overflow: hidden; }
   .mpa-col-left {
@@ -2021,7 +2021,7 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
 /* ── PC (1024px+) ── */
 @media (min-width: 1024px) {
   .modal-pencapaian { padding: 30px; }
-  .mpa-sheet        { max-width: 960px; }
+  .mpa-sheet        { max-width: 960px; height: 88vh; }
   .mpa-col-left     { width: 320px; padding: 16px 18px 28px; }
   .mpa-col-right    { padding: 16px 18px 28px; }
   .csd-sheet        { width: min(340px, calc(100vw - 48px)); max-height: 65vh; }
@@ -2064,7 +2064,7 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
   .badges-grid { grid-template-columns: repeat(5, 1fr) !important; }
   .edit-card  { max-width: 560px; }
   .edit-sheet { max-width: 800px; padding: 22px 28px; }
-  .mpa-sheet  { max-width: 1040px; }
+  .mpa-sheet  { max-width: 1040px; height: 88vh; }
   .mpa-col-left { width: 340px; }
   .csd-sheet  { width: 360px; }
 
