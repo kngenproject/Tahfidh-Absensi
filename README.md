@@ -123,7 +123,7 @@ const firebaseConfig = {
 
 ## 📱 Screenshot
 
-> *(Tambahkan screenshot di sini)*
+> *(assets/screenshot.Png)*
 
 ---
 
