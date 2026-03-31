@@ -3523,25 +3523,26 @@ span > .fai, div > .fai { vertical-align: middle; }
           <!-- Riwayat Hafalan Terakhir Siswa (muncul setelah pilih siswa) -->
           <div id="siswaHafalanHistory" style="display:none; margin-top:8px; background:var(--g0); border:1.5px solid var(--brd); border-radius:var(--rs); padding:10px; font-size:var(--fsm);"></div>
 
-          <!-- Juz (baris tersendiri) -->
-          <div style="margin-bottom:12px;">
-            <label class="flbl">Juz</label>
-            <button type="button" class="csd-trigger placeholder" id="juzSelectTrigger" onclick="openCsd('juzSelect','📚 Pilih Juz')" style="width:100%;">
-              <span id="juzSelectLabel">30</span>
-              <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
-            </button>
-            <select id="juzSelect" style="display:none;" onchange="onJuzChange();"></select>
-          </div>
-
-          <!-- Surat (baris tersendiri) -->
-          <div style="margin-bottom:12px;">
-            <label class="flbl">Surat</label>
-            <button type="button" class="csd-trigger placeholder" id="suratTrigger" onclick="openCsd('surat','📖 Pilih Surat')" style="width:100%;">
-              <span id="suratLabel">— Pilih Surat —</span>
-              <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
-            </button>
-            <select id="surat" style="display:none;" onchange="renderAyatList();"></select>
-          </div>
+        <!-- Ganti bagian Juz dan Surat di form setoran (sekitar baris 1190-1210) dengan kode berikut -->
+<!-- Juz & Surat dalam satu baris -->
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+  <div>
+    <label class="flbl">Juz</label>
+    <button type="button" class="csd-trigger placeholder" id="juzSelectTrigger" onclick="openCsd('juzSelect','📚 Pilih Juz')" style="width:100%;">
+      <span id="juzSelectLabel">30</span>
+      <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
+    </button>
+    <select id="juzSelect" style="display:none;" onchange="onJuzChange();"></select>
+  </div>
+  <div>
+    <label class="flbl">Surat</label>
+    <button type="button" class="csd-trigger placeholder" id="suratTrigger" onclick="openCsd('surat','📖 Pilih Surat')" style="width:100%;">
+      <span id="suratLabel">— Pilih Surat —</span>
+      <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
+    </button>
+    <select id="surat" style="display:none;" onchange="renderAyatList();"></select>
+  </div>
+</div>
 
           <!-- Dari & Sampai Ayat dalam satu baris (2 kolom) -->
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
