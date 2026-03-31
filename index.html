@@ -5870,69 +5870,76 @@ function getSiswaJuzProgress(nama, ket) {
   const pct = Math.min(Math.floor((linearAyat / totalAyat) * 100), 99);
   return { pct, frontierNm: fs.nm, frontierAyat, frontierAyatDisplay, frontierTotal: fs.a, khatamCount, totalSurat };
 }
-
-// Isi select surat berdasar juz aktif (termasuk surat yang melintas batas juz)
-function buildSuratDropdown(){
+// GANTI fungsi buildSuratDropdown() dengan yang ini
+function buildSuratDropdown() {
   const sel = document.getElementById('surat');
   const prev = sel.value;
   sel.innerHTML = '<option value="">— Pilih Surat —</option>';
 
-  // Gunakan JUZ_SURAT_MAP untuk menentukan surat yang ada di juz ini
-  const juzEntries = JUZ_SURAT_MAP[activeJuzSetoran] || [];
-  // Urutkan berdasar nomor surat
-  const sorted = juzEntries.slice().sort((a, b) => a.suratN - b.suratN);
-  // Hilangkan duplikat (ambil ayatMulai terkecil per surat)
-  const unique = {};
-  sorted.forEach(e => {
-    if (!unique[e.suratN] || e.ayatMulai < unique[e.suratN]) unique[e.suratN] = e.ayatMulai;
-  });
-
-  const list = Object.keys(unique).sort((a,b)=>a-b).map(n => {
-    const s = ALL_SURAT.find(x => x.n === parseInt(n));
-    return s ? { ...s, ayatMulai: unique[n] } : null;
-  }).filter(Boolean);
-
-  list.forEach(s => {
-    const label = s.ayatMulai > 1
-      ? `${s.n}. ${s.nm} (ayat ${s.ayatMulai}–${s.a})`
-      : `${s.n}. ${s.nm}`;
+  // Ambil semua surat yang berada dalam juz yang dipilih
+  const suratDiJuz = ALL_SURAT.filter(s => s.juz === activeJuzSetoran);
+  
+  // Urutkan berdasarkan nomor surat
+  const sorted = suratDiJuz.sort((a, b) => a.n - b.n);
+  
+  sorted.forEach(s => {
+    const label = `${s.n}. ${s.nm} (${s.a} ayat)`;
     sel.add(new Option(label, s.nm));
   });
 
   // Restore selection jika masih ada
-  if([...sel.options].some(o => o.value === prev)) sel.value = prev;
-  else sel.selectedIndex = list.length > 0 ? 1 : 0;
+  if ([...sel.options].some(o => o.value === prev)) {
+    sel.value = prev;
+  } else {
+    sel.selectedIndex = sorted.length > 0 ? 1 : 0;
+  }
   syncCsdTrigger('surat');
   renderAyatList();
 }
-
-// Override renderAyatList agar ayatMulai dari JUZ_SURAT_MAP digunakan
-function renderAyatList(){
+// GANTI fungsi renderAyatList() dengan yang ini
+function renderAyatList() {
   const suratNm = document.getElementById('surat').value;
   const s = ALL_SURAT.find(x => x.nm === suratNm);
-  if(!s) return;
+  if (!s) return;
 
-  // Cari ayatMulai untuk surat ini di juz aktif
-  const juzEntries = JUZ_SURAT_MAP[activeJuzSetoran] || [];
-  const entry = juzEntries.find(e => e.suratN === s.n);
-  const ayatMulaiJuz = entry ? entry.ayatMulai : 1;
+  // Hitung ayat pertama dan terakhir berdasarkan juz
+  let ayatMulaiJuz = 1;
+  let ayatAkhirJuz = s.a;
+  
+  // Jika juz yang dipilih bukan juz dari surat ini, 
+  // surat mungkin melintasi batas juz
+  if (s.juz !== activeJuzSetoran) {
+    // Cari di JUZ_SURAT_MAP untuk mengetahui ayat mulai di juz ini
+    const juzEntries = JUZ_SURAT_MAP[activeJuzSetoran] || [];
+    const entry = juzEntries.find(e => e.suratN === s.n);
+    if (entry) {
+      ayatMulaiJuz = entry.ayatMulai;
+    }
+    
+    // Cari di juz berikutnya untuk mengetahui batas akhir
+    const nextJuzEntries = JUZ_SURAT_MAP[activeJuzSetoran + 1] || [];
+    const nextEntry = nextJuzEntries.find(e => e.suratN === s.n);
+    if (nextEntry) {
+      ayatAkhirJuz = nextEntry.ayatMulai - 1;
+    }
+  }
 
   const m = document.getElementById('ayatMulai');
   const sp = document.getElementById('ayatSampai');
   m.innerHTML = '';
   sp.innerHTML = '';
-  for(let i = ayatMulaiJuz; i <= s.a; i++){
+  
+  for (let i = ayatMulaiJuz; i <= ayatAkhirJuz; i++) {
     m.add(new Option(i, i));
     sp.add(new Option(i, i));
   }
+  
   m.value = ayatMulaiJuz;
-  sp.value = s.a;
+  sp.value = ayatAkhirJuz;
   syncCsdTrigger('ayatMulai');
   syncCsdTrigger('ayatSampai');
   renderAyatGrid();
-}
-
-// Init juz selector
+}// Override renderAyatList agar ayatMulai dari JUZ_SURAT_MAP digunakan
 (()=>{
   const juzSel = document.getElementById('juzSelect');
   if(!juzSel) return;
