@@ -3502,7 +3502,6 @@ span > .fai, div > .fai { vertical-align: middle; }
         </button>
         <div style="text-align:center; font-size:var(--fxs); color:var(--mut); margin-top:4px;">Untuk siswa yang sudah hafal sebagian sebelum pakai aplikasi</div>
       </div>
-
       <!-- Form Setoran Juz 30 -->
       <div class="card">
         <div class="chd"><span><svg class="fai" viewBox="0 0 512 512" aria-hidden="true"><path d="M368.4 18.3L312.7 74.1 437.9 199.3l55.7-55.7c21.9-21.9 21.9-57.3 0-79.2L447.6 18.3c-21.9-21.9-57.3-21.9-79.2 0zM288 94.6l-9.2 2.8L134.7 140.6c-19.9 6-35.7 21.2-42.3 41L3.8 445.8c-3.8 11.3-1 23.9 7.3 32.4L164.7 324.7c-3-6.3-4.7-13.3-4.7-20.7c0-26.5 21.5-48 48-48s48 21.5 48 48s-21.5 48-48 48c-7.4 0-14.4-1.7-20.7-4.7L33.7 500.9c8.6 8.3 21.1 11.2 32.4 7.3l264-88.6c19.7-6.6 35-22.4 41-42.3l43.2-144.1 2.8-9.2L288 94.6z"/></svg>Form Setoran Juz 30</span></div>
@@ -3513,9 +3512,9 @@ span > .fai, div > .fai { vertical-align: middle; }
             <div id="kelasChipsTahfidh" class="frow" style="margin-bottom:0; flex-wrap:wrap;"></div>
           </div>
           <!-- Siswa -->
-          <div>
+          <div style="margin-bottom:12px;">
             <label class="flbl">Nama Siswa</label>
-            <button type="button" class="csd-trigger placeholder" id="namaSiswaTrigger" onclick="openCsdSiswa('namaSiswa')">
+            <button type="button" class="csd-trigger placeholder" id="namaSiswaTrigger" onclick="openCsdSiswa('namaSiswa')" style="width:100%;">
               <span id="namaSiswaLabel">— Pilih Siswa —</span>
               <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
             </button>
@@ -3524,46 +3523,51 @@ span > .fai, div > .fai { vertical-align: middle; }
           <!-- Riwayat Hafalan Terakhir Siswa (muncul setelah pilih siswa) -->
           <div id="siswaHafalanHistory" style="display:none; margin-top:8px; background:var(--g0); border:1.5px solid var(--brd); border-radius:var(--rs); padding:10px; font-size:var(--fsm);"></div>
 
-          <!-- Juz + Surat + Dari + Sampai dalam 1 grid -->
-          <div style="display:grid; grid-template-columns:auto 1fr auto auto; gap:6px; align-items:end; margin-top:8px;">
+          <!-- Juz (baris tersendiri) -->
+          <div style="margin-bottom:12px;">
+            <label class="flbl">Juz</label>
+            <button type="button" class="csd-trigger placeholder" id="juzSelectTrigger" onclick="openCsd('juzSelect','📚 Pilih Juz')" style="width:100%;">
+              <span id="juzSelectLabel">30</span>
+              <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
+            </button>
+            <select id="juzSelect" style="display:none;" onchange="onJuzChange();"></select>
+          </div>
+
+          <!-- Surat (baris tersendiri) -->
+          <div style="margin-bottom:12px;">
+            <label class="flbl">Surat</label>
+            <button type="button" class="csd-trigger placeholder" id="suratTrigger" onclick="openCsd('surat','📖 Pilih Surat')" style="width:100%;">
+              <span id="suratLabel">— Pilih Surat —</span>
+              <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
+            </button>
+            <select id="surat" style="display:none;" onchange="renderAyatList();"></select>
+          </div>
+
+          <!-- Dari & Sampai Ayat dalam satu baris (2 kolom) -->
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
             <div>
-              <label class="flbl">Juz</label>
-              <button type="button" class="csd-trigger placeholder" id="juzSelectTrigger" onclick="openCsd('juzSelect','📚 Pilih Juz')" style="min-width:54px;">
-                <span id="juzSelectLabel">30</span>
-                <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
-              </button>
-              <select id="juzSelect" style="display:none;" onchange="onJuzChange();"></select>
-            </div>
-            <div style="min-width:0;">
-              <label class="flbl">Surat</label>
-              <button type="button" class="csd-trigger placeholder" id="suratTrigger" onclick="openCsd('surat','📖 Pilih Surat')" style="width:100%;">
-                <span id="suratLabel">— Pilih Surat —</span>
-                <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
-              </button>
-              <select id="surat" style="display:none;" onchange="renderAyatList();"></select>
-            </div>
-            <div>
-              <label class="flbl">Dari</label>
-              <button type="button" class="csd-trigger placeholder" id="ayatMulaiTrigger" onclick="openCsd('ayatMulai','Dari Ayat')" style="min-width:48px;">
+              <label class="flbl">Dari Ayat</label>
+              <button type="button" class="csd-trigger placeholder" id="ayatMulaiTrigger" onclick="openCsd('ayatMulai','Dari Ayat')" style="width:100%;">
                 <span id="ayatMulaiLabel">—</span>
                 <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
               </button>
               <select id="ayatMulai" style="display:none;" onchange="renderAyatGrid();"></select>
             </div>
             <div>
-              <label class="flbl">Sampai</label>
-              <button type="button" class="csd-trigger placeholder" id="ayatSampaiTrigger" onclick="openCsd('ayatSampai','Sampai Ayat')" style="min-width:48px;">
+              <label class="flbl">Sampai Ayat</label>
+              <button type="button" class="csd-trigger placeholder" id="ayatSampaiTrigger" onclick="openCsd('ayatSampai','Sampai Ayat')" style="width:100%;">
                 <span id="ayatSampaiLabel">—</span>
                 <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
               </button>
               <select id="ayatSampai" style="display:none;" onchange="renderAyatGrid();"></select>
             </div>
           </div>
-          <!-- Status + Tambahan -->
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
+
+          <!-- Status + Tambahan dalam satu baris (2 kolom) -->
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
             <div>
               <label class="flbl">Status</label>
-              <button type="button" class="csd-trigger" id="statLancarTrigger" onclick="openCsd('statLancar','Status Hafalan')">
+              <button type="button" class="csd-trigger" id="statLancarTrigger" onclick="openCsd('statLancar','Status Hafalan')" style="width:100%;">
                 <span id="statLancarLabel">✅ Lancar</span>
                 <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
               </button>
@@ -3574,7 +3578,7 @@ span > .fai, div > .fai { vertical-align: middle; }
             </div>
             <div>
               <label class="flbl">Tambahan</label>
-              <button type="button" class="csd-trigger placeholder" id="tambahanTrigger" onclick="openCsd('tambahan','Keterangan Tambahan')">
+              <button type="button" class="csd-trigger placeholder" id="tambahanTrigger" onclick="openCsd('tambahan','Keterangan Tambahan')" style="width:100%;">
                 <span id="tambahanLabel">— Pilih —</span>
                 <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
               </button>
@@ -3586,6 +3590,7 @@ span > .fai, div > .fai { vertical-align: middle; }
               </select>
             </div>
           </div>
+
           <!-- Evaluasi Ayat -->
           <div class="evbox">
             <div class="ev-hdr">
@@ -3598,6 +3603,7 @@ span > .fai, div > .fai { vertical-align: middle; }
             </div>
             <div class="agrid" id="ayatGrid"></div>
           </div>
+
           <!-- Tombol -->
           <div class="brow mt10">
             <button class="btn bp" onclick="simpanSetoran()"><svg class="fai" viewBox="0 0 448 512" aria-hidden="true"><path d="M64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V173.3c0-17-6.7-33.3-18.7-45.3L352 50.7C340 38.7 323.7 32 306.7 32H64zm0 96c0-17.7 14.3-32 32-32H288c17.7 0 32 14.3 32 32v64c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V128zM224 288a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg> Simpan</button>
@@ -3607,17 +3613,12 @@ span > .fai, div > .fai { vertical-align: middle; }
           </div>
         </div>
       </div>
-
       <!-- Riwayat Setoran per Tanggal -->
       <div class="card">
         <div class="chd">
           <span><svg class="fai" viewBox="0 0 512 512" aria-hidden="true"><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg>Riwayat Setoran</span>
           <div style="display:flex;align-items:center;gap:6px;">
             <span class="bdg bg" id="totSetoran">0</span>
-            <button class="btn bd bsm" style="padding:3px 8px;font-size:var(--fxs);" onclick="event.stopPropagation();hapusSemuaSetoran()">
-              <svg class="fai" viewBox="0 0 448 512" aria-hidden="true"><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></svg>
-              Hapus
-            </button>
           </div>
         </div>
         <!-- Filter kelas -->
@@ -4008,14 +4009,33 @@ span > .fai, div > .fai { vertical-align: middle; }
         </ul>
       </div>
 
-      <div class="card">
-        <div class="chd"><svg class="fai" viewBox="0 0 448 512" aria-hidden="true"><path d="M448 80v48c0 44.2-100.3 80-224 80S0 172.2 0 128V80C0 35.8 100.3 0 224 0S448 35.8 448 80zM393.2 214.7c20.8-7.4 39.9-16.9 54.8-28.6V288c0 44.2-100.3 80-224 80S0 332.2 0 288V186.1c14.9 11.8 34 21.2 54.8 28.6C99.7 230.7 159.5 240 224 240s124.3-9.3 169.2-25.3zM0 346.1c14.9 11.8 34 21.2 54.8 28.6C99.7 390.7 159.5 400 224 400s124.3-9.3 169.2-25.3c20.8-7.4 39.9-16.9 54.8-28.6V432c0 44.2-100.3 80-224 80S0 476.2 0 432V346.1z"/></svg>Data Siswa Tersimpan</div>
-        <div class="cbd">
-          <div id="dsSiswaInfo" style="font-size:var(--fmd);color:var(--mut);margin-bottom:10px">Belum ada siswa tersimpan</div>
-          <div id="dsSiswaList" style="max-height:200px;overflow-y:auto;margin-bottom:12px"></div>
-          <button class="btn bd bsm" onclick="hapusSemuaDataSiswa()"><svg class="fai" viewBox="0 0 448 512" aria-hidden="true"><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></svg> Hapus Semua Data Siswa</button>
-        </div>
-      </div>
+<div class="card">
+  <div class="chd"><svg class="fai" viewBox="0 0 448 512" aria-hidden="true"><path d="M448 80v48c0 44.2-100.3 80-224 80S0 172.2 0 128V80C0 35.8 100.3 0 224 0S448 35.8 448 80zM393.2 214.7c20.8-7.4 39.9-16.9 54.8-28.6V288c0 44.2-100.3 80-224 80S0 332.2 0 288V186.1c14.9 11.8 34 21.2 54.8 28.6C99.7 230.7 159.5 240 224 240s124.3-9.3 169.2-25.3zM0 346.1c14.9 11.8 34 21.2 54.8 28.6C99.7 390.7 159.5 400 224 400s124.3-9.3 169.2-25.3c20.8-7.4 39.9-16.9 54.8-28.6V432c0 44.2-100.3 80-224 80S0 476.2 0 432V346.1z"/></svg>Data Siswa Tersimpan</div>
+  <div class="cbd">
+    <div id="dsSiswaInfo" style="font-size:var(--fmd);color:var(--mut);margin-bottom:10px">Belum ada siswa tersimpan</div>
+    <div id="dsSiswaList" style="max-height:200px;overflow-y:auto;margin-bottom:12px"></div>
+    <button class="btn bd bsm" onclick="hapusSemuaDataSiswa()"><svg class="fai" viewBox="0 0 448 512" aria-hidden="true"><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></svg> Hapus Semua Data Siswa</button>
+  </div>
+</div>
+
+<!-- CARD: HAPUS RIWAYAT SETORAN -->
+<div class="card">
+  <div class="chd"><svg class="fai" viewBox="0 0 512 512" aria-hidden="true"><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg>Hapus Riwayat Setoran</div>
+  <div class="cbd">
+    <div style="font-size:var(--fsm);color:var(--mut);margin-bottom:12px;line-height:1.6;">
+      Hapus semua riwayat setoran siswa. Tindakan ini akan menghapus data dari server dan tidak dapat dikembalikan.
+    </div>
+    <div class="brow" style="flex-wrap:wrap;gap:8px;">
+      <button class="btn bd bsm" onclick="hapusSemuaSetoran()" style="flex:1;">
+        <svg class="fai" viewBox="0 0 448 512" aria-hidden="true"><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></svg>
+        Hapus Semua Riwayat Setoran
+      </button>
+    </div>
+    <div style="margin-top:12px;font-size:var(--fxs);color:var(--red);background:#fff0f0;padding:8px;border-radius:8px;">
+      ⚠️ Peringatan: Data yang dihapus tidak dapat dipulihkan kembali.
+    </div>
+  </div>
+</div>      
 
       <div class="card">
         <div class="chd"><svg class="fai" viewBox="0 0 576 512" aria-hidden="true"><path d="M151.5 169.8L128 256H192l-23.5-86.2c-2-7.3-12-7.3-14 0l-17 62.2zM0 64C0 46.3 14.3 32 32 32H192c10.7 0 20.7 5.5 26.2 14.6l168 280H416V288c0-17.7 14.3-32 32-32h96c17.7 0 32 14.3 32 32v32c0 17.7-14.3 32-32 32H480v32h32c17.7 0 32 14.3 32 32v32c0 17.7-14.3 32-32 32H480v32c0 17.7-14.3 32-32 32s-32-14.3-32-32V448H384c-10.7 0-20.7-5.5-26.2-14.6l-168-280H160V192c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32V160c0-17.7 14.3-32 32-32H128V96H32C14.3 96 0 81.7 0 64z"/></svg>Pengaturan Tampilan</div>
