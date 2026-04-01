@@ -4196,7 +4196,7 @@ span > .fai, div > .fai { vertical-align: middle; }
           </div>
           <div class="set-row-action" style="color:var(--mut);">›</div>
         </div>
-        <input type="file" id="xlsIn" accept=".xlsx,.xls" style="display:none" onchange="importMasterData(this)">
+        <input type="file" id="xlsIn" accept=".xlsx,.xls,.csv" style="display:none" onchange="importMasterData(this)">
         <div class="set-row" style="cursor:pointer;" onclick="openTambahSiswaManual()">
           <div class="set-row-icon ic-green">
             <svg width="16" height="16" viewBox="0 0 640 512"><path fill="currentColor" d="M96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM0 482.3C0 383.8 79.8 304 178.3 304h91.4C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3zM504 312V248H440c-13.3 0-24-10.7-24-24s10.7-24 24-24h64V136c0-13.3 10.7-24 24-24s24 10.7 24 24v64h64c13.3 0 24 10.7 24 24s-10.7 24-24 24H552v64c0 13.3-10.7 24-24 24s-24-10.7-24-24z"/></svg>
@@ -5195,21 +5195,22 @@ function kkParseExcel(input) {
       const ws  = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
 
-      // Auto-detect kolom nama & kelas baru
+      // Auto-detect kolom nama & kelas baru — regex longgar, case-insensitive
       let colNama = -1, colKelasBaru = -1, startRow = 0;
-      for (let i = 0; i < Math.min(5, rows.length); i++) {
-        const cells = rows[i].map(c => (c || '').toString().toLowerCase().trim());
-        const ni = cells.findIndex(c => /^(nama|name|siswa|murid|santri)/.test(c));
-        // Cari "kelas baru" dulu, fallback ke "kelas"
-        const kbi = cells.findIndex(c => /kelas.baru|new.class|pindah/.test(c));
-        const ki  = cells.findIndex(c => /^(kelas|class|rombel)/.test(c));
+      for (let i = 0; i < Math.min(10, rows.length); i++) {
+        const cells = rows[i].map(c => (c || '').toString().trim());
+        const ni  = cells.findIndex(c => /(nama|name|siswa|murid|santri|student)/i.test(c));
+        // "Kelas Baru" / "New Class" / "Pindah" lebih prioritas dari "Kelas"
+        const kbi = cells.findIndex(c => /(kelas\s*baru|new\s*class|pindah)/i.test(c));
+        const ki  = cells.findIndex(c => /(kelas|class|rombel|tingkat|grade)/i.test(c));
         if (ni >= 0) {
-          colNama     = ni;
+          colNama      = ni;
           colKelasBaru = kbi >= 0 ? kbi : ki >= 0 ? ki : -1;
-          startRow    = i + 1;
+          startRow     = i + 1;
           break;
         }
       }
+      // Fallback: asumsi A=Nama, B=Kelas Baru
       if (colNama < 0) { colNama = 0; colKelasBaru = 1; startRow = 1; }
 
       // Baca Excel
@@ -7638,54 +7639,37 @@ function importMasterData(input) {
                 return;
             }
 
-            // 1. Cari baris yang kemungkinan adalah header
+            // 1. Cari baris header (10 baris pertama) — regex longgar, prefix/contains
             let startRow = 0;
             let colNama = -1;
             let colKelas = -1;
             let headerRowFound = false;
 
+            const _isNamaHdr  = c => /(nama|name|siswa|murid|santri|student)/i.test(c);
+            const _isKelasHdr = c => /(kelas|class|rombel|tingkat|grade)/i.test(c);
+
             for (let i = 0; i < Math.min(10, rows.length); i++) {
                 const row = rows[i];
                 if (!row) continue;
-
-                // Ubah setiap sel di baris ini menjadi string lowercase untuk pencarian
-                const cellStrings = row.map(cell => (cell || '').toString().toLowerCase().trim());
-
-                // Cari indeks kolom yang mirip dengan "nama"
-                const namaIndex = cellStrings.findIndex(cell => /^(nama|name|siswa|murid|santri|student)$/.test(cell));
-                // Cari indeks kolom yang mirip dengan "kelas"
-                const kelasIndex = cellStrings.findIndex(cell => /^(kelas|class|rombel|tingkat|grade)$/.test(cell));
-
-                // Jika kedua kolom ditemukan di baris yang sama, anggap ini baris header
-                if (namaIndex !== -1 && kelasIndex !== -1) {
+                const cells = row.map(cell => (cell || '').toString().trim());
+                const ni = cells.findIndex(c => _isNamaHdr(c));
+                const ki = cells.findIndex(c => _isKelasHdr(c));
+                if (ni !== -1) {
                     startRow = i + 1;
-                    colNama = namaIndex;
-                    colKelas = kelasIndex;
-                    headerRowFound = true;
-                    break;
-                }
-                // Jika hanya kolom nama yang ditemukan, mungkin kelas tidak ada di file
-                if (namaIndex !== -1 && kelasIndex === -1) {
-                    startRow = i + 1;
-                    colNama = namaIndex;
-                    colKelas = -1; // Tidak ada kolom kelas
+                    colNama  = ni;
+                    colKelas = ki; // -1 jika tidak ada kolom kelas
                     headerRowFound = true;
                     break;
                 }
             }
 
-            // 2. Jika tidak ada header yang dikenali, coba asumsikan baris pertama adalah data
+            // 2. Fallback: tidak ada header dikenali — asumsi A=Nama, B=Kelas
             if (!headerRowFound) {
-                console.warn('Tidak ada header yang dikenali. Mengasumsikan baris pertama adalah data.');
-                startRow = 0;
-                colNama = 0; // Asumsikan nama di kolom A
-                colKelas = 2; // Asumsikan kelas di kolom C (opsional)
-                // Cek apakah baris pertama berisi sesuatu yang mirip data, bukan header
+                console.warn('Header tidak dikenali. Asumsi kolom A=Nama, B=Kelas.');
+                colNama  = 0;
+                colKelas = 1;
                 const firstRow = rows[0];
-                if (firstRow && firstRow[0] && /^(no|#|nomer|nomor)$/i.test(firstRow[0].toString().trim())) {
-                    // Jika baris pertama berisi "No" atau "Nomor", mungkin header yang tidak dikenali
-                    startRow = 1;
-                }
+                startRow = (firstRow && firstRow[0] && /^(no|#|nomer|nomor)$/i.test(firstRow[0].toString().trim())) ? 1 : 0;
             }
 
             // 3. Ekstrak dan normalisasi data
