@@ -2032,39 +2032,21 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
   font-size:var(--fmd); 
   color:#5a4a00; 
 }
-.tab-nav { 
-  display:flex; 
-  gap:4px; 
-  background:var(--surf2); 
-  padding:4px; 
-  border-radius:var(--rs); 
-  margin-bottom:10px; 
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+.tab-nav {
+  padding: 2px;
+  gap: 2px;
+  margin-bottom: 6px;
   position: sticky;
   top: 0;
+  background: var(--bg);
   z-index: 10;
 }
 .tab-nav::-webkit-scrollbar { display: none; }
-.tab-btn { 
-  flex:1; 
-  flex-shrink: 0;
-  min-width: 60px;
-  padding:8px 6px; 
-  border:none; 
-  background:transparent; 
-  border-radius:6px; 
-  font-size:var(--fsm); 
-  font-weight:700; 
-  color:var(--mut); 
-  cursor:pointer; 
-  transition:all .2s; 
+.tab-btn {
+  padding: 4px 2px;
+  font-size: 0.65rem;
+  min-height: 32px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-height: 44px;
 }
 .tab-btn.active { 
   background:var(--surf); 
@@ -2156,53 +2138,219 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
   font-weight:700; 
 }
 @media (max-width: 380px) {
-  :root {
-    --HDR: 48px; --NAV: 48px;
-    --fxs: 0.68rem;
-    --fsm: 0.75rem;
-    --fmd: 0.82rem;
-    --flg: 0.88rem;
-    --fxl: 0.95rem;
-    --f2xl: 1.20rem;
-    --f3xl: 1.45rem;
-    --f4xl: 1.90rem;
+  .tab-btn {
+    font-size: 0.6rem;
+    padding: 4px 1px;
   }
-  .pg { padding: 8px 8px 14px; }
-  .hdr-sub { display: block; }
-  .badges-grid { grid-template-columns: repeat(3, 1fr) !important; }
-  .strow { grid-template-columns: repeat(4, 1fr) !important; }
-}
-@media (min-width: 480px) {
+}@media (min-width: 480px) {
   .badges-grid { grid-template-columns: repeat(5, 1fr) !important; }
 }
-@media (min-width: 768px) {
-  html { font-size: clamp(14px, 2vw, 16px); }
-  :root {
-    --HDR: 60px;
-    --NAV: 60px;
-    --fxs: 0.72rem;
-    --fsm: 0.80rem;
-    --fmd: 0.88rem;
-    --flg: 0.96rem;
-    --fxl: 1.05rem;
-    --f2xl: 1.35rem;
-    --f3xl: 1.65rem;
-    --f4xl: 2.30rem;
+@media (max-width: 768px) {
+  /* Kompakkan semua spacing */
+  .pg {
+    padding: 6px 8px 8px 8px;
   }
-  .pg { padding: 16px 20px 20px; }
-  .s4 { grid-template-columns: repeat(4, 1fr) !important; gap: 12px; }
-  .s3 { grid-template-columns: repeat(3, 1fr) !important; gap: 12px; }
-  .quick-actions { grid-template-columns: repeat(4, 1fr) !important; gap: 12px; }
-  .badges-grid { grid-template-columns: repeat(5, 1fr) !important; gap: 10px; }
-  .heatmap-grid { grid-template-columns: repeat(15, 1fr) !important; gap: 5px; }
-  .strow { grid-template-columns: repeat(4, 1fr) !important; gap: 6px; }
-  .chart-slot { height: 280px; }
-  .scard { padding: 14px 16px; }
-  .btn { padding: 12px 20px; }
-  .card { margin-bottom: 12px; }
-  .lhdr, .lrow { grid-template-columns: 2fr 1.8fr 44px 1.2fr !important; }
-}
-@media (min-width: 820px) {
+  
+  .card {
+    margin-bottom: 6px;
+    border-radius: 8px;
+  }
+  
+  .chd {
+    padding: 6px 8px;
+    font-size: 0.7rem;
+  }
+  
+  .cbd {
+    padding: 6px 8px;
+  }
+  
+  /* Compact Grid untuk stats */
+  .s4, .s3, .quick-actions {
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+  
+  .sc {
+    padding: 4px 2px;
+  }
+  
+  .scn {
+    font-size: 1rem;
+  }
+  
+  .scl {
+    font-size: 0.6rem;
+  }
+  
+  /* Compact untuk progress ring */
+  .progress-ring-container {
+    padding: 8px;
+    gap: 8px;
+  }
+  
+  .progress-ring {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .progress-text {
+    font-size: 0.7rem;
+  }
+  
+  /* Compact untuk streak & points */
+  .streak-container, .points-container {
+    padding: 8px;
+  }
+  
+  .streak-count, .points-count {
+    font-size: 1.2rem;
+  }
+  
+  .streak-label, .points-label {
+    font-size: 0.6rem;
+  }
+  
+  /* Compact untuk heatmap */
+  .heatmap-container {
+    padding: 6px;
+  }
+  
+  .heatmap-grid {
+    gap: 2px;
+  }
+  
+  .heatmap-day {
+    font-size: 0.6rem;
+    min-height: 20px;
+  }
+  
+  /* Compact untuk badges */
+  .badges-grid {
+    gap: 4px;
+  }
+  
+  .badge-item {
+    padding: 6px 4px;
+  }
+  
+  .badge-icon {
+    font-size: 1rem;
+  }
+  
+  .badge-name {
+    font-size: 0.6rem;
+  }
+  
+  /* Compact untuk form */
+  .flbl {
+    font-size: 0.65rem;
+    margin-bottom: 2px;
+  }
+  
+  .csd-trigger, select, input {
+    padding: 6px 8px;
+    font-size: 0.7rem;
+    min-height: 32px;
+  }
+  
+  .btn {
+    padding: 6px 12px;
+    font-size: 0.7rem;
+  }
+  
+  /* Compact untuk tabel */
+  .tbl th, .tbl td {
+    padding: 4px 3px;
+    font-size: 0.65rem;
+  }
+  
+  /* Compact untuk absensi cards */
+  .scard {
+    padding: 6px 8px;
+    margin-bottom: 4px;
+  }
+  
+  .stbtn {
+    padding: 3px 2px;
+    font-size: 0.6rem;
+    min-height: 28px;
+  }
+  
+  .sc-name {
+    font-size: 0.7rem;
+  }
+  
+  /* Compact untuk lencana */
+  .leaderboard-item {
+    padding: 6px;
+    gap: 6px;
+  }
+  
+  .leaderboard-rank {
+    width: 24px;
+    height: 24px;
+    font-size: 0.7rem;
+  }
+  
+  .leaderboard-name {
+    font-size: 0.7rem;
+  }
+  
+  .leaderboard-points {
+    font-size: 0.6rem;
+  }
+  
+  .leaderboard-value {
+    font-size: 0.8rem;
+  }
+  
+  /* Compact untuk setoran list */
+  .rekap-row {
+    padding: 4px 6px;
+    gap: 4px;
+    font-size: 0.65rem;
+  }
+  
+  .prog-row {
+    padding: 4px 0;
+    gap: 6px;
+  }
+  
+  .prog-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 0.7rem;
+  }
+  
+  .prog-nama {
+    font-size: 0.7rem;
+  }
+  
+  .prog-detail {
+    font-size: 0.6rem;
+  }
+  
+  /* Hide less important elements */
+  .quick-actions .qa-label {
+    font-size: 0.6rem;
+  }
+  
+  .quick-actions .qa-icon {
+    font-size: 1rem;
+    margin-bottom: 2px;
+  }
+  
+  /* Compact untuk modal */
+  .modal-content {
+    max-width: 90vw;
+    max-height: 80vh;
+  }
+  
+  .modal-header, .modal-body, .modal-footer {
+    padding: 8px 10px;
+  }
+}@media (min-width: 820px) {
   /* Tablet 10 inci (MatePad SE, iPad mini dst) */
   .pg { max-width: 720px; margin: 0 auto; }
   .pginner { align-items: flex-start; }
@@ -2263,7 +2411,7 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
   .surat-check-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
   .csd-sheet   { width: min(320px, calc(100vw - 32px)); max-height: 60vh; }
   .edit-card  { max-width: 460px; padding: 24px 22px; }
-  .edit-sheet { border-radius: 20px; max-width: 640px; padding: 18px 20px; }
+  .edit-sheet { border-radius: 20px; max-width: 85vw; max-height: 85vh; padding: 18px 20px; }
   .hdr-title { font-size: 15px; }
   .hdr-sub   { font-size: 10px; }
   .quick-actions { gap: 10px; }
@@ -2281,7 +2429,7 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
   .mpa-col-right    { padding: 16px 18px 28px; }
   .csd-sheet        { width: min(340px, calc(100vw - 48px)); max-height: 65vh; }
   .edit-card  { max-width: 500px; padding: 28px 26px; box-shadow: 0 8px 32px rgba(0,0,0,.14); }
-  .edit-sheet { max-width: 720px; padding: 20px 24px; border-radius: 20px; }
+  .edit-sheet { max-width: 90vw; max-height: 90vh; padding: 20px 24px; border-radius: 20px; }
   .hdr-title { font-size: 16px; letter-spacing: .4px; }
   .hdr-ico   { width: 40px; height: 40px; font-size: 22px; }
   .chart-slot         { height: 340px; }
@@ -2318,7 +2466,7 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
 
   .badges-grid { grid-template-columns: repeat(5, 1fr) !important; }
   .edit-card  { max-width: 560px; }
-  .edit-sheet { max-width: 800px; padding: 22px 28px; }
+  .edit-sheet { max-width: 90vw; max-height: 90vh; padding: 22px 28px; }
   .mpa-sheet  { max-width: 1040px; height: 88vh; }
   .mpa-col-left { width: 340px; }
   .csd-sheet  { width: 360px; }
@@ -3007,15 +3155,20 @@ span > .fai, div > .fai { vertical-align: middle; }
   display: none; position: fixed; inset: 0; z-index: 9000;
   background: rgba(0,0,0,.5); align-items: center; justify-content: center;
   padding: 16px;
+  overflow: hidden;
 }
 .edit-overlay.show { display: flex; }
 .edit-sheet {
   background: var(--surf);
   border-radius: 16px;
   width: 100%;
-  max-width: 580px;
+  max-width: 95vw;
+  max-height: 95vh;
   padding: 16px 16px;
   padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .edit-card {
@@ -3024,6 +3177,118 @@ span > .fai, div > .fai { vertical-align: middle; }
 }
 .edit-card h3 { font-size:var(--flg); font-weight: 800; color: var(--g8); margin-bottom: 16px; }
 .form-row { margin-bottom: 12px; }
+
+/* ── Grid Cards untuk Detail Modal ── */
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+@media (min-width: 480px) {
+  .detail-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  }
+}
+
+@media (min-width: 768px) {
+  .detail-grid {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .detail-grid {
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 14px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .detail-grid {
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 16px;
+  }
+}
+
+.detail-card {
+  background: var(--surf2);
+  border: 1px solid var(--brd);
+  border-radius: var(--rs);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.detail-card:active {
+  transform: scale(0.98);
+}
+
+.detail-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.detail-card-title {
+  font-weight: 700;
+  font-size: var(--fmd);
+  color: var(--g8);
+}
+
+.detail-card-subtitle {
+  font-size: var(--fxs);
+  color: var(--mut);
+  margin-top: 2px;
+}
+
+.detail-card-section {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding-top: 8px;
+}
+
+.detail-card-label {
+  font-size: var(--fxs);
+  font-weight: 700;
+  color: var(--mut);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  letter-spacing: 0.3px;
+}
+
+.detail-card-value {
+  font-size: var(--fsm);
+  color: var(--txt);
+  word-break: break-word;
+}
+
+.detail-card-badge {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.detail-card-delete {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #ddd;
+  font-size: var(--fxl);
+  padding: 6px;
+  transition: color 0.2s;
+}
+
+.detail-card-delete:active {
+  color: var(--red);
+}
 .form-row label { display: block; font-size:var(--fsm); font-weight: 700; color: var(--mut); margin-bottom: 4px; }
 .form-row input, .form-row select {
   width: 100%; padding: 9px 11px; border: 1.5px solid var(--brd);
@@ -3437,8 +3702,6 @@ span > .fai, div > .fai { vertical-align: middle; }
     padding: 20px;
   }
 }
-
-/* ── Login Screen ── */
 
 </style>
 </head>
@@ -8414,52 +8677,49 @@ function renderDetailSetoran(){
   const tabelEl = document.getElementById('detailSetoranTabel');
   if(!deduped.length){ tabelEl.innerHTML = '<div style="padding:20px;text-align:center;color:#bbb;">Tidak ada data</div>'; _inRenderDetailSetoran = false; return; }
 
-  tabelEl.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:var(--fmd);">
-    <thead>
-      <tr style="background:var(--g8);color:#fff;">
-        <th style="padding:7px 8px;text-align:left;">Nama</th>
-        <th style="padding:7px 6px;text-align:left;">Surat & Ayat</th>
-        <th style="padding:7px 4px;text-align:center;">St</th>
-        <th style="padding:7px 6px;text-align:left;">Ket</th>
-        <th style="padding:7px 4px;"></th>
-      </tr>
-    </thead>
-    <tbody>
-      ${deduped.map((i,idx) => {
+  tabelEl.innerHTML = `<div class="detail-grid">
+    ${deduped.map((i,idx) => {
         const kl = (i.stat||'')==='KL';
         const kelas = (masterSiswa.find(m=>m.nama===i.nama)?.kelas || i.kelas || 'Umum').trim();
-        // Data awal: tampilkan label frontier ("At-Takwir ayat 20") + jumlah surat di batch
         const dataAwalLbl = _dataAwalLabel(i);
-        // Untuk mode manual (arahHafalan='manual'), tidak ada label frontier — tampilkan count saja
         const isDataAwal = !!i.arahHafalan;
         const isManualAwal = i.arahHafalan === 'manual';
         const suratCell = isDataAwal
-          ? `<div style="font-weight:600;">${dataAwalLbl || (i._batchCount ? `${i._batchCount} surat dipilih` : i.surat||'—')}</div>
-             <div style="font-size:var(--fxs);color:var(--mut);">${i._batchCount ? i._batchCount+' surat · ' : ''}${i.tambahan||'Data Awal'}</div>`
-          : `<div style="font-weight:600;">${i.surat||'—'}</div>
-             <div style="color:#888;font-size:var(--fsm);">${i.rentang||''}</div>`;
+          ? `<div style="font-weight:600;color:var(--g8);">${dataAwalLbl || (i._batchCount ? i._batchCount+' surat' : i.surat||'—')}</div>
+             <div style="font-size:var(--fsm);color:var(--mut);margin-top:2px;">${i._batchCount ? i._batchCount+' surat · ' : ''}${i.tambahan||'Data Awal'}</div>`
+          : `<div style="font-weight:600;color:var(--g8);">${i.surat||'—'}</div>
+             <div style="color:#888;font-size:var(--fsm);margin-top:2px;">${i.rentang||''}</div>`;
         let ket = [];
         if(!dataAwalLbl){
           if((i.jml||0)>0) ket.push(`<span style="color:#b91c1c">${i.jml} salah${i.kategori&&i.kategori!=='-'?' · '+i.kategori:''}</span>`);
           if(i.salah&&i.salah!=='-') ket.push(`<span style="color:#e67e22">${i.salah}</span>`);
         }
         const canDel = isAdmin || !i.inputBy || i.inputBy==='offline' || i.inputBy===currentUser?.uid;
-        const delBtn = canDel ? `<button class="bdel" onclick="delSetoran('${i.fbId||i.id}');bukaDetailSetoran('${_detailSetoranKey}')">✕</button>` : `<span style="color:#ddd;font-size:var(--fxs);">🔒</span>`;
-        return `<tr style="border-bottom:1px solid var(--brd);background:${idx%2===0?'#fff':'var(--surf2)'}">
-          <td style="padding:7px 8px;">
-            <div style="font-weight:700;font-size:var(--fmd);">${i.nama||'—'}</div>
-            <div style="font-size:var(--fxs);color:var(--mut);">${kelas}${i.inputByNama?' · '+i.inputByNama:''}</div>
-          </td>
-          <td style="padding:7px 6px;">${suratCell}</td>
-          <td style="padding:7px 4px;text-align:center;">${isDataAwal
-            ? `<span class="bdg" style="background:#e0f2fe;color:#0369a1;font-size:var(--fxs);">Awal</span>`
-            : `<span class="${kl?'bdg bgd':'bdg bg'}">${kl?'KL':'L'}</span>`}</td>
-          <td style="padding:7px 6px;font-size:var(--fsm);">${ket.join('<br>')||'<span style="color:#ccc">—</span>'}</td>
-          <td style="padding:7px 4px;">${delBtn}</td>
-        </tr>`;
+        const delBtn = canDel ? `<button class="detail-card-delete" onclick="delSetoran('${i.fbId||i.id}');bukaDetailSetoran('${_detailSetoranKey}')">✕</button>` : `<span style="color:#ddd;font-size:var(--fxs);">🔒</span>`;
+        return `<div class="detail-card">
+          <div class="detail-card-header">
+            <div style="flex:1;min-width:0;">
+              <div class="detail-card-title">${i.nama||'—'}</div>
+              <div class="detail-card-subtitle">${kelas}${i.inputByNama?' · '+i.inputByNama:''}</div>
+            </div>
+            <div class="detail-card-badge">
+              ${isDataAwal
+                ? `<span class="bdg" style="background:#e0f2fe;color:#0369a1;font-size:var(--fxs);white-space:nowrap;">Awal</span>`
+                : `<span class="${kl?'bdg bgd':'bdg bg'}" style="white-space:nowrap;">${kl?'KL':'L'}</span>`}
+            </div>
+          </div>
+          <div class="detail-card-section">
+            <div class="detail-card-label">📚 Surat & Ayat</div>
+            ${suratCell}
+          </div>
+          ${ket.length ? `<div class="detail-card-section">
+            <div class="detail-card-label">📝 Keterangan</div>
+            <div style="font-size:var(--fsm);color:var(--txt);">${ket.join('<br/>')}</div>
+          </div>` : ''}
+          ${delBtn !== '<span style="color:#ddd;font-size:var(--fxs);">🔒</span>' ? delBtn : ''}
+        </div>`;
       }).join('')}
-    </tbody>
-  </table>`;
+  </div>`;
   _inRenderDetailSetoran = false;
 }
 
@@ -8972,27 +9232,30 @@ async function bukaDetailAbsensi(key){
         nama, kelas: v.kelas || 'Umum', status: v.status || 'Hadir', waktu: v.waktu || '-'
       })).sort((a, b) => a.nama.localeCompare(b.nama, 'id'));
     }
-    tabelEl.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:var(--fmd);">
-      <thead>
-        <tr style="background:var(--g8);color:#fff;">
-          <th style="padding:7px 8px;text-align:left;">Nama</th>
-          <th style="padding:7px 6px;text-align:left;">Kelas</th>
-          <th style="padding:7px 6px;text-align:center;">Status</th>
-          <th style="padding:7px 6px;text-align:center;">Waktu</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${siswa.map((s,i)=>{
+    tabelEl.innerHTML = `<div class="detail-grid">
+      ${siswa.map((s,i)=>{
           const warna = s.status==='Hadir'?'var(--g6)':s.status==='Ijin'?'#c07f00':s.status==='Sakit'?'var(--tel)':'var(--red)';
-          return `<tr style="border-bottom:1px solid var(--brd);background:${i%2===0?'#fff':'var(--surf2)'}">
-            <td style="padding:7px 8px;font-weight:600;">${s.nama}</td>
-            <td style="padding:7px 6px;color:var(--mut);">${s.kelas||'Umum'}</td>
-            <td style="padding:7px 6px;text-align:center;"><span style="font-weight:700;color:${warna};">${s.status}</span></td>
-            <td style="padding:7px 6px;text-align:center;color:var(--mut);">${s.waktu||'-'}</td>
-          </tr>`;
+          const warnaBg = s.status==='Hadir'?'#e6f5f0':s.status==='Ijin'?'#fef8e0':s.status==='Sakit'?'#e0f7fa':'#fff0f0';
+          const ikon = s.status==='Hadir'?'✓':s.status==='Ijin'?'📋':s.status==='Sakit'?'🤒':'✕';
+          return `<div class="detail-card" style="background:${warnaBg};border:1.5px solid ${warna};">
+            <div class="detail-card-header">
+              <div style="flex:1;min-width:0;">
+                <div class="detail-card-title">${s.nama}</div>
+                <div class="detail-card-subtitle">${s.kelas||'Umum'}</div>
+              </div>
+              <div style="flex-shrink:0;font-size:20px;line-height:1;opacity:0.7;">${ikon}</div>
+            </div>
+            <div class="detail-card-section">
+              <div class="detail-card-label">✓ Status</div>
+              <div style="font-weight:700;color:${warna};font-size:var(--fmd);">${s.status}</div>
+            </div>
+            ${s.waktu && s.waktu !== '-' ? `<div class="detail-card-section">
+              <div class="detail-card-label">⏰ Waktu</div>
+              <div class="detail-card-value">${s.waktu}</div>
+            </div>` : ''}
+          </div>`;
         }).join('')}
-      </tbody>
-    </table>`;
+    </div>`;
   } catch(err){
     tabelEl.innerHTML = `<div style="padding:20px;text-align:center;color:var(--red);">Gagal: ${err.message}</div>`;
   }
