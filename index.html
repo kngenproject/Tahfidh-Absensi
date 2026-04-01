@@ -548,6 +548,37 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
   color:var(--g8); 
   min-height: 0;
   height: clamp(34px, 9.5vw, 48px);
+  transition: all .15s ease;
+}
+
+/* Grid Button untuk Dari Ayat & Sampai Ayat */
+.ayat-grid-btn {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: var(--fsm);
+  cursor: pointer;
+  background: var(--g1);
+  border: 1.5px solid var(--brd);
+  color: var(--txt);
+  min-height: 0;
+  height: clamp(42px, 10vw, 56px);
+  transition: all 0.15s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.ayat-grid-btn:active {
+  transform: scale(0.92);
+}
+.ayat-grid-btn.selected {
+  background: var(--g5);
+  border-color: var(--g7);
+  color: #fff;
+  font-weight: 700;
+}
 }
 .ai:active { transform:scale(.9); }
 .ai.salah { 
@@ -3796,24 +3827,18 @@ span > .fai, div > .fai { vertical-align: middle; }
   </div>
 </div>
 
-          <!-- Dari & Sampai Ayat dalam satu baris (2 kolom) -->
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
-            <div>
-              <label class="flbl">Dari Ayat</label>
-              <button type="button" class="csd-trigger placeholder" id="ayatMulaiTrigger" onclick="openCsd('ayatMulai','Dari Ayat')" style="width:100%;">
-                <span id="ayatMulaiLabel">—</span>
-                <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
-              </button>
-              <select id="ayatMulai" style="display:none;" onchange="renderAyatGrid();"></select>
-            </div>
-            <div>
-              <label class="flbl">Sampai Ayat</label>
-              <button type="button" class="csd-trigger placeholder" id="ayatSampaiTrigger" onclick="openCsd('ayatSampai','Sampai Ayat')" style="width:100%;">
-                <span id="ayatSampaiLabel">—</span>
-                <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
-              </button>
-              <select id="ayatSampai" style="display:none;" onchange="renderAyatGrid();"></select>
-            </div>
+          <!-- Dari Ayat Grid -->
+          <div style="margin-bottom:12px;">
+            <label class="flbl">Dari Ayat</label>
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(50px, 1fr)); gap:6px; border:1.5px solid var(--brd); border-radius:var(--rs); padding:10px; background:var(--surf2); max-height:220px; overflow-y:auto;" id="dariAyatGrid"></div>
+            <select id="ayatMulai" style="display:none;" onchange="renderAyatGrid();"></select>
+          </div>
+
+          <!-- Sampai Ayat Grid -->
+          <div style="margin-bottom:12px;">
+            <label class="flbl">Sampai Ayat</label>
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(50px, 1fr)); gap:6px; border:1.5px solid var(--brd); border-radius:var(--rs); padding:10px; background:var(--surf2); max-height:220px; overflow-y:auto;" id="sampaiAyatGrid"></div>
+            <select id="ayatSampai" style="display:none;" onchange="renderAyatGrid();"></select>
           </div>
 
           <!-- Status + Tambahan dalam satu baris (2 kolom) -->
@@ -8103,6 +8128,59 @@ function renderAyatGrid(){
     d.onclick = () => d.classList.toggle('salah');
     g.appendChild(d);
   }
+  
+  // Render grid untuk dari ayat
+  renderDariAyatGrid();
+  // Render grid untuk sampai ayat
+  renderSampaiAyatGrid();
+}
+
+// Fungsi render grid untuk Dari Ayat
+function renderDariAyatGrid() {
+  const gridContainer = document.getElementById('dariAyatGrid');
+  const selectEl = document.getElementById('ayatMulai');
+  const options = Array.from(selectEl.options).map(opt => opt.value);
+  const selectedValue = selectEl.value;
+  
+  gridContainer.innerHTML = '';
+  options.forEach(val => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'ayat-grid-btn' + (val === selectedValue ? ' selected' : '');
+    btn.textContent = val;
+    btn.onclick = (e) => {
+      e.preventDefault();
+      selectEl.value = val;
+      renderDariAyatGrid();
+      renderSampaiAyatGrid();
+      renderAyatGrid();
+    };
+    gridContainer.appendChild(btn);
+  });
+}
+
+// Fungsi render grid untuk Sampai Ayat
+function renderSampaiAyatGrid() {
+  const gridContainer = document.getElementById('sampaiAyatGrid');
+  const selectEl = document.getElementById('ayatSampai');
+  const options = Array.from(selectEl.options).map(opt => opt.value);
+  const selectedValue = selectEl.value;
+  
+  gridContainer.innerHTML = '';
+  options.forEach(val => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'ayat-grid-btn' + (val === selectedValue ? ' selected' : '');
+    btn.textContent = val;
+    btn.onclick = (e) => {
+      e.preventDefault();
+      selectEl.value = val;
+      renderDariAyatGrid();
+      renderSampaiAyatGrid();
+      renderAyatGrid();
+    };
+    gridContainer.appendChild(btn);
+  });
 }
 
 function simpanSetoran(){
@@ -10207,6 +10285,14 @@ function syncCsdTrigger(selectId) {
   } else {
     labelEl.textContent = raw || '— Pilih —';
     trigger.classList.add('placeholder');
+  }
+  
+  // Render grid jika ini adalah ayatMulai atau ayatSampai
+  if (selectId === 'ayatMulai' || selectId === 'ayatSampai') {
+    setTimeout(() => {
+      if (document.getElementById('dariAyatGrid')) renderDariAyatGrid();
+      if (document.getElementById('sampaiAyatGrid')) renderSampaiAyatGrid();
+    }, 0);
   }
 }
 
