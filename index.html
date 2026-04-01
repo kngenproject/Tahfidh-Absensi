@@ -3424,6 +3424,66 @@ span > .fai, div > .fai { vertical-align: middle; }
 .csd-row:active { background: var(--g1); }
 .csd-row.selected { background: #f0faf4; }
 
+/* ── Grid Layout untuk CSD ── */
+.csd-body.grid-mode {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 8px;
+  padding: 12px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.csd-body.grid-mode .csd-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  border: 1.5px solid var(--brd);
+  border-radius: var(--rs);
+  border-bottom: 1.5px solid var(--brd);
+  min-height: 80px;
+  gap: 4px;
+  text-align: center;
+  background: var(--surf);
+  transition: all .15s;
+}
+
+.csd-body.grid-mode .csd-row:active {
+  background: var(--g1);
+  border-color: var(--g5);
+}
+
+.csd-body.grid-mode .csd-row.selected {
+  background: var(--g1);
+  border-color: var(--g6);
+  box-shadow: 0 0 0 2px var(--g6);
+}
+
+.csd-body.grid-mode .csd-row-num {
+  display: none;
+}
+
+.csd-body.grid-mode .csd-row-name {
+  font-size: var(--fsm);
+  font-weight: 600;
+  white-space: normal;
+  word-break: break-word;
+  overflow: visible;
+  text-overflow: initial;
+  line-height: 1.2;
+}
+
+.csd-body.grid-mode .csd-row-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--g6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* ── Nomor urut ── */
 .csd-row-num {
   font-size: var(--fsm);
@@ -4029,7 +4089,7 @@ span > .fai, div > .fai { vertical-align: middle; }
           <!-- Siswa -->
           <div style="margin-bottom:12px;">
             <label class="flbl">Nama Siswa</label>
-            <button type="button" class="csd-trigger placeholder" id="namaSiswaTrigger" onclick="openCsdSiswa('namaSiswa')" style="width:100%;">
+            <button type="button" class="csd-trigger placeholder" id="namaSiswaTrigger" onclick="openCsdGridSiswa('namaSiswa','👤 Pilih Siswa')" style="width:100%;">
               <span id="namaSiswaLabel">— Pilih Siswa —</span>
               <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
             </button>
@@ -4041,7 +4101,7 @@ span > .fai, div > .fai { vertical-align: middle; }
           <div style="display:grid; grid-template-columns: 1fr 2fr; gap:12px; margin-bottom:12px;">
   <div>
     <label class="flbl">Juz</label>
-    <button type="button" class="csd-trigger placeholder" id="juzSelectTrigger" onclick="openCsd('juzSelect','📚 Pilih Juz')" style="width:100%;">
+    <button type="button" class="csd-trigger placeholder" id="juzSelectTrigger" onclick="openCsdGrid('juzSelect','📚 Pilih Juz')" style="width:100%;">
       <span id="juzSelectLabel">30</span>
       <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
     </button>
@@ -4049,7 +4109,7 @@ span > .fai, div > .fai { vertical-align: middle; }
   </div>
   <div>
     <label class="flbl">Surat</label>
-    <button type="button" class="csd-trigger placeholder" id="suratTrigger" onclick="openCsd('surat','📖 Pilih Surat')" style="width:100%;">
+    <button type="button" class="csd-trigger placeholder" id="suratTrigger" onclick="openCsdGrid('surat','📖 Pilih Surat')" style="width:100%;">
       <span id="suratLabel">— Pilih Surat —</span>
       <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
     </button>
@@ -4060,7 +4120,7 @@ span > .fai, div > .fai { vertical-align: middle; }
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
             <div>
               <label class="flbl">Dari Ayat</label>
-              <button type="button" class="csd-trigger placeholder" id="ayatMulaiTrigger" onclick="openCsd('ayatMulai','Dari Ayat')" style="width:100%;">
+              <button type="button" class="csd-trigger placeholder" id="ayatMulaiTrigger" onclick="openCsdGrid('ayatMulai','Dari Ayat')" style="width:100%;">
                 <span id="ayatMulaiLabel">—</span>
                 <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
               </button>
@@ -4068,7 +4128,7 @@ span > .fai, div > .fai { vertical-align: middle; }
             </div>
             <div>
               <label class="flbl">Sampai Ayat</label>
-              <button type="button" class="csd-trigger placeholder" id="ayatSampaiTrigger" onclick="openCsd('ayatSampai','Sampai Ayat')" style="width:100%;">
+              <button type="button" class="csd-trigger placeholder" id="ayatSampaiTrigger" onclick="openCsdGrid('ayatSampai','Sampai Ayat')" style="width:100%;">
                 <span id="ayatSampaiLabel">—</span>
                 <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
               </button>
@@ -4080,7 +4140,7 @@ span > .fai, div > .fai { vertical-align: middle; }
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
             <div>
               <label class="flbl">Status</label>
-              <button type="button" class="csd-trigger" id="statLancarTrigger" onclick="openCsd('statLancar','Status Hafalan')" style="width:100%;">
+              <button type="button" class="csd-trigger" id="statLancarTrigger" onclick="openCsdGrid('statLancar','Status Hafalan')" style="width:100%;">
                 <span id="statLancarLabel">✅ Lancar</span>
                 <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
               </button>
@@ -4091,7 +4151,7 @@ span > .fai, div > .fai { vertical-align: middle; }
             </div>
             <div>
               <label class="flbl">Tambahan</label>
-              <button type="button" class="csd-trigger placeholder" id="tambahanTrigger" onclick="openCsd('tambahan','Keterangan Tambahan')" style="width:100%;">
+              <button type="button" class="csd-trigger placeholder" id="tambahanTrigger" onclick="openCsdGrid('tambahan','Keterangan Tambahan')" style="width:100%;">
                 <span id="tambahanLabel">— Pilih —</span>
                 <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
               </button>
@@ -10451,6 +10511,41 @@ function openCsdSiswa(targetId) {
   openCsd(targetId, '👤 Pilih Siswa');
 }
 
+// Fungsi baru untuk popup grid
+function openCsdGrid(targetId, title) {
+  _csdTargetId = targetId;
+  const titleEl = document.getElementById('csdTitle');
+  if(titleEl) titleEl.textContent = title || 'Pilih';
+  const sel = document.getElementById(targetId);
+  _csdItems = [];
+  for (const child of sel.children) {
+    if (child.tagName === 'OPTGROUP') {
+      for (const opt of child.children) {
+        _csdItems.push({ value: opt.value, label: opt.text, group: child.label });
+      }
+    } else {
+      _csdItems.push({ value: child.value, label: child.text, group: null });
+    }
+  }
+  const searchInput = document.getElementById('csdSearchInput');
+  if (searchInput) searchInput.value = '';
+  renderCsdItemsGrid();
+  const overlay = document.getElementById('csdOverlay');
+  const sheet   = overlay.querySelector('.csd-sheet');
+  const trigger = document.getElementById(targetId + 'Trigger');
+  if (sheet) sheet.style.visibility = 'hidden';
+  overlay.classList.add('show');
+  requestAnimationFrame(() => {
+    if (sheet && trigger) _positionCsdSheet(sheet, trigger);
+    if (sheet) sheet.style.visibility = '';
+  });
+}
+
+// Grid version untuk siswa
+function openCsdGridSiswa(targetId, title) {
+  openCsdGrid(targetId, title);
+}
+
 // Sync label trigger setelah select diupdate secara programatik
 function syncCsdTrigger(selectId) {
   const sel = document.getElementById(selectId);
@@ -10471,6 +10566,8 @@ function syncCsdTrigger(selectId) {
 }
 
 function closeCsdSiswa() {
+  const body = document.getElementById('csdBody');
+  if (body) body.classList.remove('grid-mode');
   document.getElementById('csdOverlay').classList.remove('show');
   _csdTargetId = null;
 }
@@ -10479,7 +10576,14 @@ function closeCsdSiswaOutside(e) {
   if (e.target === document.getElementById('csdOverlay')) closeCsdSiswa();
 }
 
-function filterCsdItems() { renderCsdItems(); }
+function filterCsdItems() { 
+  const body = document.getElementById('csdBody');
+  if (body && body.classList.contains('grid-mode')) {
+    renderCsdItemsGrid();
+  } else {
+    renderCsdItems();
+  }
+}
 
 function renderCsdItems() {
   const currentVal = _csdTargetId ? document.getElementById(_csdTargetId).value : '';
@@ -10569,6 +10673,71 @@ function renderCsdItems() {
   }
 
   // Scroll to selected item
+  requestAnimationFrame(() => {
+    const sel = body.querySelector('.csd-row.selected');
+    if (sel) sel.scrollIntoView({ block: 'nearest' });
+  });
+}
+
+function renderCsdItemsGrid() {
+  const currentVal = _csdTargetId ? document.getElementById(_csdTargetId).value : '';
+  const body = document.getElementById('csdBody');
+  const q = (document.getElementById('csdSearchInput')?.value || '').trim().toLowerCase();
+
+  const specialItems = _csdItems.filter(it => !it.value || it.value === 'SEMUA' || it.value === '');
+  const regularItems = _csdItems.filter(it => it.value && it.value !== 'SEMUA' && it.value !== '');
+
+  const filtered = q
+    ? regularItems.filter(it => it.label.toLowerCase().includes(q) || (it.group||'').toLowerCase().includes(q))
+    : regularItems;
+
+  // Aktifkan grid mode pada body
+  body.classList.add('grid-mode');
+  body.innerHTML = '';
+
+  if (!filtered.length && !specialItems.length) {
+    body.innerHTML = '<div class="csd-empty" style="grid-column:1/-1;">Tidak ada pilihan</div>';
+    return;
+  }
+
+  const CHECK_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7l233.4-233.3c12.5-12.5 32.8-12.5 45.3 0z"/></svg>';
+
+  // Render special items (tidak dalam grid, di atas)
+  specialItems.forEach(it => {
+    const isSel = it.value === currentVal || (!currentVal && it.value === 'SEMUA');
+    const cleanLabel = it.label.replace(/^[—-]\s*|\s*[—-]$/g,'').trim() || it.label;
+    const row = document.createElement('div');
+    row.className = 'csd-row special' + (isSel ? ' selected' : '');
+    row.innerHTML = `
+      <div class="csd-row-name">👥 ${cleanLabel}</div>
+      ${isSel ? `<div class="csd-row-check">${CHECK_SVG}</div>` : ''}`;
+    row.style.gridColumn = '1 / -1';
+    row.addEventListener('click', () => selectCsdItem(it.value, it.label));
+    body.appendChild(row);
+  });
+
+  if (q && !filtered.length) {
+    const empty = document.createElement('div');
+    empty.className = 'csd-empty';
+    empty.style.gridColumn = '1 / -1';
+    empty.textContent = `Tidak ditemukan "${q}"`;
+    body.appendChild(empty);
+    return;
+  }
+
+  // Render items dalam grid (tanpa group labels, langsung grid)
+  filtered.forEach((it) => {
+    const isSel = it.value === currentVal;
+    const cleanLabel = it.label.replace(/^\d+\.\s*/, '');
+    const row = document.createElement('div');
+    row.className = 'csd-row' + (isSel ? ' selected' : '');
+    row.innerHTML = `
+      <span class="csd-row-name">${cleanLabel}</span>
+      ${isSel ? `<div class="csd-row-check">${CHECK_SVG}</div>` : ''}`;
+    row.addEventListener('click', () => selectCsdItem(it.value, it.label));
+    body.appendChild(row);
+  });
+
   requestAnimationFrame(() => {
     const sel = body.querySelector('.csd-row.selected');
     if (sel) sel.scrollIntoView({ block: 'nearest' });
