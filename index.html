@@ -824,14 +824,14 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
 }
 .lhdr { 
   display:grid; 
-  grid-template-columns: 2fr 1.5fr 40px 1fr !important; 
+  grid-template-columns: minmax(120px, 1.2fr) minmax(100px, 1fr) minmax(80px, 0.9fr) minmax(60px, 0.8fr) !important; 
   padding:8px 10px; 
   background:var(--g8); 
   border-radius:8px 8px 0 0; 
   font-size:var(--fmd); 
   font-weight:700; 
   color:rgba(255,255,255,.9); 
-  gap:4px; 
+  gap:6px; 
 }
 .lhdr span:nth-child(3) { text-align:center; }
 .lbody { 
@@ -841,11 +841,11 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
 }
 .lrow { 
   display:grid; 
-  grid-template-columns: 2fr 1.5fr 40px 1fr !important; 
+  grid-template-columns: minmax(120px, 1.2fr) minmax(100px, 1fr) minmax(80px, 0.9fr) minmax(60px, 0.8fr) !important; 
   padding:10px; 
   border-bottom:1px solid var(--brd); 
   align-items:center; 
-  gap:4px; 
+  gap:6px; 
   position:relative;
   cursor:pointer;
 }
@@ -853,8 +853,9 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
 .cn { 
   display:flex; 
   flex-direction:column; 
-  gap:2px; 
+  gap:3px; 
   min-width: 0;
+  overflow: hidden;
 }
 .cnn { 
   font-weight:700; 
@@ -867,6 +868,9 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
 .cnd { 
   font-size:var(--fsm); 
   color:#999; 
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .cnt { 
   display:inline-block; 
@@ -884,20 +888,24 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
 .cs { 
   display:flex; 
   flex-direction:column; 
-  gap:2px; 
+  gap:3px; 
   min-width: 0;
+  overflow: hidden;
 }
 .css { 
   font-size:var(--fmd); 
   font-weight:700; 
-  color:var(--g7);
+  color:var(--g8);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .csa { 
-  font-size:var(--fmd); 
-  color:var(--mut); 
+  font-size:var(--fsm); 
+  color:#888; 
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .cst { 
   display:flex; 
@@ -3250,7 +3258,8 @@ span > .fai, div > .fai { vertical-align: middle; }
 
 .detail-card-section {
   border-top: 1px solid rgba(0, 0, 0, 0.1);
-  padding-top: 8px;
+  padding-top: 10px;
+  padding-bottom: 6px;
 }
 
 .detail-card-label {
@@ -3258,7 +3267,7 @@ span > .fai, div > .fai { vertical-align: middle; }
   font-weight: 700;
   color: var(--mut);
   text-transform: uppercase;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   letter-spacing: 0.3px;
 }
 
@@ -5171,7 +5180,7 @@ async function fetchAllData(){
 // ── Sinkronisasi otomatis saat buka / tutup app dengan PERSISTENT CHECKPOINT ─────────
 // Catat kapan app terakhir di-background dan kapan terakhir sync
 // FIXES: Recover state even if app is force-killed or crashes
-const _MIN_BG_MS = 30_000; // min waktu background (30 detik) sebelum re-fetch
+const _MIN_BG_MS = 10_000; // min waktu background (10 detik) sebelum re-fetch — LOWERED untuk lebih aggressive
 const LS_HIDDEN_AT = '_hiddenAt_checkpoint';
 const LS_LAST_SYNC = '_lastSyncAt_checkpoint';
 
@@ -5233,12 +5242,12 @@ document.addEventListener('visibilitychange', () => {
     const bgDuration = calculateBackgroundDuration();
     _hiddenAt = null; // reset memory state
     
-    console.log('[visibility] app visible, bg duration:', bgDuration, 'ms');
+    console.log('[visibility] app visible, bg duration:', bgDuration, 'ms, threshold:', _MIN_BG_MS);
 
     if(bgDuration >= _MIN_BG_MS){
-      // Sudah ≥30 detik di background → ambil data terbaru dari Firestore
+      // Sudah ≥10 detik di background → ambil data terbaru dari Firestore
       if(typeof fetchAllData === 'function' && currentSchoolId){
-        console.log('[visibility] triggering fetchAllData due to long background (>= 30s)');
+        console.log('[visibility] triggering fetchAllData due to background (>= '+_MIN_BG_MS+'ms)');
         showSyncing(); // tampilkan sync indicator
         fetchAllData()
           .then(() => {
@@ -5253,10 +5262,29 @@ document.addEventListener('visibilitychange', () => {
           });
       }
     } else {
-      console.log('[visibility] bg duration < 30s threshold, skipping re-fetch');
+      console.log('[visibility] bg duration < '+_MIN_BG_MS+'ms threshold, skipping re-fetch');
     }
   }
 });
+
+// ─── Tambahan: pageshow listener untuk handle browser back/restore ───
+window.addEventListener('pageshow', (e) => {
+  if(!currentUser || !currentSchoolId) return;
+  if(e.persisted){
+    console.log('[pageshow] page restored from bfcache, triggering sync');
+    showSyncing();
+    fetchAllData()
+      .then(() => {
+        _lastSyncAt = Date.now();
+        ls.set(LS_LAST_SYNC, String(_lastSyncAt));
+        showSyncDone();
+        console.log('[pageshow] sync success');
+      })
+      .catch(e => {
+        console.warn('[pageshow] sync error:', e);
+      });
+  }
+}, false);
 
 // ─── Sync indicator ────────────────────────────────────────────
 let syncTimer = null;
