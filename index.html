@@ -4957,7 +4957,7 @@ async function startApp() {
 function _loadLocalData() {
   masterSiswa       = JSON.parse(ls.get('db_master_siswa') || '[]');
   dataSetoran       = JSON.parse(ls.get('db_setoran') || '[]');
-  dataAbsensi       = JSON.parse(ls.get(`db_absensi_${_initTodayKey}`) || ls.get('db_absensi_harian') || '[]');
+  dataAbsensi       = JSON.parse(ls.get(`db_absensi_${(()=>{ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })()}`) || ls.get('db_absensi_harian') || '[]');
   userPoints        = JSON.parse(ls.get('db_points') || '{}');
   userStreaks        = JSON.parse(ls.get('db_streaks') || '{}');
   lastActive        = ls.get('db_last_active') || new Date().toDateString();
@@ -5341,7 +5341,7 @@ async function approveGuru(uid, action) {
     } else {
       await ref.delete();
       await fbDb.collection('userMeta').doc(uid).delete();
-      showToast('Permintaan ditolak', 'info');
+      showToast('Permintaan ditolak', 'warning');
     }
     await renderGuruList();
   } catch(e) {
@@ -5354,7 +5354,10 @@ async function updateGuruRole(uid, role) {
   if (!isAdmin || !currentSchoolId) return;
   try {
     await fbDb.collection('schools').doc(currentSchoolId).collection('members').doc(uid)
-      .update({ role, kelasDiajar: role === 'waliKelas' ? [] : [] });
+      .update(role === 'waliKelas'
+        ? { role, kelasDiajar: [] }
+        : { role, kelasDiajar: firebase.firestore.FieldValue.delete() }
+      );
     showToast('Role diperbarui', 'success');
     await renderGuruList();
   } catch(e) { showToast('Gagal: ' + e.message, 'error'); }
@@ -8901,12 +8904,20 @@ window.delSetoran = function(id, fbId){
 window.hapusSemuaSetoran = function(){
   if(!dataSetoran.length){ showToast('Sudah kosong','warning'); return; }
   if(!confirm(`Hapus ${dataSetoran.length} riwayat setoran? Ini akan menghapus dari server juga!`)) return;
-  // Delete all from Firestore
-  const batch = fbDb.batch();
-  dataSetoran.forEach(s => { if(s.fbId) batch.delete(schoolCol('setoran').doc(s.fbId)); });
-  batch.commit().then(() => {
-    showToast('Semua riwayat dihapus dari server', 'success');
-  }).catch(err => showToast('Error: ' + err.message, 'error'));
+  // Delete all from Firestore (chunked to stay within 500-op batch limit)
+  const fbIds = dataSetoran.map(s => s.fbId).filter(Boolean);
+  if (fbIds.length) {
+    (async () => {
+      try {
+        for (let i = 0; i < fbIds.length; i += 400) {
+          const b = fbDb.batch();
+          fbIds.slice(i, i + 400).forEach(fid => b.delete(schoolCol('setoran').doc(fid)));
+          await b.commit();
+        }
+        showToast('Semua riwayat dihapus dari server', 'success');
+      } catch(err) { showToast('Error: ' + err.message, 'error'); }
+    })();
+  }
   dataSetoran = [];
   ls.set('db_setoran', JSON.stringify(dataSetoran));
   renderTblSetoran();
@@ -9280,7 +9291,15 @@ function exportDetailAbsensiExcel(){
     ['Hadir', d.hadir||0], ['Ijin', d.ijin||0], ['Sakit', d.sakit||0], ['Alpha', d.alpha||0],
     [],
     ['No', 'Nama', 'Kelas', 'Status', 'Waktu'],
-    ...(d.siswa||[]).map((s,i) => [i+1, s.nama, s.kelas||'Umum', s.status, s.waktu||'-'])
+    ...((() => {
+      let siswa = d.siswa || [];
+      if (!siswa.length && d.data && typeof d.data === 'object') {
+        siswa = Object.entries(d.data).map(([nama, v]) => ({
+          nama, kelas: v.kelas || 'Umum', status: v.status || 'Hadir', waktu: v.waktu || '-'
+        })).sort((a, b) => a.nama.localeCompare(b.nama, 'id'));
+      }
+      return siswa.map((s, i) => [i + 1, s.nama, s.kelas || 'Umum', s.status, s.waktu || '-']);
+    })())
   ];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'Absensi');
