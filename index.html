@@ -5168,41 +5168,93 @@ async function fetchAllData(){
 
 // Refresh manual
 // Sync saat tab/app ditutup atau di-background
-// ── Sinkronisasi otomatis saat buka / tutup app ─────────────────
+// ── Sinkronisasi otomatis saat buka / tutup app dengan PERSISTENT CHECKPOINT ─────────
 // Catat kapan app terakhir di-background dan kapan terakhir sync
-let _hiddenAt = null;     // timestamp saat masuk background
-let _lastSyncAt = Date.now(); // timestamp saat terakhir fetch dari Firestore
+// FIXES: Recover state even if app is force-killed or crashes
 const _MIN_BG_MS = 30_000; // min waktu background (30 detik) sebelum re-fetch
+const LS_HIDDEN_AT = '_hiddenAt_checkpoint';
+const LS_LAST_SYNC = '_lastSyncAt_checkpoint';
+
+let _hiddenAt = null;     // timestamp saat masuk background (in-memory)
+let _lastSyncAt = Date.now(); // timestamp saat terakhir fetch dari Firestore
+
+// Helper: restore checkpoint dari localStorage saat app start
+function restoreSyncCheckpoint(){
+  try {
+    const savedSync = ls.get(LS_LAST_SYNC);
+    if(savedSync) _lastSyncAt = parseInt(savedSync, 10) || Date.now();
+    console.log('[checkpoint] restored _lastSyncAt from localStorage:', _lastSyncAt);
+  } catch(e) { console.warn('[checkpoint] restore error:', e); }
+}
+
+// Helper: persist state saat background
+function persistHiddenState(){
+  try {
+    ls.set('db_setoran', JSON.stringify(dataSetoran));
+    ls.set('db_absensi_harian', JSON.stringify(dataAbsensi));
+    ls.set('db_master_siswa', JSON.stringify(masterSiswa));
+    ls.set('db_points', JSON.stringify(userPoints));
+    ls.set('db_streaks', JSON.stringify(userStreaks));
+    ls.set(LS_HIDDEN_AT, String(Date.now())); // simpan kapan masuk background — PERSISTENT
+    ls.set(LS_LAST_SYNC, String(_lastSyncAt)); // simpan last sync time — PERSISTENT
+    console.log('[visibility] persisted checkpoint:', { hiddenAt: Date.now(), lastSync: _lastSyncAt });
+  } catch(e) { console.warn('[visibility] save error:', e); }
+}
+
+// Helper: calculate bg duration, fallback ke localStorage jika in-memory state hilang
+function calculateBackgroundDuration(){
+  if(_hiddenAt) return Date.now() - _hiddenAt;
+  
+  // Fallback: cek localStorage jika device crash/force-kill
+  try {
+    const savedHidden = ls.get(LS_HIDDEN_AT);
+    if(savedHidden){
+      const bgDur = Date.now() - parseInt(savedHidden, 10);
+      console.log('[checkpoint] fallback mode — recovered bg duration from checkpoint:', bgDur, 'ms');
+      ls.delete(LS_HIDDEN_AT); // hapus checkpoint, sudah terpakai
+      return bgDur;
+    }
+  } catch(e) { console.warn('[checkpoint] fallback error:', e); }
+  
+  return Infinity; // jika tidak ada data, assume lama (force re-sync)
+}
 
 document.addEventListener('visibilitychange', () => {
   if(!currentUser || !currentSchoolId) return; // jangan jalan jika belum login/sekolah
+  
   if(document.visibilityState === 'hidden'){
-    // ── TUTUP / BACKGROUND: simpan ke localStorage ──
+    // ── TUTUP / BACKGROUND: simpan to localStorage dengan CHECKPOINT ──
     _hiddenAt = Date.now();
-    try {
-      ls.set('db_setoran', JSON.stringify(dataSetoran));
-      ls.set('db_absensi_harian', JSON.stringify(dataAbsensi));
-      ls.set('db_master_siswa', JSON.stringify(masterSiswa));
-      ls.set('db_points', JSON.stringify(userPoints));
-      ls.set('db_streaks', JSON.stringify(userStreaks));
-      ls.set('_lastSyncAt', String(_lastSyncAt));
-    } catch(e) { console.warn('[visibility] save error:', e); }
+    persistHiddenState();
+    console.log('[visibility] app hidden, checkpoint saved at', _hiddenAt);
 
   } else if(document.visibilityState === 'visible'){
     // ── BUKA / KEMBALI KE FOREGROUND: re-fetch jika sudah lama di background ──
-    const bgDuration = _hiddenAt ? Date.now() - _hiddenAt : Infinity;
-    _hiddenAt = null;
+    const bgDuration = calculateBackgroundDuration();
+    _hiddenAt = null; // reset memory state
+    
+    console.log('[visibility] app visible, bg duration:', bgDuration, 'ms');
 
     if(bgDuration >= _MIN_BG_MS){
       // Sudah ≥30 detik di background → ambil data terbaru dari Firestore
       if(typeof fetchAllData === 'function' && currentSchoolId){
-        fetchAllData().then(() => {
-          _lastSyncAt = Date.now();
-          ls.set('_lastSyncAt', String(_lastSyncAt));
-        }).catch(e => console.warn('[visibility] fetchAllData error:', e));
+        console.log('[visibility] triggering fetchAllData due to long background (>= 30s)');
+        showSyncing(); // tampilkan sync indicator
+        fetchAllData()
+          .then(() => {
+            _lastSyncAt = Date.now();
+            ls.set(LS_LAST_SYNC, String(_lastSyncAt));
+            showSyncDone();
+            console.log('[visibility] fetchAllData success at', _lastSyncAt);
+          })
+          .catch(e => {
+            console.warn('[visibility] fetchAllData error:', e);
+            showToast('⚠️ Gagal menyinkron data setelah kembali aktif', 'warning');
+          });
       }
+    } else {
+      console.log('[visibility] bg duration < 30s threshold, skipping re-fetch');
     }
-    // Jika < 30 detik (misal switch tab sebentar), tidak perlu fetch ulang
   }
 });
 
@@ -9715,6 +9767,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Called by Firebase auth after successful login
 document.addEventListener('firebase-ready', function() {
+  // Restore sync checkpoint dari localStorage sebelum semua operasi lain
+  restoreSyncCheckpoint();
+  
   // fetchAllData sudah render semua UI utama.
   // Di sini hanya init pelengkap yang tidak ada di fetchAllData.
   if(typeof XLSX === 'undefined'){
