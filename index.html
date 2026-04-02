@@ -2678,6 +2678,9 @@ span > .fai, div > .fai { vertical-align: middle; }
   background: #0c4a2a;
   display: flex; align-items: center; justify-content: center;
   padding: 20px;
+  padding-top: max(20px, env(safe-area-inset-top, 20px));
+  padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
+  overflow-y: auto;
   opacity: 0; pointer-events: none; transition: opacity .3s;
 }
 #schoolSetupOverlay.show { opacity: 1; pointer-events: all; }
@@ -2685,6 +2688,9 @@ span > .fai, div > .fai { vertical-align: middle; }
   background: #fff; border-radius: 20px;
   padding: 28px 24px; width: 100%; max-width: 400px;
   box-shadow: 0 8px 32px rgba(0,0,0,.2);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .ss-logo {
   text-align: center; font-size: 48px; margin-bottom: 8px;
@@ -2724,7 +2730,7 @@ span > .fai, div > .fai { vertical-align: middle; }
   text-align: center; padding: 20px 0;
 }
 .ss-pending-icon { font-size: 48px; margin-bottom: 12px; }
-.ss-err { color: var(--red); font-size: var(--fsm); text-align: center; display: none; }
+.ss-err { color: var(--red); font-size: var(--fsm); text-align: center; display: none; min-height: 18px; margin-top: 4px; line-height: 1.4; }
 
 /* ── Kenaikan Kelas ── */
 .kk-header-kelas {
@@ -2866,9 +2872,29 @@ span > .fai, div > .fai { vertical-align: middle; }
 }
 .csd-close:active { background: var(--brd); color: var(--txt); }
 
-/* ── Search & divider — disembunyikan ── */
-.csd-search-wrap { display: none !important; }
-.csd-divider     { display: none !important; }
+/* ── Search wrap — show only when CSD has many items (controlled by JS) ── */
+.csd-search-wrap {
+  display: none;
+  padding: 8px 10px 6px;
+  flex-shrink: 0;
+}
+.csd-search-wrap.visible { display: block; }
+.csd-divider { display: none; }
+.csd-divider.visible { display: block; height: 1px; background: var(--brd); margin: 0 10px; }
+
+/* ── Search input inside CSD ── */
+.csd-search {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1.5px solid var(--brd);
+  border-radius: var(--rs);
+  font-size: var(--fmd);
+  color: var(--txt);
+  background: var(--surf2);
+  outline: none;
+  transition: border-color .15s;
+}
+.csd-search:focus { border-color: var(--g5); background: #fff; }
 
 /* ── Scrollable body ── */
 .csd-body {
@@ -4135,23 +4161,23 @@ span > .fai, div > .fai { vertical-align: middle; }
 
 <!-- Bottom Navigation -->
 <div class="bnav">
-  <div class="bnav-buttons">
-    <button class="nb on" id="nb0" onclick="goPage(0)" tabindex="0">
+  <div class="bnav-buttons" role="tablist" aria-label="Navigasi Utama">
+    <button class="nb on" id="nb0" onclick="goPage(0)" tabindex="0" role="tab" aria-selected="true" aria-label="Beranda">
       <svg class="fai" viewBox="0 0 576 512" aria-hidden="true"><path d="M575.8 255.5c0 18-15 32.1-32 32.1h-32l.7 160.2c0 2.7-.2 5.4-.5 8.1V472c0 22.1-17.9 40-40 40H456c-1.1 0-2.2 0-3.3-.1c-1.4 .1-2.8 .1-4.2 .1H416 392c-22.1 0-40-17.9-40-40V448 384c0-17.7-14.3-32-32-32H256c-17.7 0-32 14.3-32 32v64 24c0 22.1-17.9 40-40 40H160 128.1c-1.4 0-2.8 0-4.2-.1c-1.1 .1-2.2 .1-3.3 .1H96c-22.1 0-40-17.9-40-40V360c0-.9 0-1.9 .1-2.8V287.6H32c-18 0-32-14-32-32.1c0-9 3-17 10-24L266.4 8c7-7 15-8 22-8s15 2 21 7L564.8 231.5c8 7 12 15 11 24z"/></svg><span>Beranda</span>
     </button>
-    <button class="nb" id="nb1" onclick="goPage(1)" tabindex="0">
+    <button class="nb" id="nb1" onclick="goPage(1)" tabindex="0" role="tab" aria-selected="false" aria-label="Tahfidh">
       <svg class="fai" viewBox="0 0 576 512" aria-hidden="true"><path d="M249.6 471.5c10.8 3.8 22.4-4.1 22.4-15.5V78.6c0-4.2-1.6-8.4-5-11C247.4 52 202.4 32 144 32C93.5 32 46.3 45.3 18.1 56.1C6.8 60.5 0 71.7 0 83.8V454.1c0 11.9 12.8 20.2 24.1 16.5C55.6 460.1 105.5 448 144 448c33.9 0 79 14 105.6 23.5zm76.8 0C353 462 398.1 448 432 448c38.5 0 88.4 12.1 119.9 22.6c11.3 3.8 24.1-4.6 24.1-16.5V83.8c0-12.1-6.8-23.3-18.1-27.6C529.7 45.3 482.5 32 432 32c-58.4 0-103.4 20-123 35.6c-3.3 2.6-5 6.8-5 11V456c0 11.4 11.7 19.3 22.4 15.5z"/></svg><span>Tahfidh</span>
     </button>
-    <button class="nb" id="nb2" onclick="goPage(2)" tabindex="0">
+    <button class="nb" id="nb2" onclick="goPage(2)" tabindex="0" role="tab" aria-selected="false" aria-label="Absen">
       <svg class="fai" viewBox="0 0 640 512" aria-hidden="true"><path d="M144 0a80 80 0 1 1 0 160A80 80 0 1 1 144 0zM512 0a80 80 0 1 1 0 160A80 80 0 1 1 512 0zM0 298.7C0 239.8 47.8 192 106.7 192h42.7c15.9 0 31 3.5 44.6 9.7c-1.3 7.2-1.9 14.7-1.9 22.3c0 38.2 16.8 72.5 43.3 96c-.2 0-.4 0-.7 0H21.3C9.6 320 0 310.4 0 298.7zM405.3 320c-.2 0-.4 0-.7 0c26.6-23.5 43.3-57.8 43.3-96c0-7.6-.7-15-1.9-22.3c13.6-6.3 28.7-9.7 44.6-9.7h42.7C592.2 192 640 239.8 640 298.7c0 11.8-9.6 21.3-21.3 21.3H405.3zM224 224a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zM128 485.3C128 411.7 187.7 352 261.3 352H378.7C452.3 352 512 411.7 512 485.3c0 14.7-11.9 26.7-26.7 26.7H154.7c-14.7 0-26.7-11.9-26.7-26.7z"/></svg><span>Absen</span>
     </button>
-    <button class="nb" id="nb3" onclick="goPage(3)">
+    <button class="nb" id="nb3" onclick="goPage(3)" role="tab" aria-selected="false" aria-label="Statistik">
       <svg class="fai" viewBox="0 0 512 512" aria-hidden="true"><path d="M64 64c0-17.7-14.3-32-32-32S0 46.3 0 64V400c0 44.2 35.8 80 80 80H480c17.7 0 32-14.3 32-32s-14.3-32-32-32H80c-8.8 0-16-7.2-16-16V64zm406.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L320 210.7l-57.4-57.4c-12.5-12.5-32.8-12.5-45.3 0l-112 112c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L240 221.3l57.4 57.4c12.5 12.5 32.8 12.5 45.3 0l128-128z"/></svg><span>Statistik</span>
     </button>
-    <button class="nb" id="nb4" onclick="goPage(4)">
+    <button class="nb" id="nb4" onclick="goPage(4)" role="tab" aria-selected="false" aria-label="Viewer">
       <svg class="fai" viewBox="0 0 384 512" aria-hidden="true"><path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM155.7 250.2L192 302.1l36.3-51.9c7.6-10.9 22.6-13.5 33.4-5.9s13.5 22.6 5.9 33.4L221.3 344l46.4 66.2c7.6 10.9 5 25.8-5.9 33.4s-25.8 5-33.4-5.9L192 385.8l-36.3 51.9c-7.6 10.9-22.6 13.5-33.4 5.9s-13.5-22.6-5.9-33.4L162.7 344l-46.4-66.2c-7.6-10.9-5-25.8 5.9-33.4s25.8-5 33.4 5.9z"/></svg><span>Viewer</span>
     </button>
-    <button class="nb" id="nb5" onclick="goPage(5)">
+    <button class="nb" id="nb5" onclick="goPage(5)" role="tab" aria-selected="false" aria-label="Tentang">
       <svg class="fai" viewBox="0 0 512 512" aria-hidden="true"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg><span>Tentang</span>
     </button>
   </div>
@@ -5565,7 +5591,12 @@ function goPage(i){
   inner.style.willChange = 'transform';
   curPg = i;
   inner.style.transform = `translateX(calc(-${i} * (100vw - var(--SNAV, 0px))))`;
-  for(let j=0;j<6;j++) document.getElementById('nb'+j).classList.toggle('on',j===i);
+  for(let j=0;j<6;j++){
+    const nb = document.getElementById('nb'+j);
+    nb.classList.toggle('on', j===i);
+    nb.setAttribute('aria-selected', j===i ? 'true' : 'false');
+    nb.setAttribute('tabindex', j===i ? '0' : '-1');
+  }
 
   const fab = document.getElementById('fabBtn');
   fab.style.display = (i === 2) ? 'flex' : 'none';
@@ -9848,7 +9879,13 @@ function openCsd(targetId, title) {
       _csdItems.push({ value: child.value, label: child.text, group: null });
     }
   }
-  // Clear search (tetap di-render, cuma tersembunyi via CSS)
+  // Show search bar if more than 6 regular items
+  const regularCount = _csdItems.filter(it => it.value && it.value !== 'SEMUA' && it.value !== '').length;
+  const searchWrap = document.getElementById('csdSearchWrap');
+  const divider    = document.querySelector('#csdOverlay .csd-divider');
+  if (searchWrap) searchWrap.classList.toggle('visible', regularCount > 6);
+  if (divider)    divider.classList.toggle('visible', regularCount > 6);
+  // Clear search
   const searchInput = document.getElementById('csdSearchInput');
   if (searchInput) searchInput.value = '';
   renderCsdItems();
@@ -9862,6 +9899,8 @@ function openCsd(targetId, title) {
   requestAnimationFrame(() => {
     if (sheet && trigger) _positionCsdSheet(sheet, trigger);
     if (sheet) sheet.style.visibility = '';
+    // Fokus ke search jika tampil
+    if (regularCount > 6 && searchInput) searchInput.focus();
   });
 }
 
@@ -10457,40 +10496,15 @@ function _generateKode() {
 }
 
 // ── Buat Sekolah Baru ──
-async function sinkronisasiUlang() {
-  if (!currentSchoolId) { showToast('Belum login ke sekolah', 'warning'); return; }
-  showToast('🔄 Menyinkronisasi...', 'info', 2000);
-  try {
-    await fetchAllData();
-    renderDdSiswa && renderDdSiswa();
-    updateStrip && updateStrip();
-    renderSiswaCards && renderSiswaCards();
-    updateDashboard && updateDashboard();
-    showToast('✅ Sinkronisasi selesai', 'success');
-  } catch(e) {
-    showToast('Gagal sinkronisasi: ' + e.message, 'error');
-  }
-}
-
-function bersihkanCacheLokal() {
-  if (!confirm('Bersihkan cache lokal? Data akan dimuat ulang dari server.')) return;
-  try {
-    const prefix = currentUser ? currentUser.uid + ':' : 'guest:';
-    Object.keys(localStorage).filter(k => k.startsWith(prefix)).forEach(k => localStorage.removeItem(k));
-    showToast('Cache lokal dibersihkan. Memuat ulang...', 'success', 2000);
-    setTimeout(() => location.reload(), 1500);
-  } catch(e) {
-    showToast('Gagal: ' + e.message, 'error');
-  }
-}
-
+async function ssBuatSekolah() {
   const nama      = document.getElementById('ssNamaSekolah')?.value.trim();
   const namaAdmin = document.getElementById('ssNamaAdmin')?.value.trim();
   const tahun     = document.getElementById('ssTahunAjaran')?.value.trim();
   _ssErr('ssErrBuat', '');
-  if (!nama)      return _ssErr('ssErrBuat', 'Nama sekolah wajib diisi');
-  if (!namaAdmin) return _ssErr('ssErrBuat', 'Nama admin wajib diisi');
+  if (!nama || nama.length < 3)  return _ssErr('ssErrBuat', 'Nama sekolah minimal 3 karakter');
+  if (!namaAdmin || namaAdmin.length < 2) return _ssErr('ssErrBuat', 'Nama admin minimal 2 karakter');
   if (!tahun)     return _ssErr('ssErrBuat', 'Tahun ajaran wajib diisi');
+  if (!/^\d{4}\/\d{4}$/.test(tahun)) return _ssErr('ssErrBuat', 'Format tahun ajaran: 2024/2025');
 
   _ssSetLoading('ssBtnBuat', true);
   try {
@@ -10563,7 +10577,8 @@ async function ssGabungSekolah() {
   const namaGuru = document.getElementById('ssNamaGuru')?.value.trim();
   _ssErr('ssErrGabung', '');
   if (!kode || kode.length !== 6) return _ssErr('ssErrGabung', 'Masukkan kode sekolah 6 karakter');
-  if (!namaGuru)                   return _ssErr('ssErrGabung', 'Nama wajib diisi');
+  if (!/^[A-Z0-9]{6}$/.test(kode)) return _ssErr('ssErrGabung', 'Kode hanya boleh huruf A-Z dan angka 2-9');
+  if (!namaGuru || namaGuru.length < 2) return _ssErr('ssErrGabung', 'Nama wajib diisi minimal 2 karakter');
 
   _ssSetLoading('ssBtnGabung', true);
   try {
@@ -10987,7 +11002,7 @@ async function ssGabungSekolah() {
       <input type="text" id="ssNamaSekolah" placeholder="Nama Sekolah / Lembaga" autocapitalize="words">
       <input type="text" id="ssNamaAdmin"   placeholder="Nama Anda (Admin)" autocapitalize="words">
       <input type="text" id="ssTahunAjaran" placeholder="Tahun Ajaran (misal: 2024/2025)">
-      <div class="ss-err" id="ssErrBuat"></div>
+      <div class="ss-err" id="ssErrBuat" role="alert" aria-live="polite"></div>
       <button class="btn bp bfull" id="ssBtnBuat" onclick="ssBuatSekolah()">
         ✨ Buat Sekolah
       </button>
@@ -10999,7 +11014,7 @@ async function ssGabungSekolah() {
              maxlength="6" style="text-transform:uppercase;letter-spacing:4px;font-weight:700;text-align:center;"
              oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
       <input type="text" id="ssNamaGuru" placeholder="Nama Anda" autocapitalize="words">
-      <div class="ss-err" id="ssErrGabung"></div>
+      <div class="ss-err" id="ssErrGabung" role="alert" aria-live="polite"></div>
       <button class="btn bp bfull" id="ssBtnGabung" onclick="ssGabungSekolah()">
         🔗 Gabung Sekolah
       </button>
