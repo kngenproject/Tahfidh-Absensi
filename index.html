@@ -4118,11 +4118,7 @@ span > .fai, div > .fai { vertical-align: middle; }
   </div>
   <div>
     <label class="flbl">Surat</label>
-    <button type="button" class="csd-trigger placeholder" id="suratTrigger" onclick="openCsdGrid('surat','📖 Pilih Surat')" style="width:100%;">
-      <span id="suratLabel">— Pilih Surat —</span>
-      <span class="csd-trigger-arrow"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg></span>
-    </button>
-    <select id="surat" style="display:none;" onchange="renderAyatList();"></select>
+    <select id="surat" onchange="renderAyatList();"></select>
   </div>
 </div>
           <!-- Dari & Sampai Ayat dalam satu baris (2 kolom) -->
@@ -6588,7 +6584,6 @@ function buildSuratDropdown() {
   } else {
     sel.selectedIndex = sorted.length > 0 ? 1 : 0;
   }
-  syncCsdTrigger('surat');
   renderAyatList();
 }
 // GANTI fungsi renderAyatList() dengan yang ini
@@ -6755,7 +6750,6 @@ function showSiswaHafalanHistory(nama){
       const suratSel = document.getElementById('surat');
       if (suratSel && terakhir.surat) {
         suratSel.value = terakhir.surat;
-        syncCsdTrigger('surat');
       }
 
       // Set ayat mulai & sampai dari rentang terakhir
@@ -8508,6 +8502,8 @@ function renderAyatGrid(){
 function simpanSetoran(){
   const nama = document.getElementById('namaSiswa').value;
   if(!nama){ showToast('Pilih Nama Siswa!','warning'); return; }
+  const suratVal = document.getElementById('surat').value;
+  if(!suratVal){ showToast('Pilih Surat terlebih dahulu!','warning'); return; }
   const ayatSalah = [...document.querySelectorAll('.ai.salah')].map(x => x.textContent);
   const tambahan = document.getElementById('tambahan').value;
   const catSalah = [...document.querySelectorAll('.cat-salah:checked')].map(x => x.value);
