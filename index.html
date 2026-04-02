@@ -1058,259 +1058,6 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
   line-height: 1.5;
   margin-bottom: 2px;
 }
-
-/* ══════════════════════════════
-   MATERIAL SETTINGS PAGE STYLES
-══════════════════════════════ */
-
-/* App Identity Banner — compact */
-.set-banner {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: linear-gradient(135deg, var(--g9), var(--g7));
-  border-radius: var(--r);
-  padding: 14px 16px;
-  margin-bottom: 10px;
-  box-shadow: var(--sh);
-  color: #fff;
-}
-.set-banner-icon {
-  font-size: 32px;
-  flex-shrink: 0;
-  width: 48px;
-  height: 48px;
-  background: rgba(255,255,255,.15);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.set-banner-info { flex: 1; min-width: 0; }
-.set-banner-name {
-  font-size: var(--flg);
-  font-weight: 800;
-  letter-spacing: .3px;
-}
-.set-banner-sub {
-  font-size: var(--fxs);
-  opacity: .75;
-  margin-top: 2px;
-}
-.set-banner-ver {
-  font-size: var(--fxs);
-  background: rgba(255,255,255,.18);
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-weight: 700;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-
-/* Section label (divider) */
-.set-section-lbl {
-  font-size: var(--fxs);
-  font-weight: 700;
-  color: var(--g6);
-  text-transform: uppercase;
-  letter-spacing: .8px;
-  padding: 14px 4px 6px;
-}
-
-/* Material-style setting row */
-.set-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 13px 14px;
-  border-bottom: 1px solid var(--brd);
-  background: var(--surf);
-  cursor: default;
-  transition: background .15s;
-}
-.set-row:last-child { border-bottom: none; }
-.set-row:active { background: var(--surf2); }
-.set-row-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-}
-.set-row-icon.ic-green  { background: var(--g1); color: var(--g7); }
-.set-row-icon.ic-blue   { background: #e3f0fb; color: var(--blu); }
-.set-row-icon.ic-yellow { background: #fef3c7; color: #b45309; }
-.set-row-icon.ic-red    { background: #fff0f0; color: var(--red); }
-.set-row-icon.ic-teal   { background: #e0f4f5; color: var(--tel); }
-.set-row-body { flex: 1; min-width: 0; }
-.set-row-title {
-  font-size: var(--fmd);
-  font-weight: 700;
-  color: var(--txt);
-  line-height: 1.3;
-}
-.set-row-sub {
-  font-size: var(--fxs);
-  color: var(--mut);
-  margin-top: 2px;
-  line-height: 1.4;
-}
-.set-row-action { flex-shrink: 0; }
-
-/* Card with 0 padding for rows */
-.set-card {
-  background: var(--surf);
-  border-radius: var(--r);
-  box-shadow: var(--sh);
-  margin-bottom: 10px;
-  overflow: hidden;
-}
-.set-card-hd {
-  padding: 10px 14px 8px;
-  font-size: var(--fxs);
-  font-weight: 700;
-  color: var(--mut);
-  text-transform: uppercase;
-  letter-spacing: .6px;
-  border-bottom: 1px solid var(--brd);
-  background: var(--surf2);
-}
-
-/* Akun row */
-.set-akun-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px;
-}
-.set-akun-avatar {
-  width: 44px; height: 44px;
-  border-radius: 50%;
-  background: var(--g4);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px; color: #fff;
-  flex-shrink: 0; overflow: hidden;
-}
-.set-akun-info { flex: 1; min-width: 0; }
-.set-akun-name {
-  font-weight: 800;
-  font-size: var(--fmd);
-  color: var(--txt);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.set-akun-email {
-  font-size: var(--fsm);
-  color: var(--mut);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  margin-top: 1px;
-}
-
-/* Danger zone */
-.set-danger-card {
-  background: var(--surf);
-  border-radius: var(--r);
-  box-shadow: var(--sh);
-  margin-bottom: 10px;
-  overflow: hidden;
-  border: 1px solid #ffdede;
-}
-.set-danger-hd {
-  padding: 10px 14px 8px;
-  font-size: var(--fxs);
-  font-weight: 700;
-  color: var(--red);
-  text-transform: uppercase;
-  letter-spacing: .6px;
-  border-bottom: 1px solid #ffdede;
-  background: #fff8f8;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.set-danger-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 13px 14px;
-  border-bottom: 1px solid #ffeaea;
-  cursor: pointer;
-  transition: background .15s;
-}
-.set-danger-row:last-child { border-bottom: none; }
-.set-danger-row:active { background: #fff0f0; }
-.set-danger-title {
-  font-size: var(--fmd);
-  font-weight: 700;
-  color: var(--red);
-}
-.set-danger-sub {
-  font-size: var(--fxs);
-  color: #c0605a;
-  margin-top: 2px;
-}
-
-/* Font size control inline */
-.set-font-ctrl {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px 12px;
-  background: var(--surf2);
-  border-top: 1px solid var(--brd);
-}
-.set-font-ctrl input[type=range] {
-  flex: 1;
-  accent-color: var(--g6);
-  height: 4px;
-  cursor: pointer;
-}
-
-/* Fitur collapse */
-.set-fitur-toggle {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 13px 14px;
-  cursor: pointer;
-  user-select: none;
-  -webkit-user-select: none;
-  transition: background .15s;
-}
-.set-fitur-toggle:active { background: var(--surf2); }
-.set-fitur-chevron {
-  flex-shrink: 0;
-  color: var(--mut);
-  transition: transform .25s;
-  display: flex;
-  align-items: center;
-}
-.set-fitur-chevron.open { transform: rotate(180deg); }
-.set-fitur-body {
-  display: none;
-  border-top: 1px solid var(--brd);
-}
-.set-fitur-body.open { display: block; }
-.set-fitur-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--brd);
-  font-size: var(--fsm);
-  line-height: 1.5;
-  color: var(--mut);
-}
-.set-fitur-item:last-child { border-bottom: none; }
-.set-fitur-item strong {
-  display: block;
-  font-size: var(--fmd);
-  color: var(--txt);
-  margin-bottom: 1px;
-  font-weight: 700;
-}
 /* Utility */
 .slbl { 
   font-size:var(--fmd); 
@@ -2032,21 +1779,39 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
   font-size:var(--fmd); 
   color:#5a4a00; 
 }
-.tab-nav {
-  padding: 2px;
-  gap: 2px;
-  margin-bottom: 6px;
+.tab-nav { 
+  display:flex; 
+  gap:4px; 
+  background:var(--surf2); 
+  padding:4px; 
+  border-radius:var(--rs); 
+  margin-bottom:10px; 
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
   position: sticky;
   top: 0;
-  background: var(--bg);
   z-index: 10;
 }
 .tab-nav::-webkit-scrollbar { display: none; }
-.tab-btn {
-  padding: 4px 2px;
-  font-size: 0.65rem;
-  min-height: 32px;
+.tab-btn { 
+  flex:1; 
+  flex-shrink: 0;
+  min-width: 60px;
+  padding:8px 6px; 
+  border:none; 
+  background:transparent; 
+  border-radius:6px; 
+  font-size:var(--fsm); 
+  font-weight:700; 
+  color:var(--mut); 
+  cursor:pointer; 
+  transition:all .2s; 
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 44px;
 }
 .tab-btn.active { 
   background:var(--surf); 
@@ -2138,219 +1903,53 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
   font-weight:700; 
 }
 @media (max-width: 380px) {
-  .tab-btn {
-    font-size: 0.6rem;
-    padding: 4px 1px;
+  :root {
+    --HDR: 48px; --NAV: 48px;
+    --fxs: 0.68rem;
+    --fsm: 0.75rem;
+    --fmd: 0.82rem;
+    --flg: 0.88rem;
+    --fxl: 0.95rem;
+    --f2xl: 1.20rem;
+    --f3xl: 1.45rem;
+    --f4xl: 1.90rem;
   }
-}@media (min-width: 480px) {
+  .pg { padding: 8px 8px 14px; }
+  .hdr-sub { display: block; }
+  .badges-grid { grid-template-columns: repeat(3, 1fr) !important; }
+  .strow { grid-template-columns: repeat(4, 1fr) !important; }
+}
+@media (min-width: 480px) {
   .badges-grid { grid-template-columns: repeat(5, 1fr) !important; }
 }
-@media (max-width: 768px) {
-  /* Kompakkan semua spacing */
-  .pg {
-    padding: 6px 8px 8px 8px;
+@media (min-width: 768px) {
+  html { font-size: clamp(14px, 2vw, 16px); }
+  :root {
+    --HDR: 60px;
+    --NAV: 60px;
+    --fxs: 0.72rem;
+    --fsm: 0.80rem;
+    --fmd: 0.88rem;
+    --flg: 0.96rem;
+    --fxl: 1.05rem;
+    --f2xl: 1.35rem;
+    --f3xl: 1.65rem;
+    --f4xl: 2.30rem;
   }
-  
-  .card {
-    margin-bottom: 6px;
-    border-radius: 8px;
-  }
-  
-  .chd {
-    padding: 6px 8px;
-    font-size: 0.7rem;
-  }
-  
-  .cbd {
-    padding: 6px 8px;
-  }
-  
-  /* Compact Grid untuk stats */
-  .s4, .s3, .quick-actions {
-    gap: 4px;
-    margin-bottom: 6px;
-  }
-  
-  .sc {
-    padding: 4px 2px;
-  }
-  
-  .scn {
-    font-size: 1rem;
-  }
-  
-  .scl {
-    font-size: 0.6rem;
-  }
-  
-  /* Compact untuk progress ring */
-  .progress-ring-container {
-    padding: 8px;
-    gap: 8px;
-  }
-  
-  .progress-ring {
-    width: 50px;
-    height: 50px;
-  }
-  
-  .progress-text {
-    font-size: 0.7rem;
-  }
-  
-  /* Compact untuk streak & points */
-  .streak-container, .points-container {
-    padding: 8px;
-  }
-  
-  .streak-count, .points-count {
-    font-size: 1.2rem;
-  }
-  
-  .streak-label, .points-label {
-    font-size: 0.6rem;
-  }
-  
-  /* Compact untuk heatmap */
-  .heatmap-container {
-    padding: 6px;
-  }
-  
-  .heatmap-grid {
-    gap: 2px;
-  }
-  
-  .heatmap-day {
-    font-size: 0.6rem;
-    min-height: 20px;
-  }
-  
-  /* Compact untuk badges */
-  .badges-grid {
-    gap: 4px;
-  }
-  
-  .badge-item {
-    padding: 6px 4px;
-  }
-  
-  .badge-icon {
-    font-size: 1rem;
-  }
-  
-  .badge-name {
-    font-size: 0.6rem;
-  }
-  
-  /* Compact untuk form */
-  .flbl {
-    font-size: 0.65rem;
-    margin-bottom: 2px;
-  }
-  
-  .csd-trigger, select, input {
-    padding: 6px 8px;
-    font-size: 0.7rem;
-    min-height: 32px;
-  }
-  
-  .btn {
-    padding: 6px 12px;
-    font-size: 0.7rem;
-  }
-  
-  /* Compact untuk tabel */
-  .tbl th, .tbl td {
-    padding: 4px 3px;
-    font-size: 0.65rem;
-  }
-  
-  /* Compact untuk absensi cards */
-  .scard {
-    padding: 6px 8px;
-    margin-bottom: 4px;
-  }
-  
-  .stbtn {
-    padding: 3px 2px;
-    font-size: 0.6rem;
-    min-height: 28px;
-  }
-  
-  .sc-name {
-    font-size: 0.7rem;
-  }
-  
-  /* Compact untuk lencana */
-  .leaderboard-item {
-    padding: 6px;
-    gap: 6px;
-  }
-  
-  .leaderboard-rank {
-    width: 24px;
-    height: 24px;
-    font-size: 0.7rem;
-  }
-  
-  .leaderboard-name {
-    font-size: 0.7rem;
-  }
-  
-  .leaderboard-points {
-    font-size: 0.6rem;
-  }
-  
-  .leaderboard-value {
-    font-size: 0.8rem;
-  }
-  
-  /* Compact untuk setoran list */
-  .rekap-row {
-    padding: 4px 6px;
-    gap: 4px;
-    font-size: 0.65rem;
-  }
-  
-  .prog-row {
-    padding: 4px 0;
-    gap: 6px;
-  }
-  
-  .prog-avatar {
-    width: 28px;
-    height: 28px;
-    font-size: 0.7rem;
-  }
-  
-  .prog-nama {
-    font-size: 0.7rem;
-  }
-  
-  .prog-detail {
-    font-size: 0.6rem;
-  }
-  
-  /* Hide less important elements */
-  .quick-actions .qa-label {
-    font-size: 0.6rem;
-  }
-  
-  .quick-actions .qa-icon {
-    font-size: 1rem;
-    margin-bottom: 2px;
-  }
-  
-  /* Compact untuk modal */
-  .modal-content {
-    max-width: 90vw;
-    max-height: 80vh;
-  }
-  
-  .modal-header, .modal-body, .modal-footer {
-    padding: 8px 10px;
-  }
-}@media (min-width: 820px) {
+  .pg { padding: 16px 20px 20px; }
+  .s4 { grid-template-columns: repeat(4, 1fr) !important; gap: 12px; }
+  .s3 { grid-template-columns: repeat(3, 1fr) !important; gap: 12px; }
+  .quick-actions { grid-template-columns: repeat(4, 1fr) !important; gap: 12px; }
+  .badges-grid { grid-template-columns: repeat(5, 1fr) !important; gap: 10px; }
+  .heatmap-grid { grid-template-columns: repeat(15, 1fr) !important; gap: 5px; }
+  .strow { grid-template-columns: repeat(4, 1fr) !important; gap: 6px; }
+  .chart-slot { height: 280px; }
+  .scard { padding: 14px 16px; }
+  .btn { padding: 12px 20px; }
+  .card { margin-bottom: 12px; }
+  .lhdr, .lrow { grid-template-columns: 2fr 1.8fr 44px 1.2fr !important; }
+}
+@media (min-width: 820px) {
   /* Tablet 10 inci (MatePad SE, iPad mini dst) */
   .pg { max-width: 720px; margin: 0 auto; }
   .pginner { align-items: flex-start; }
@@ -2411,7 +2010,7 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
   .surat-check-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
   .csd-sheet   { width: min(320px, calc(100vw - 32px)); max-height: 60vh; }
   .edit-card  { max-width: 460px; padding: 24px 22px; }
-  .edit-sheet { border-radius: 20px; max-width: 85vw; max-height: 85vh; padding: 18px 20px; }
+  .edit-sheet { border-radius: 20px; max-width: 640px; padding: 18px 20px; }
   .hdr-title { font-size: 15px; }
   .hdr-sub   { font-size: 10px; }
   .quick-actions { gap: 10px; }
@@ -2429,7 +2028,7 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
   .mpa-col-right    { padding: 16px 18px 28px; }
   .csd-sheet        { width: min(340px, calc(100vw - 48px)); max-height: 65vh; }
   .edit-card  { max-width: 500px; padding: 28px 26px; box-shadow: 0 8px 32px rgba(0,0,0,.14); }
-  .edit-sheet { max-width: 90vw; max-height: 90vh; padding: 20px 24px; border-radius: 20px; }
+  .edit-sheet { max-width: 720px; padding: 20px 24px; border-radius: 20px; }
   .hdr-title { font-size: 16px; letter-spacing: .4px; }
   .hdr-ico   { width: 40px; height: 40px; font-size: 22px; }
   .chart-slot         { height: 340px; }
@@ -2466,7 +2065,7 @@ input[type=search]:focus, textarea:focus { font-size: 16px; }
 
   .badges-grid { grid-template-columns: repeat(5, 1fr) !important; }
   .edit-card  { max-width: 560px; }
-  .edit-sheet { max-width: 90vw; max-height: 90vh; padding: 22px 28px; }
+  .edit-sheet { max-width: 800px; padding: 22px 28px; }
   .mpa-sheet  { max-width: 1040px; height: 88vh; }
   .mpa-col-left { width: 340px; }
   .csd-sheet  { width: 360px; }
@@ -3155,20 +2754,15 @@ span > .fai, div > .fai { vertical-align: middle; }
   display: none; position: fixed; inset: 0; z-index: 9000;
   background: rgba(0,0,0,.5); align-items: center; justify-content: center;
   padding: 16px;
-  overflow: hidden;
 }
 .edit-overlay.show { display: flex; }
 .edit-sheet {
   background: var(--surf);
   border-radius: 16px;
   width: 100%;
-  max-width: 95vw;
-  max-height: 95vh;
+  max-width: 580px;
   padding: 16px 16px;
   padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
 }
 
 .edit-card {
@@ -3177,118 +2771,6 @@ span > .fai, div > .fai { vertical-align: middle; }
 }
 .edit-card h3 { font-size:var(--flg); font-weight: 800; color: var(--g8); margin-bottom: 16px; }
 .form-row { margin-bottom: 12px; }
-
-/* ── Grid Cards untuk Detail Modal ── */
-.detail-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
-  gap: 12px;
-  width: 100%;
-}
-
-@media (min-width: 480px) {
-  .detail-grid {
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
-  }
-}
-
-@media (min-width: 768px) {
-  .detail-grid {
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  }
-}
-
-@media (min-width: 1024px) {
-  .detail-grid {
-    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-    gap: 14px;
-  }
-}
-
-@media (min-width: 1280px) {
-  .detail-grid {
-    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-    gap: 16px;
-  }
-}
-
-.detail-card {
-  background: var(--surf2);
-  border: 1px solid var(--brd);
-  border-radius: var(--rs);
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.2s ease;
-}
-
-.detail-card:active {
-  transform: scale(0.98);
-}
-
-.detail-card-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.detail-card-title {
-  font-weight: 700;
-  font-size: var(--fmd);
-  color: var(--g8);
-}
-
-.detail-card-subtitle {
-  font-size: var(--fxs);
-  color: var(--mut);
-  margin-top: 2px;
-}
-
-.detail-card-section {
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-  padding-top: 8px;
-}
-
-.detail-card-label {
-  font-size: var(--fxs);
-  font-weight: 700;
-  color: var(--mut);
-  text-transform: uppercase;
-  margin-bottom: 4px;
-  letter-spacing: 0.3px;
-}
-
-.detail-card-value {
-  font-size: var(--fsm);
-  color: var(--txt);
-  word-break: break-word;
-}
-
-.detail-card-badge {
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.detail-card-delete {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #ddd;
-  font-size: var(--fxl);
-  padding: 6px;
-  transition: color 0.2s;
-}
-
-.detail-card-delete:active {
-  color: var(--red);
-}
 .form-row label { display: block; font-size:var(--fsm); font-weight: 700; color: var(--mut); margin-bottom: 4px; }
 .form-row input, .form-row select {
   width: 100%; padding: 9px 11px; border: 1.5px solid var(--brd);
@@ -3703,6 +3185,8 @@ span > .fai, div > .fai { vertical-align: middle; }
   }
 }
 
+/* ── Login Screen ── */
+
 </style>
 </head>
 <body>
@@ -4017,6 +3501,32 @@ span > .fai, div > .fai { vertical-align: middle; }
 
     <!-- TAB 1 — TAHFIDH JUZ 30 -->
     <div class="pg" id="pg1">
+      <!-- IMPORT STRIP -->
+      <div class="istrip" id="istrip">
+        <div class="is-info">
+          <svg class="fai" viewBox="0 0 640 512" aria-hidden="true"><path d="M144 0a80 80 0 1 1 0 160A80 80 0 1 1 144 0zM512 0a80 80 0 1 1 0 160A80 80 0 1 1 512 0zM0 298.7C0 239.8 47.8 192 106.7 192h42.7c15.9 0 31 3.5 44.6 9.7c-1.3 7.2-1.9 14.7-1.9 22.3c0 38.2 16.8 72.5 43.3 96c-.2 0-.4 0-.7 0H21.3C9.6 320 0 310.4 0 298.7zM405.3 320c-.2 0-.4 0-.7 0c26.6-23.5 43.3-57.8 43.3-96c0-7.6-.7-15-1.9-22.3c13.6-6.3 28.7-9.7 44.6-9.7h42.7C592.2 192 640 239.8 640 298.7c0 11.8-9.6 21.3-21.3 21.3H405.3zM224 224a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zM128 485.3C128 411.7 187.7 352 261.3 352H378.7C452.3 352 512 411.7 512 485.3c0 14.7-11.9 26.7-26.7 26.7H154.7c-14.7 0-26.7-11.9-26.7-26.7z"/></svg>
+          <div class="is-text">
+            <div class="is-lbl" id="istripLbl">Belum ada daftar siswa</div>
+            <div class="is-sub" id="istripSub">Import Excel atau tambah manual</div>
+          </div>
+        </div>
+        <button class="is-btn" onclick="openTambahSiswaManual()" style="margin-right:6px;background:var(--g5);">+ Siswa</button>
+        <label class="is-btn" for="xlsIn">
+          <svg class="fai" viewBox="0 0 512 512" aria-hidden="true"><path d="M288 109.3V352c0 17.7-14.3 32-32 32s-32-14.3-32-32V109.3l-73.4 73.4c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l128-128c12.5-12.5 32.8-12.5 45.3 0l128 128c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L288 109.3zM64 352H192c0 35.3 28.7 64 64 64s64-28.7 64-64H448c35.3 0 64 28.7 64 64v32c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V416c0-35.3 28.7-64 64-64z"/></svg> Import Excel
+        </label>
+        <input type="file" id="xlsIn" accept=".xlsx,.xls" style="display:none" onchange="importMasterData(this)">
+      </div>
+
+
+      <!-- Tombol Pencapaian Awal -->
+      <div style="margin-bottom:10px;">
+        <button class="btn bfull" onclick="openPencapaian()"
+          style="background:linear-gradient(135deg,#f9a825,#e6b830); color:#2a1800; border:none; font-weight:800; gap:8px;">
+          <svg class="fai" viewBox="0 0 576 512" aria-hidden="true"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
+          Input Pencapaian Awal Siswa
+        </button>
+        <div style="text-align:center; font-size:var(--fxs); color:var(--mut); margin-top:4px;">Untuk siswa yang sudah hafal sebagian sebelum pakai aplikasi</div>
+      </div>
       <!-- Form Setoran Juz 30 -->
       <div class="card">
         <div class="chd"><span><svg class="fai" viewBox="0 0 512 512" aria-hidden="true"><path d="M368.4 18.3L312.7 74.1 437.9 199.3l55.7-55.7c21.9-21.9 21.9-57.3 0-79.2L447.6 18.3c-21.9-21.9-57.3-21.9-79.2 0zM288 94.6l-9.2 2.8L134.7 140.6c-19.9 6-35.7 21.2-42.3 41L3.8 445.8c-3.8 11.3-1 23.9 7.3 32.4L164.7 324.7c-3-6.3-4.7-13.3-4.7-20.7c0-26.5 21.5-48 48-48s48 21.5 48 48s-21.5 48-48 48c-7.4 0-14.4-1.7-20.7-4.7L33.7 500.9c8.6 8.3 21.1 11.2 32.4 7.3l264-88.6c19.7-6.6 35-22.4 41-42.3l43.2-144.1 2.8-9.2L288 94.6z"/></svg>Form Setoran Juz 30</span></div>
@@ -4037,8 +3547,10 @@ span > .fai, div > .fai { vertical-align: middle; }
           </div>
           <!-- Riwayat Hafalan Terakhir Siswa (muncul setelah pilih siswa) -->
           <div id="siswaHafalanHistory" style="display:none; margin-top:8px; background:var(--g0); border:1.5px solid var(--brd); border-radius:var(--rs); padding:10px; font-size:var(--fsm);"></div>
+
+        <!-- Ganti bagian Juz dan Surat di form setoran (sekitar baris 1190-1210) dengan kode berikut -->
 <!-- Juz & Surat dalam satu baris -->
-          <div style="display:grid; grid-template-columns: 1fr 2fr; gap:12px; margin-bottom:12px;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
   <div>
     <label class="flbl">Juz</label>
     <button type="button" class="csd-trigger placeholder" id="juzSelectTrigger" onclick="openCsd('juzSelect','📚 Pilih Juz')" style="width:100%;">
@@ -4056,6 +3568,7 @@ span > .fai, div > .fai { vertical-align: middle; }
     <select id="surat" style="display:none;" onchange="renderAyatList();"></select>
   </div>
 </div>
+
           <!-- Dari & Sampai Ayat dalam satu baris (2 kolom) -->
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
             <div>
@@ -4125,6 +3638,28 @@ span > .fai, div > .fai { vertical-align: middle; }
             </button>
           </div>
         </div>
+      </div>
+      <!-- Riwayat Setoran per Tanggal -->
+      <div class="card">
+        <div class="chd">
+          <span><svg class="fai" viewBox="0 0 512 512" aria-hidden="true"><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg>Riwayat Setoran</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span class="bdg bg" id="totSetoran">0</span>
+          </div>
+        </div>
+        <!-- Filter kelas -->
+        <div id="filterKelasSetoran" style="padding:6px 12px 0; display:none;">
+          <div id="chipsKelasSetoran" class="frow" style="flex-wrap:wrap; margin-bottom:0;"></div>
+        </div>
+        <!-- List tanggal -->
+        <div id="listSetoranTanggal" style="background:#fff; border-radius:0 0 var(--rs) var(--rs); overflow:hidden;">
+          <div id="emptySetoran" class="tempty">
+            <svg class="fai" viewBox="0 0 512 512" aria-hidden="true"><path d="M121 32C91.6 32 66 52 58.9 80.5L1.9 308.4C.6 313.5 0 318.7 0 323.9V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V323.9c0-5.2-.6-10.4-1.9-15.5l-57-227.9C446 52 420.4 32 391 32H121zm0 64H391l48 192H336c-13.3 0-24 10.7-24 24c0 48.6-39.4 88-88 88s-88-39.4-88-88c0-13.3-10.7-24-24-24H73L121 96z"/></svg>
+            Belum ada setoran
+          </div>
+        </div>
+        <!-- hidden tbody agar kode lama tidak error -->
+        <table style="display:none"><tbody id="tblSetoran"></tbody></table>
       </div>
     </div>
 
@@ -4333,100 +3868,98 @@ span > .fai, div > .fai { vertical-align: middle; }
       </div>
     </div>
 
-    <!-- TAB 5 — PENGATURAN (redesign Material) -->
+    <!-- TAB 5 — TENTANG -->
     <div class="pg" id="pg5">
-
-      <!-- ══ App Banner ══ -->
-      <div class="set-banner">
-        <div class="set-banner-icon">📖</div>
-        <div class="set-banner-info">
-          <div class="set-banner-name">TAMMA</div>
-          <div class="set-banner-sub">Tahfidh Juz Amma & Absensi Siswa</div>
-        </div>
-        <div class="set-banner-ver">v2.3.5</div>
+      <div class="ab-hero">
+        <div class="aico">📖</div>
+        <h2>TAMMA</h2>
+        <p>Manajemen Tahfidh Juz Amma & Absensi Siswa</p>
+        <span class="aver">Versi 2.3.5</span>
       </div>
 
-      <!-- ══ AKUN ══ -->
-      <div class="set-card" id="cardAkun">
-        <div class="set-card-hd">Akun</div>
-        <div class="set-akun-row">
-          <div id="settingsAvatar" class="set-akun-avatar">👤</div>
-          <div class="set-akun-info">
-            <div id="settingsUserName" class="set-akun-name">—</div>
-            <div id="settingsUserEmail" class="set-akun-email">—</div>
-          </div>
-        </div>
-        <div class="set-row" style="cursor:pointer;" onclick="lpLogout()">
-          <div class="set-row-icon ic-red">
-            <svg width="16" height="16" viewBox="0 0 512 512"><path fill="currentColor" d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"/></svg>
-          </div>
-          <div class="set-row-body">
-            <div class="set-row-title" style="color:var(--red);">Keluar (Logout)</div>
-          </div>
-          <div class="set-row-action" style="color:var(--mut);">›</div>
-        </div>
-      </div>
-
-      <!-- ══ SEKOLAH ══ -->
-      <div class="set-card" id="cardInfoSekolah">
-        <div class="set-card-hd">Sekolah</div>
-        <div style="padding:12px 14px 4px;">
-          <div id="infoSekolahNama" style="font-size:var(--flg);font-weight:800;color:var(--g9);margin-bottom:6px;">—</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
-            <span style="font-size:var(--fsm);color:var(--mut);">T.A.:</span>
+      <!-- ── Info Sekolah ── -->
+      <div class="card" id="cardInfoSekolah">
+        <div class="chd">🏫 Info Sekolah</div>
+        <div class="cbd">
+          <div id="infoSekolahNama" style="font-size:var(--flg);font-weight:800;color:var(--g9);margin-bottom:4px;">—</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
+            <span style="font-size:var(--fsm);color:var(--mut);">Tahun Ajaran:</span>
             <span id="infoSekolahTahun" style="font-size:var(--fsm);font-weight:700;color:var(--g7);">—</span>
-            <span style="font-size:var(--fsm);color:var(--brd);">|</span>
-            <span style="font-size:var(--fsm);color:var(--mut);">Role:</span>
+            <span style="font-size:var(--fsm);color:var(--mut);">• Role:</span>
             <span id="infoSekolahRole" style="font-size:var(--fsm);font-weight:700;color:var(--g7);">—</span>
           </div>
-          <div id="infoKodeSekolahRow" style="display:none;margin-bottom:12px;">
-            <div style="font-size:var(--fxs);color:var(--mut);margin-bottom:5px;">Kode undangan guru:</div>
+          <!-- Kode sekolah — hanya admin -->
+          <div id="infoKodeSekolahRow" style="display:none;margin-bottom:10px;">
+            <div style="font-size:var(--fsm);color:var(--mut);margin-bottom:6px;">Kode undangan untuk guru:</div>
             <div id="infoKodeSekolah" class="ss-kode" onclick="navigator.clipboard.writeText(this.textContent);showToast('Kode disalin!','success');">—</div>
-            <div style="font-size:var(--fxs);color:var(--mut);margin-top:3px;">Tap kode untuk salin</div>
+            <div style="font-size:var(--fxs);color:var(--mut);margin-top:4px;">Tap kode untuk salin</div>
           </div>
-          <div id="gantiTahunRow" style="display:none;padding-bottom:10px;">
-            <div style="font-size:var(--fxs);color:var(--mut);margin-bottom:6px;font-weight:700;">GANTI TAHUN AJARAN</div>
-            <div style="display:flex;gap:8px;">
+          <!-- Ganti tahun ajaran — admin only -->
+          <div id="gantiTahunRow" style="display:none;">
+            <label class="flbl">Ganti Tahun Ajaran</label>
+            <div style="display:flex;gap:8px;margin-top:6px;">
               <input type="text" id="inputTahunBaru" placeholder="2025/2026"
-                style="flex:1;padding:8px 10px;border:1.5px solid var(--brd);border-radius:var(--rs);font-size:var(--fmd);">
+                style="flex:1;padding:9px 10px;border:1.5px solid var(--brd);border-radius:var(--rs);font-size:var(--fmd);">
               <button class="btn bp bsm" onclick="gantiTahunAjaran()">Simpan</button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- ══ MANAJEMEN GURU (admin only) ══ -->
-      <div class="set-card" id="cardManajemenGuru" style="display:none;">
-        <div class="set-card-hd">Manajemen Guru</div>
-        <div style="padding:12px 14px;">
-          <div id="guruPendingSection" style="display:none;margin-bottom:10px;">
-            <div style="font-size:var(--fsm);font-weight:700;color:var(--red);margin-bottom:6px;">⏳ Menunggu Persetujuan</div>
+      <!-- ── Manajemen Guru (admin only) ── -->
+      <div class="card" id="cardManajemenGuru" style="display:none;">
+        <div class="chd">👨‍🏫 Manajemen Guru</div>
+        <div class="cbd">
+          <!-- Pending approval -->
+          <div id="guruPendingSection" style="display:none;">
+            <div style="font-size:var(--fsm);font-weight:700;color:var(--red);margin-bottom:8px;">
+              ⏳ Menunggu Persetujuan
+            </div>
             <div id="guruPendingList"></div>
           </div>
-          <div style="font-size:var(--fxs);font-weight:700;color:var(--mut);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Guru Aktif</div>
+          <!-- Daftar guru aktif -->
+          <div style="font-size:var(--fsm);font-weight:700;color:var(--mut);margin:10px 0 8px;">
+            Guru Aktif
+          </div>
           <div id="guruAktifList"></div>
         </div>
       </div>
 
-      <!-- ══ KENAIKAN KELAS (admin only) ══ -->
-      <div class="set-card" id="cardKenaikanKelas" style="display:none;">
-        <div class="set-card-hd">Kenaikan Kelas</div>
-        <div style="padding:12px 14px;">
-          <div style="font-size:var(--fsm);color:var(--mut);margin-bottom:12px;line-height:1.5;">Upload Excel (kolom <b>Nama</b> + <b>Kelas</b>). Tulis <b>Lulus</b> di kolom kelas untuk menandai lulus.</div>
+      <!-- ── Kenaikan Kelas (admin only) ── -->
+      <div class="card" id="cardKenaikanKelas" style="display:none;">
+        <div class="chd">🎓 Kenaikan Kelas</div>
+        <div class="cbd">
+          <div style="font-size:var(--fsm);color:var(--mut);margin-bottom:12px;line-height:1.6;">
+            Upload Excel berisi nama siswa + kelas baru. Sistem akan mencocokkan otomatis. Edit individual hanya untuk pengecualian.
+          </div>
+
+          <!-- Step 1: Tahun ajaran + upload Excel -->
           <div id="kkStep1">
             <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
-              <span style="font-size:var(--fsm);color:var(--mut);white-space:nowrap;">T.A. baru:</span>
+              <span style="font-size:var(--fsm);color:var(--mut);white-space:nowrap;">Tahun ajaran baru:</span>
               <input type="text" id="kkTahunBaru" placeholder="2025/2026"
                 style="flex:1;min-width:110px;padding:7px 10px;border:1.5px solid var(--brd);border-radius:var(--rs);font-size:var(--fmd);">
             </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <button class="btn bp bsm" style="flex:1;" onclick="document.getElementById('kkFileInput').click()">📂 Upload Excel</button>
-              <button class="btn bo bsm" style="flex:1;" onclick="kkDownloadTemplate()">⬇️ Template</button>
+            <div style="font-size:var(--fxs);color:var(--mut);margin-bottom:10px;">
+              Format Excel: kolom <b>Nama</b> + kolom <b>Kelas</b>. Siswa tidak ada di file → tetap di kelas lama. Tulis <b>Lulus</b> di kolom kelas untuk menandai lulus.
             </div>
-            <input type="file" id="kkFileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="kkParseExcel(this)">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn bp bsm" style="flex:1;" onclick="document.getElementById('kkFileInput').click()">
+                📂 Upload Excel Kelas Baru
+              </button>
+              <button class="btn bo bsm" style="flex:1;" onclick="kkDownloadTemplate()">
+                ⬇️ Download Template
+              </button>
+            </div>
+            <input type="file" id="kkFileInput" accept=".xlsx,.xls,.csv" style="display:none"
+              onchange="kkParseExcel(this)">
           </div>
+
+          <!-- Step 2: Preview hasil mapping -->
           <div id="kkStep2" style="display:none;margin-top:14px;">
             <div id="kkPreviewInfo" style="font-size:var(--fsm);color:var(--mut);margin-bottom:8px;"></div>
+
+            <!-- Filter tampilan -->
             <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;" id="kkFilterRow">
               <button class="fchip on" onclick="kkFilterPreview('semua',this)">Semua</button>
               <button class="fchip" onclick="kkFilterPreview('berubah',this)">Naik Kelas</button>
@@ -4434,189 +3967,161 @@ span > .fai, div > .fai { vertical-align: middle; }
               <button class="fchip" onclick="kkFilterPreview('sama',this)">Tetap</button>
               <button class="fchip" onclick="kkFilterPreview('notfound',this)">⚠️ Tidak cocok</button>
             </div>
+
             <div id="kkPreviewTable" style="max-height:50vh;overflow-y:auto;border:1px solid var(--brd);border-radius:8px;"></div>
+
             <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--brd);display:flex;gap:8px;flex-wrap:wrap;">
               <button class="btn bo bsm" style="flex:1;" onclick="kkReset()">🔄 Upload Ulang</button>
-              <button class="btn bp" style="flex:2;" id="kkBtnEksekusi" onclick="kkEksekusi()">🎓 Proses Kenaikan</button>
+              <button class="btn bp" style="flex:2;" id="kkBtnEksekusi" onclick="kkEksekusi()">
+                🎓 Proses Kenaikan Kelas
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- ══ DATA SISWA ══ -->
-      <div class="set-card">
-        <div class="set-card-hd">Data Siswa</div>
-        <div class="set-row" style="cursor:pointer;" onclick="document.getElementById('xlsIn').click()">
-          <div class="set-row-icon ic-green">
-            <svg width="16" height="16" viewBox="0 0 512 512"><path fill="currentColor" d="M288 109.3V352c0 17.7-14.3 32-32 32s-32-14.3-32-32V109.3l-73.4 73.4c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l128-128c12.5-12.5 32.8-12.5 45.3 0l128 128c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L288 109.3z"/></svg>
+      <div class="card">
+        <div class="chd"><svg class="fai" viewBox="0 0 576 512" aria-hidden="true"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>Fitur Aplikasi</div>
+        <ul class="flist">
+          <li>
+            <div class="fico fig">📖</div>
+            <div class="ftxt">
+              <strong>Tahfidh Juz 30</strong>
+              Input setoran harian per siswa dengan pilihan surat Juz 30, rentang ayat, status Lancar / Kurang Lancar, dan keterangan. Riwayat setoran per tanggal bisa dilihat, diedit, dan diekspor ke Excel.
+            </div>
+          </li>
+          <li>
+            <div class="fico fig">🎯</div>
+            <div class="ftxt">
+              <strong>Pencapaian Awal Siswa</strong>
+              Catat posisi hafalan awal siswa (surat & ayat terakhir) secara otomatis maupun manual per surat, lengkap dengan keterangan Belum Khatam / Muroja'ah / Tasmi'.
+            </div>
+          </li>
+          <li>
+            <div class="fico fib">👥</div>
+            <div class="ftxt">
+              <strong>Absensi Terintegrasi</strong>
+              Import siswa sekali untuk Tahfidh dan Absen. Tandai Hadir / Ijin / Sakit / Alpha per sesi, lihat riwayat per tanggal, dan ekspor laporan per kelas ke Excel.
+            </div>
+          </li>
+          <li>
+            <div class="fico fiy">📊</div>
+            <div class="ftxt">
+              <strong>Statistik & Rekap</strong>
+              Tab Statistik menampilkan grafik performa mingguan, leaderboard kelas, rekap status hafalan (Belum Khatam / Muroja'ah / Tasmi') dengan filter per kelas, serta trend 30 hari dan insight AI.
+            </div>
+          </li>
+          <li>
+            <div class="fico fiy">🏅</div>
+            <div class="ftxt">
+              <strong>Gamifikasi & Badge</strong>
+              Streak harian, badge pencapaian otomatis, dan progress ring hafalan untuk memotivasi siswa terus setoran.
+            </div>
+          </li>
+          <li>
+            <div class="fico fir">📂</div>
+            <div class="ftxt">
+              <strong>Viewer File Excel</strong>
+              Upload file setoran atau absensi (.xlsx/.xls/.csv) untuk ditampilkan, difilter per status dan kelas, tanpa perlu buka aplikasi lain.
+            </div>
+          </li>
+          <li>
+            <div class="fico fig">💾</div>
+            <div class="ftxt">
+              <strong>Firebase & Offline / PWA</strong>
+              Data tersinkron ke Firebase Firestore secara real-time dan tersedia offline. Dapat dipasang ke layar utama HP seperti aplikasi native.
+            </div>
+          </li>
+        </ul>
+      </div>
+
+<div class="card">
+  <div class="chd"><svg class="fai" viewBox="0 0 448 512" aria-hidden="true"><path d="M448 80v48c0 44.2-100.3 80-224 80S0 172.2 0 128V80C0 35.8 100.3 0 224 0S448 35.8 448 80zM393.2 214.7c20.8-7.4 39.9-16.9 54.8-28.6V288c0 44.2-100.3 80-224 80S0 332.2 0 288V186.1c14.9 11.8 34 21.2 54.8 28.6C99.7 230.7 159.5 240 224 240s124.3-9.3 169.2-25.3zM0 346.1c14.9 11.8 34 21.2 54.8 28.6C99.7 390.7 159.5 400 224 400s124.3-9.3 169.2-25.3c20.8-7.4 39.9-16.9 54.8-28.6V432c0 44.2-100.3 80-224 80S0 476.2 0 432V346.1z"/></svg>Data Siswa Tersimpan</div>
+  <div class="cbd">
+    <div id="dsSiswaInfo" style="font-size:var(--fmd);color:var(--mut);margin-bottom:10px">Belum ada siswa tersimpan</div>
+    <div id="dsSiswaList" style="max-height:200px;overflow-y:auto;margin-bottom:12px"></div>
+    <button class="btn bd bsm" onclick="hapusSemuaDataSiswa()"><svg class="fai" viewBox="0 0 448 512" aria-hidden="true"><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></svg> Hapus Semua Data Siswa</button>
+  </div>
+</div>
+
+<!-- CARD: HAPUS RIWAYAT SETORAN -->
+<div class="card">
+  <div class="chd"><svg class="fai" viewBox="0 0 512 512" aria-hidden="true"><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg>Hapus Riwayat Setoran</div>
+  <div class="cbd">
+    <div style="font-size:var(--fsm);color:var(--mut);margin-bottom:12px;line-height:1.6;">
+      Hapus semua riwayat setoran siswa. Tindakan ini akan menghapus data dari server dan tidak dapat dikembalikan.
+    </div>
+    <div class="brow" style="flex-wrap:wrap;gap:8px;">
+      <button class="btn bd bsm" onclick="hapusSemuaSetoran()" style="flex:1;">
+        <svg class="fai" viewBox="0 0 448 512" aria-hidden="true"><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></svg>
+        Hapus Semua Riwayat Setoran
+      </button>
+    </div>
+    <div style="margin-top:12px;font-size:var(--fxs);color:var(--red);background:#fff0f0;padding:8px;border-radius:8px;">
+      ⚠️ Peringatan: Data yang dihapus tidak dapat dipulihkan kembali.
+    </div>
+  </div>
+</div>      
+
+      <div class="card">
+        <div class="chd"><svg class="fai" viewBox="0 0 576 512" aria-hidden="true"><path d="M151.5 169.8L128 256H192l-23.5-86.2c-2-7.3-12-7.3-14 0l-17 62.2zM0 64C0 46.3 14.3 32 32 32H192c10.7 0 20.7 5.5 26.2 14.6l168 280H416V288c0-17.7 14.3-32 32-32h96c17.7 0 32 14.3 32 32v32c0 17.7-14.3 32-32 32H480v32h32c17.7 0 32 14.3 32 32v32c0 17.7-14.3 32-32 32H480v32c0 17.7-14.3 32-32 32s-32-14.3-32-32V448H384c-10.7 0-20.7-5.5-26.2-14.6l-168-280H160V192c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32V160c0-17.7 14.3-32 32-32H128V96H32C14.3 96 0 81.7 0 64z"/></svg>Pengaturan Tampilan</div>
+        <div class="cbd">
+          <label class="flbl">Ukuran Font</label>
+          <div style="display:flex; align-items:center; gap:12px; margin-top:6px;">
+            <button class="btn bo bsm" onclick="changeFontSize(-1)" style="width:40px;padding:8px;flex-shrink:0;font-size:var(--fxl);font-weight:800;">A-</button>
+            <div style="flex:1;">
+              <input type="range" id="fontSizeRange" min="10" max="20" step="1" value="14"
+                oninput="applyFontSize(this.value)"
+                style="width:100%;accent-color:var(--g6);height:6px;cursor:pointer;">
+              <div style="display:flex;justify-content:space-between;font-size:var(--fsm);color:var(--mut);margin-top:4px;">
+                <span>Kecil</span><span id="fontSizeLabel">Normal (14px)</span><span>Besar</span>
+              </div>
+            </div>
+            <button class="btn bo bsm" onclick="changeFontSize(1)" style="width:40px;padding:8px;flex-shrink:0;font-size:var(--fxl);font-weight:800;">A+</button>
           </div>
-          <div class="set-row-body">
-            <div class="set-row-title">Import dari Excel</div>
-            <div class="set-row-sub" id="istripLbl2">File .xlsx / .xls</div>
-          </div>
-          <div class="set-row-action" style="color:var(--mut);">›</div>
-        </div>
-        <input type="file" id="xlsIn" accept=".xlsx,.xls,.csv" style="display:none" onchange="importMasterData(this)">
-        <div class="set-row" style="cursor:pointer;" onclick="openTambahSiswaManual()">
-          <div class="set-row-icon ic-green">
-            <svg width="16" height="16" viewBox="0 0 640 512"><path fill="currentColor" d="M96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM0 482.3C0 383.8 79.8 304 178.3 304h91.4C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3zM504 312V248H440c-13.3 0-24-10.7-24-24s10.7-24 24-24h64V136c0-13.3 10.7-24 24-24s24 10.7 24 24v64h64c13.3 0 24 10.7 24 24s-10.7 24-24 24H552v64c0 13.3-10.7 24-24 24s-24-10.7-24-24z"/></svg>
-          </div>
-          <div class="set-row-body">
-            <div class="set-row-title">Tambah Manual</div>
-            <div class="set-row-sub">Input satu per satu</div>
-          </div>
-          <div class="set-row-action" style="color:var(--mut);">›</div>
-        </div>
-        <div style="padding:10px 14px;border-top:1px solid var(--brd);">
-          <div id="dsSiswaInfo" style="font-size:var(--fsm);color:var(--mut);margin-bottom:6px;">Belum ada siswa tersimpan</div>
-          <div id="dsSiswaList" style="max-height:160px;overflow-y:auto;"></div>
+          <button class="btn bo bsm mt8" onclick="resetFontSize()" style="font-size:var(--fsm);">
+            <svg class="fai" viewBox="0 0 512 512" aria-hidden="true"><path d="M48.5 224H40c-13.3 0-24-10.7-24-24V72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L98.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L185 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8H48.5z"/></svg> Reset ke Default
+          </button>
         </div>
       </div>
 
-      <!-- ══ HAFALAN & SETORAN ══ -->
-      <div class="set-card">
-        <div class="set-card-hd">Hafalan & Setoran</div>
-        <div class="set-row" style="cursor:pointer;" onclick="openPencapaian()">
-          <div class="set-row-icon ic-yellow">⭐</div>
-          <div class="set-row-body">
-            <div class="set-row-title">Input Pencapaian Awal</div>
-            <div class="set-row-sub">Posisi hafalan awal siswa</div>
+      <div class="card">
+        <div class="chd">🔄 Sinkronisasi & Cache</div>
+        <div class="cbd">
+          <div style="font-size:var(--fsm);color:var(--mut);margin-bottom:10px;line-height:1.5;">
+            Jika data siswa tidak sesuai (terlalu banyak / tidak sinkron setelah hapus dari Firebase Console), gunakan tombol di bawah untuk membersihkan cache lokal dan mengambil data terbaru dari server.
           </div>
-          <div class="set-row-action" style="color:var(--mut);">›</div>
-        </div>
-        <div style="border-top:1px solid var(--brd);">
-          <div class="set-row" style="border-bottom:none;">
-            <div class="set-row-icon ic-teal">
-              <svg width="16" height="16" viewBox="0 0 512 512"><path fill="currentColor" d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75z"/></svg>
-            </div>
-            <div class="set-row-body">
-              <div class="set-row-title">Riwayat Setoran</div>
-              <div class="set-row-sub" id="istripSub2">Semua data setoran tersinkron</div>
-            </div>
-            <div class="set-row-action"><span class="bdg bg" id="totSetoran">0</span></div>
-          </div>
-          <div id="filterKelasSetoran" style="padding:0 14px 6px; display:none;">
-            <div id="chipsKelasSetoran" class="frow" style="flex-wrap:wrap; margin-bottom:0;"></div>
-          </div>
-          <div id="listSetoranTanggal" style="background:#fff; border-radius:0 0 var(--r) var(--r); overflow:hidden;">
-            <div id="emptySetoran" class="tempty">
-              <svg class="fai" viewBox="0 0 512 512"><path d="M121 32C91.6 32 66 52 58.9 80.5L1.9 308.4C.6 313.5 0 318.7 0 323.9V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V323.9c0-5.2-.6-10.4-1.9-15.5l-57-227.9C446 52 420.4 32 391 32H121zm0 64H391l48 192H336c-13.3 0-24 10.7-24 24c0 48.6-39.4 88-88 88s-88-39.4-88-88c0-13.3-10.7-24-24-24H73L121 96z"/></svg>
-              Belum ada setoran
-            </div>
-          </div>
-          <table style="display:none"><tbody id="tblSetoran"></tbody></table>
-        </div>
-      </div>
-
-      <!-- ══ TAMPILAN ══ -->
-      <div class="set-card">
-        <div class="set-card-hd">Tampilan</div>
-        <div class="set-row" style="flex-direction:column;align-items:stretch;gap:8px;cursor:default;">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div class="set-row-icon ic-blue" style="flex-shrink:0;">
-              <svg width="16" height="16" viewBox="0 0 576 512"><path fill="currentColor" d="M151.5 169.8L128 256H192l-23.5-86.2c-2-7.3-12-7.3-14 0l-17 62.2zM0 64C0 46.3 14.3 32 32 32H192c10.7 0 20.7 5.5 26.2 14.6l168 280H416V288c0-17.7 14.3-32 32-32h96c17.7 0 32 14.3 32 32v32c0 17.7-14.3 32-32 32H480v32h32c17.7 0 32 14.3 32 32v32c0 17.7-14.3 32-32 32H480v32c0 17.7-14.3 32-32 32s-32-14.3-32-32V448H384c-10.7 0-20.7-5.5-26.2-14.6l-168-280H160V192c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32V160c0-17.7 14.3-32 32-32H128V96H32C14.3 96 0 81.7 0 64z"/></svg>
-            </div>
-            <div style="flex:1;min-width:0;">
-              <div class="set-row-title">Ukuran Font</div>
-              <div id="fontSizeLabel" class="set-row-sub">Normal (14px)</div>
-            </div>
-            <div style="display:flex;gap:4px;flex-shrink:0;">
-              <button class="btn bo bsm" onclick="changeFontSize(-1)" style="width:34px;padding:5px;font-size:var(--fmd);font-weight:800;">A−</button>
-              <button class="btn bo bsm" onclick="changeFontSize(1)"  style="width:34px;padding:5px;font-size:var(--fmd);font-weight:800;">A+</button>
-            </div>
-          </div>
-          <div class="set-font-ctrl">
-            <span style="font-size:var(--fxs);color:var(--mut);white-space:nowrap;">Kecil</span>
-            <input type="range" id="fontSizeRange" min="10" max="20" step="1" value="14" oninput="applyFontSize(this.value)">
-            <span style="font-size:var(--fxs);color:var(--mut);white-space:nowrap;">Besar</span>
-          </div>
-          <div style="padding:0 0 4px;">
-            <button class="btn bo bsm" onclick="resetFontSize()" style="font-size:var(--fsm);width:100%;">
-              <svg class="fai" viewBox="0 0 512 512"><path d="M48.5 224H40c-13.3 0-24-10.7-24-24V72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L98.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L185 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8H48.5z"/></svg>
-              Reset ke Default
+          <div class="brow" style="flex-wrap:wrap;gap:8px;">
+            <button class="btn bo bsm" onclick="sinkronisasiUlang()" style="flex:1;">
+              <svg class="fai" viewBox="0 0 512 512" aria-hidden="true"><path d="M48.5 224H40c-13.3 0-24-10.7-24-24V72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L98.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L185 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8H48.5z"/></svg>
+              Sinkronisasi Ulang
+            </button>
+            <button class="btn bd bsm" onclick="bersihkanCacheLokal()" style="flex:1;">
+              🗑 Bersihkan Cache Lokal
             </button>
           </div>
         </div>
       </div>
 
-      <!-- ══ SINKRONISASI ══ -->
-      <div class="set-card">
-        <div class="set-card-hd">Sinkronisasi & Cache</div>
-        <div class="set-row" style="cursor:pointer;" onclick="sinkronisasiUlang()">
-          <div class="set-row-icon ic-teal">
-            <svg width="16" height="16" viewBox="0 0 512 512"><path fill="currentColor" d="M48.5 224H40c-13.3 0-24-10.7-24-24V72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L98.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L185 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8H48.5z"/></svg>
+      <div class="card" id="cardAkun">
+        <div class="chd">👤 Akun Saya</div>
+        <div class="cbd">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+            <div id="settingsAvatar" style="width:46px;height:46px;border-radius:50%;background:var(--g4);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;flex-shrink:0;overflow:hidden;">👤</div>
+            <div style="flex:1;min-width:0;">
+              <div id="settingsUserName" style="font-weight:800;font-size:var(--fmd);color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
+              <div id="settingsUserEmail" style="font-size:var(--fsm);color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
+            </div>
           </div>
-          <div class="set-row-body">
-            <div class="set-row-title">Sinkronisasi Ulang</div>
-            <div class="set-row-sub">Ambil data terbaru dari server</div>
-          </div>
-          <div class="set-row-action" style="color:var(--mut);">›</div>
-        </div>
-        <div class="set-row" style="cursor:pointer;" onclick="bersihkanCacheLokal()">
-          <div class="set-row-icon ic-yellow">
-            <svg width="16" height="16" viewBox="0 0 448 512"><path fill="currentColor" d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128z"/></svg>
-          </div>
-          <div class="set-row-body">
-            <div class="set-row-title">Bersihkan Cache Lokal</div>
-            <div class="set-row-sub">Reset data tersimpan di perangkat</div>
-          </div>
-          <div class="set-row-action" style="color:var(--mut);">›</div>
-        </div>
-      </div>
-
-      <!-- ══ FITUR APLIKASI (collapsible) ══ -->
-      <div class="set-card">
-        <div class="set-fitur-toggle" onclick="toggleFiturSection(this)">
-          <div class="set-row-icon ic-green" style="flex-shrink:0;">
-            <svg width="16" height="16" viewBox="0 0 576 512"><path fill="currentColor" d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>
-          </div>
-          <div class="set-row-body">
-            <div class="set-row-title">Fitur Aplikasi</div>
-            <div class="set-row-sub">7 fitur tersedia</div>
-          </div>
-          <div class="set-fitur-chevron">
-            <svg width="14" height="14" viewBox="0 0 512 512"><path fill="currentColor" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/></svg>
-          </div>
-        </div>
-        <div class="set-fitur-body">
-          <div class="set-fitur-item"><div class="fico fig">📖</div><div><strong>Tahfidh Juz 30</strong>Input setoran harian per siswa dengan surat, rentang ayat, status, dan keterangan. Ekspor ke Excel.</div></div>
-          <div class="set-fitur-item"><div class="fico fig">🎯</div><div><strong>Pencapaian Awal</strong>Catat posisi hafalan awal siswa lengkap dengan status Belum Khatam / Muroja'ah / Tasmi'.</div></div>
-          <div class="set-fitur-item"><div class="fico fib">👥</div><div><strong>Absensi Terintegrasi</strong>Hadir / Ijin / Sakit / Alpha per sesi, riwayat per tanggal, ekspor per kelas ke Excel.</div></div>
-          <div class="set-fitur-item"><div class="fico fiy">📊</div><div><strong>Statistik & Rekap</strong>Grafik performa, leaderboard kelas, trend 30 hari, dan insight AI.</div></div>
-          <div class="set-fitur-item"><div class="fico fiy">🏅</div><div><strong>Gamifikasi & Badge</strong>Streak harian, badge otomatis, progress ring hafalan.</div></div>
-          <div class="set-fitur-item"><div class="fico fir">📂</div><div><strong>Viewer Excel</strong>Upload file setoran/absensi .xlsx untuk ditampilkan dan difilter langsung.</div></div>
-          <div class="set-fitur-item"><div class="fico fig">💾</div><div><strong>Firebase & PWA</strong>Sinkron real-time, tersedia offline, bisa dipasang ke layar utama HP.</div></div>
-        </div>
-      </div>
-
-      <!-- ══ ZONA BERBAHAYA ══ -->
-      <div class="set-danger-card">
-        <div class="set-danger-hd">
-          <svg width="13" height="13" viewBox="0 0 512 512"><path fill="currentColor" d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480H40c-14.3 0-27.6-7.7-34.7-20.1s-7-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24V296c0 13.3 10.7 24 24 24s24-10.7 24-24V184c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"/></svg>
-          Zona Berbahaya
-        </div>
-        <div class="set-danger-row" onclick="hapusSemuaDataSiswa()">
-          <div class="set-row-icon ic-red" style="flex-shrink:0;">
-            <svg width="15" height="15" viewBox="0 0 640 512"><path fill="currentColor" d="M96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM0 482.3C0 383.8 79.8 304 178.3 304h91.4C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3z"/></svg>
-          </div>
-          <div style="flex:1;min-width:0;">
-            <div class="set-danger-title">Hapus Semua Data Siswa</div>
-            <div class="set-danger-sub">Data lokal & di server akan dihapus permanen</div>
-          </div>
-        </div>
-        <div class="set-danger-row" onclick="hapusSemuaSetoran()">
-          <div class="set-row-icon ic-red" style="flex-shrink:0;">
-            <svg width="15" height="15" viewBox="0 0 512 512"><path fill="currentColor" d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75z"/></svg>
-          </div>
-          <div style="flex:1;min-width:0;">
-            <div class="set-danger-title">Hapus Semua Riwayat Setoran</div>
-            <div class="set-danger-sub">Tidak dapat dipulihkan kembali</div>
-          </div>
+          <button class="btn bd bsm" style="width:100%;" onclick="lpLogout()">
+            <svg class="fai" viewBox="0 0 512 512" aria-hidden="true"><path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"/></svg>
+            Keluar (Logout)
+          </button>
         </div>
       </div>
 
       <div class="ab-foot">
-        Data disimpan di Firebase Firestore &amp; cache lokal perangkat.<br>
+        Data disimpan di Firebase Firestore &amp; cache lokal perangkat.<br><br>
         <strong style="color:var(--g7)">TAMMA</strong> — Tahfidh & Absensi
       </div>
     </div>
@@ -4643,7 +4148,7 @@ span > .fai, div > .fai { vertical-align: middle; }
       <svg class="fai" viewBox="0 0 384 512" aria-hidden="true"><path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM155.7 250.2L192 302.1l36.3-51.9c7.6-10.9 22.6-13.5 33.4-5.9s13.5 22.6 5.9 33.4L221.3 344l46.4 66.2c7.6 10.9 5 25.8-5.9 33.4s-25.8 5-33.4-5.9L192 385.8l-36.3 51.9c-7.6 10.9-22.6 13.5-33.4 5.9s-13.5-22.6-5.9-33.4L162.7 344l-46.4-66.2c-7.6-10.9-5-25.8 5.9-33.4s25.8-5 33.4 5.9z"/></svg><span>Viewer</span>
     </button>
     <button class="nb" id="nb5" onclick="goPage(5)">
-      <svg class="fai" viewBox="0 0 512 512" aria-hidden="true"><path d="M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z"/></svg><span>Pengaturan</span>
+      <svg class="fai" viewBox="0 0 512 512" aria-hidden="true"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg><span>Tentang</span>
     </button>
   </div>
   <div class="bnav-safe"></div>
@@ -4957,7 +4462,7 @@ async function startApp() {
 function _loadLocalData() {
   masterSiswa       = JSON.parse(ls.get('db_master_siswa') || '[]');
   dataSetoran       = JSON.parse(ls.get('db_setoran') || '[]');
-  dataAbsensi       = JSON.parse(ls.get(`db_absensi_${(()=>{ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })()}`) || ls.get('db_absensi_harian') || '[]');
+  dataAbsensi       = JSON.parse(ls.get(`db_absensi_${_initTodayKey}`) || ls.get('db_absensi_harian') || '[]');
   userPoints        = JSON.parse(ls.get('db_points') || '{}');
   userStreaks        = JSON.parse(ls.get('db_streaks') || '{}');
   lastActive        = ls.get('db_last_active') || new Date().toDateString();
@@ -5341,7 +4846,7 @@ async function approveGuru(uid, action) {
     } else {
       await ref.delete();
       await fbDb.collection('userMeta').doc(uid).delete();
-      showToast('Permintaan ditolak', 'warning');
+      showToast('Permintaan ditolak', 'info');
     }
     await renderGuruList();
   } catch(e) {
@@ -5354,10 +4859,7 @@ async function updateGuruRole(uid, role) {
   if (!isAdmin || !currentSchoolId) return;
   try {
     await fbDb.collection('schools').doc(currentSchoolId).collection('members').doc(uid)
-      .update(role === 'waliKelas'
-        ? { role, kelasDiajar: [] }
-        : { role, kelasDiajar: firebase.firestore.FieldValue.delete() }
-      );
+      .update({ role, kelasDiajar: role === 'waliKelas' ? [] : [] });
     showToast('Role diperbarui', 'success');
     await renderGuruList();
   } catch(e) { showToast('Gagal: ' + e.message, 'error'); }
@@ -5458,22 +4960,21 @@ function kkParseExcel(input) {
       const ws  = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
 
-      // Auto-detect kolom nama & kelas baru — regex longgar, case-insensitive
+      // Auto-detect kolom nama & kelas baru
       let colNama = -1, colKelasBaru = -1, startRow = 0;
-      for (let i = 0; i < Math.min(10, rows.length); i++) {
-        const cells = rows[i].map(c => (c || '').toString().trim());
-        const ni  = cells.findIndex(c => /(nama|name|siswa|murid|santri|student)/i.test(c));
-        // "Kelas Baru" / "New Class" / "Pindah" lebih prioritas dari "Kelas"
-        const kbi = cells.findIndex(c => /(kelas\s*baru|new\s*class|pindah)/i.test(c));
-        const ki  = cells.findIndex(c => /(kelas|class|rombel|tingkat|grade)/i.test(c));
+      for (let i = 0; i < Math.min(5, rows.length); i++) {
+        const cells = rows[i].map(c => (c || '').toString().toLowerCase().trim());
+        const ni = cells.findIndex(c => /^(nama|name|siswa|murid|santri)/.test(c));
+        // Cari "kelas baru" dulu, fallback ke "kelas"
+        const kbi = cells.findIndex(c => /kelas.baru|new.class|pindah/.test(c));
+        const ki  = cells.findIndex(c => /^(kelas|class|rombel)/.test(c));
         if (ni >= 0) {
-          colNama      = ni;
+          colNama     = ni;
           colKelasBaru = kbi >= 0 ? kbi : ki >= 0 ? ki : -1;
-          startRow     = i + 1;
+          startRow    = i + 1;
           break;
         }
       }
-      // Fallback: asumsi A=Nama, B=Kelas Baru
       if (colNama < 0) { colNama = 0; colKelasBaru = 1; startRow = 1; }
 
       // Baca Excel
@@ -6020,14 +5521,6 @@ function changeFontSize(delta){
 function resetFontSize(){
   applyFontSize(14);
   showToast('Font direset ke default','success');
-}
-
-function toggleFiturSection(toggleEl) {
-  const chevron = toggleEl.querySelector('.set-fitur-chevron');
-  const body = toggleEl.nextElementSibling;
-  const isOpen = body.classList.contains('open');
-  body.classList.toggle('open', !isOpen);
-  if (chevron) chevron.classList.toggle('open', !isOpen);
 }
 
 (function(){
@@ -7842,143 +7335,86 @@ function showAchievement(title, desc){
 // Data sementara sebelum dikonfirmasi import
 let _importPending = [];
 
-// ==============================
-// FUNGSI NORMALISASI DATA SISWA (TAMBAHKAN INI)
-// ==============================
-function _normalizeExcelData(rows, colNama, colKelas, startRow) {
-    const siswaBaru = [];
-    const errors = [];
-    for (let i = startRow; i < rows.length; i++) {
+function importMasterData(input){
+  const f = input.files[0];
+  if(!f){ input.value=''; return; }
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+      if(!rows || rows.length === 0){
+        showToast('File Excel kosong atau tidak bisa dibaca', 'error'); input.value=''; return;
+      }
+
+      // ── Auto-detect header row dan kolom ──
+      let startRow = 0;
+      let colNama = -1, colKelas = -1;
+
+      // Cari baris header (cek 5 baris pertama)
+      for(let i = 0; i < Math.min(5, rows.length); i++){
+        const cells = rows[i].map(c => (c||'').toString().toLowerCase().trim());
+        const ni = cells.findIndex(c => /^(nama|name|siswa|murid|student|santri)/.test(c));
+        const ki = cells.findIndex(c => /^(kelas|class|rombel|tingkat|grade|ruang)/.test(c));
+        if(ni >= 0){
+          startRow = i + 1;
+          colNama = ni;
+          colKelas = ki >= 0 ? ki : -1;
+          break;
+        }
+      }
+
+      // Tidak ada header? Asumsikan kolom A = nama, C = kelas (format lama)
+      if(colNama < 0){
+        startRow = 0;
+        colNama = 0;
+        colKelas = 2; // kolom C
+        // Lewati baris pertama jika berisi teks non-nama (kemungkinan header tak dikenal)
+        if(rows[0] && /^(no|#|nomer|nomor)/i.test((rows[0][0]||'').toString().trim())){
+          startRow = 1;
+        }
+      }
+
+      // ── Baca data siswa ──
+      const siswaBaru = [];
+      const errors = [];
+      for(let i = startRow; i < rows.length; i++){
         const row = rows[i];
-        if (!row || row.every(c => !c)) continue; // Lewati baris kosong
+        if(!row || row.every(c => !c)) continue; // baris kosong
+        const nama = (row[colNama] || '').toString().trim();
+        const kelas = colKelas >= 0 ? (row[colKelas] || 'Umum').toString().trim() : 'Umum';
+        if(!nama){ continue; }
+        if(nama.length < 2){ errors.push(`Baris ${i+1}: nama terlalu pendek ("${nama}")`); continue; }
+        siswaBaru.push({nama, kelas: kelas || 'Umum'});
+      }
 
-        let nama = (row[colNama] || '').toString().trim();
-        let kelas = colKelas >= 0 ? (row[colKelas] || '').toString().trim() : '';
+      if(siswaBaru.length === 0){
+        let msg = 'Tidak ada data siswa yang valid.';
+        if(colNama === 0) msg += ' Format: kolom A = Nama, kolom C = Kelas (opsional)';
+        else msg += ` Kolom nama terdeteksi: ${String.fromCharCode(65 + colNama)}`;
+        showToast(msg, 'error'); input.value=''; return;
+      }
 
-        if (!nama) {
-            errors.push(`Baris ${i + 1}: Nama kosong, dilewati.`);
-            continue;
-        }
+      // Deduplikasi dari file itu sendiri
+      const seen = new Set();
+      const unique = siswaBaru.filter(s => {
+        if(seen.has(s.nama.toLowerCase())) return false;
+        seen.add(s.nama.toLowerCase()); return true;
+      });
 
-        // Bersihkan nama dari spasi berlebih dan karakter aneh
-        nama = nama.replace(/\s+/g, ' ').trim();
-        if (nama.length < 2) {
-            errors.push(`Baris ${i + 1}: Nama terlalu pendek ("${nama}"), dilewati.`);
-            continue;
-        }
+      _importPending = unique;
+      input.value = '';
+      tampilkanPreviewImport(unique, errors, colNama, colKelas, startRow);
 
-        // Jika kelas tidak ditemukan atau kosong, beri nilai default 'Umum'
-        if (!kelas) {
-            kelas = 'Umum';
-        } else {
-            // Bersihkan kelas juga
-            kelas = kelas.replace(/\s+/g, ' ').trim();
-        }
-
-        siswaBaru.push({ nama, kelas });
+    } catch(err){
+      showToast('Gagal membaca file: ' + err.message, 'error');
+      input.value = '';
     }
-    return { siswaBaru, errors };
+  };
+  r.readAsArrayBuffer(f);
 }
 
-// ==============================
-// IMPORT MASTER DATA SISWA (GANTI DENGAN INI)
-// ==============================
-function importMasterData(input) {
-    const f = input.files[0];
-    if (!f) {
-        input.value = '';
-        return;
-    }
-    const r = new FileReader();
-    r.onload = e => {
-        try {
-            const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
-            const ws = wb.Sheets[wb.SheetNames[0]];
-            // Gunakan header: 1 untuk mendapatkan array of arrays, dan defval untuk nilai kosong
-            const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-            if (!rows || rows.length === 0) {
-                showToast('File Excel kosong atau tidak bisa dibaca', 'error');
-                input.value = '';
-                return;
-            }
-
-            // 1. Cari baris header (10 baris pertama) — regex longgar, prefix/contains
-            let startRow = 0;
-            let colNama = -1;
-            let colKelas = -1;
-            let headerRowFound = false;
-
-            const _isNamaHdr  = c => /(nama|name|siswa|murid|santri|student)/i.test(c);
-            const _isKelasHdr = c => /(kelas|class|rombel|tingkat|grade)/i.test(c);
-
-            for (let i = 0; i < Math.min(10, rows.length); i++) {
-                const row = rows[i];
-                if (!row) continue;
-                const cells = row.map(cell => (cell || '').toString().trim());
-                const ni = cells.findIndex(c => _isNamaHdr(c));
-                const ki = cells.findIndex(c => _isKelasHdr(c));
-                if (ni !== -1) {
-                    startRow = i + 1;
-                    colNama  = ni;
-                    colKelas = ki; // -1 jika tidak ada kolom kelas
-                    headerRowFound = true;
-                    break;
-                }
-            }
-
-            // 2. Fallback: tidak ada header dikenali — asumsi A=Nama, B=Kelas
-            if (!headerRowFound) {
-                console.warn('Header tidak dikenali. Asumsi kolom A=Nama, B=Kelas.');
-                colNama  = 0;
-                colKelas = 1;
-                const firstRow = rows[0];
-                startRow = (firstRow && firstRow[0] && /^(no|#|nomer|nomor)$/i.test(firstRow[0].toString().trim())) ? 1 : 0;
-            }
-
-            // 3. Ekstrak dan normalisasi data
-            const { siswaBaru, errors } = _normalizeExcelData(rows, colNama, colKelas, startRow);
-
-            if (siswaBaru.length === 0) {
-                let msg = 'Tidak ada data siswa yang valid.';
-                if (!headerRowFound) {
-                    msg += ' Pastikan file memiliki kolom dengan judul "Nama" dan "Kelas" (atau nama/kelas). Atau format lama: kolom A = Nama, kolom C = Kelas.';
-                }
-                if (errors.length) {
-                    msg += `\nDetail: ${errors.slice(0, 3).join('; ')}${errors.length > 3 ? '...' : ''}`;
-                }
-                showToast(msg, 'error');
-                input.value = '';
-                return;
-            }
-
-            // 4. Hapus duplikat dari file itu sendiri berdasarkan nama (case-insensitive)
-            const seen = new Set();
-            const uniqueSiswa = siswaBaru.filter(s => {
-                const key = s.nama.toLowerCase();
-                if (seen.has(key)) return false;
-                seen.add(key);
-                return true;
-            });
-
-            if (uniqueSiswa.length !== siswaBaru.length) {
-                const duplicateCount = siswaBaru.length - uniqueSiswa.length;
-                errors.push(`Ditemukan ${duplicateCount} duplikat dalam file yang di-import.`);
-            }
-
-            // Simpan data yang sudah diproses ke variabel global untuk preview
-            _importPending = uniqueSiswa;
-            input.value = '';
-            // Tampilkan preview dengan informasi detil
-            tampilkanPreviewImport(uniqueSiswa, errors, colNama, colKelas, startRow);
-
-        } catch (err) {
-            console.error(err);
-            showToast('Gagal membaca file: ' + err.message, 'error');
-            input.value = '';
-        }
-    };
-    r.readAsArrayBuffer(f);
-}
 function tampilkanPreviewImport(list, errors, colNama, colKelas, startRow){
   const existingNama = new Set(masterSiswa.map(s => s.nama.toLowerCase()));
   const baru = list.filter(s => !existingNama.has(s.nama.toLowerCase()));
@@ -8150,15 +7586,14 @@ async function simpanSiswaManual(){
 
 
 function updateStrip(){
-  const l=document.getElementById('istripLbl2');
-  const sub=document.getElementById('istripSub2');
-  if(!l) return;
+  const s=document.getElementById('istrip');
+  const l=document.getElementById('istripLbl');
   if(masterSiswa.length){ 
-    l.textContent=`${masterSiswa.length} siswa`;
-    if(sub) sub.textContent=`${masterSiswa.length} siswa tersimpan. Import ulang untuk memperbarui.`;
+    l.textContent=`${masterSiswa.length} siswa tersimpan`; 
+    s.classList.add('ok'); 
   } else { 
-    l.textContent='';
-    if(sub) sub.textContent='Import daftar siswa dari file Excel (.xlsx) atau tambah manual satu per satu.';
+    l.textContent='Belum ada daftar siswa'; 
+    s.classList.remove('ok'); 
   }
 }
 
@@ -8680,49 +8115,52 @@ function renderDetailSetoran(){
   const tabelEl = document.getElementById('detailSetoranTabel');
   if(!deduped.length){ tabelEl.innerHTML = '<div style="padding:20px;text-align:center;color:#bbb;">Tidak ada data</div>'; _inRenderDetailSetoran = false; return; }
 
-  tabelEl.innerHTML = `<div class="detail-grid">
-    ${deduped.map((i,idx) => {
+  tabelEl.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:var(--fmd);">
+    <thead>
+      <tr style="background:var(--g8);color:#fff;">
+        <th style="padding:7px 8px;text-align:left;">Nama</th>
+        <th style="padding:7px 6px;text-align:left;">Surat & Ayat</th>
+        <th style="padding:7px 4px;text-align:center;">St</th>
+        <th style="padding:7px 6px;text-align:left;">Ket</th>
+        <th style="padding:7px 4px;"></th>
+      </tr>
+    </thead>
+    <tbody>
+      ${deduped.map((i,idx) => {
         const kl = (i.stat||'')==='KL';
         const kelas = (masterSiswa.find(m=>m.nama===i.nama)?.kelas || i.kelas || 'Umum').trim();
+        // Data awal: tampilkan label frontier ("At-Takwir ayat 20") + jumlah surat di batch
         const dataAwalLbl = _dataAwalLabel(i);
+        // Untuk mode manual (arahHafalan='manual'), tidak ada label frontier — tampilkan count saja
         const isDataAwal = !!i.arahHafalan;
         const isManualAwal = i.arahHafalan === 'manual';
         const suratCell = isDataAwal
-          ? `<div style="font-weight:600;color:var(--g8);">${dataAwalLbl || (i._batchCount ? i._batchCount+' surat' : i.surat||'—')}</div>
-             <div style="font-size:var(--fsm);color:var(--mut);margin-top:2px;">${i._batchCount ? i._batchCount+' surat · ' : ''}${i.tambahan||'Data Awal'}</div>`
-          : `<div style="font-weight:600;color:var(--g8);">${i.surat||'—'}</div>
-             <div style="color:#888;font-size:var(--fsm);margin-top:2px;">${i.rentang||''}</div>`;
+          ? `<div style="font-weight:600;">${dataAwalLbl || (i._batchCount ? `${i._batchCount} surat dipilih` : i.surat||'—')}</div>
+             <div style="font-size:var(--fxs);color:var(--mut);">${i._batchCount ? i._batchCount+' surat · ' : ''}${i.tambahan||'Data Awal'}</div>`
+          : `<div style="font-weight:600;">${i.surat||'—'}</div>
+             <div style="color:#888;font-size:var(--fsm);">${i.rentang||''}</div>`;
         let ket = [];
         if(!dataAwalLbl){
           if((i.jml||0)>0) ket.push(`<span style="color:#b91c1c">${i.jml} salah${i.kategori&&i.kategori!=='-'?' · '+i.kategori:''}</span>`);
           if(i.salah&&i.salah!=='-') ket.push(`<span style="color:#e67e22">${i.salah}</span>`);
         }
         const canDel = isAdmin || !i.inputBy || i.inputBy==='offline' || i.inputBy===currentUser?.uid;
-        const delBtn = canDel ? `<button class="detail-card-delete" onclick="delSetoran('${i.fbId||i.id}');bukaDetailSetoran('${_detailSetoranKey}')">✕</button>` : `<span style="color:#ddd;font-size:var(--fxs);">🔒</span>`;
-        return `<div class="detail-card">
-          <div class="detail-card-header">
-            <div style="flex:1;min-width:0;">
-              <div class="detail-card-title">${i.nama||'—'}</div>
-              <div class="detail-card-subtitle">${kelas}${i.inputByNama?' · '+i.inputByNama:''}</div>
-            </div>
-            <div class="detail-card-badge">
-              ${isDataAwal
-                ? `<span class="bdg" style="background:#e0f2fe;color:#0369a1;font-size:var(--fxs);white-space:nowrap;">Awal</span>`
-                : `<span class="${kl?'bdg bgd':'bdg bg'}" style="white-space:nowrap;">${kl?'KL':'L'}</span>`}
-            </div>
-          </div>
-          <div class="detail-card-section">
-            <div class="detail-card-label">📚 Surat & Ayat</div>
-            ${suratCell}
-          </div>
-          ${ket.length ? `<div class="detail-card-section">
-            <div class="detail-card-label">📝 Keterangan</div>
-            <div style="font-size:var(--fsm);color:var(--txt);">${ket.join('<br/>')}</div>
-          </div>` : ''}
-          ${delBtn !== '<span style="color:#ddd;font-size:var(--fxs);">🔒</span>' ? delBtn : ''}
-        </div>`;
+        const delBtn = canDel ? `<button class="bdel" onclick="delSetoran('${i.fbId||i.id}');bukaDetailSetoran('${_detailSetoranKey}')">✕</button>` : `<span style="color:#ddd;font-size:var(--fxs);">🔒</span>`;
+        return `<tr style="border-bottom:1px solid var(--brd);background:${idx%2===0?'#fff':'var(--surf2)'}">
+          <td style="padding:7px 8px;">
+            <div style="font-weight:700;font-size:var(--fmd);">${i.nama||'—'}</div>
+            <div style="font-size:var(--fxs);color:var(--mut);">${kelas}${i.inputByNama?' · '+i.inputByNama:''}</div>
+          </td>
+          <td style="padding:7px 6px;">${suratCell}</td>
+          <td style="padding:7px 4px;text-align:center;">${isDataAwal
+            ? `<span class="bdg" style="background:#e0f2fe;color:#0369a1;font-size:var(--fxs);">Awal</span>`
+            : `<span class="${kl?'bdg bgd':'bdg bg'}">${kl?'KL':'L'}</span>`}</td>
+          <td style="padding:7px 6px;font-size:var(--fsm);">${ket.join('<br>')||'<span style="color:#ccc">—</span>'}</td>
+          <td style="padding:7px 4px;">${delBtn}</td>
+        </tr>`;
       }).join('')}
-  </div>`;
+    </tbody>
+  </table>`;
   _inRenderDetailSetoran = false;
 }
 
@@ -8904,20 +8342,12 @@ window.delSetoran = function(id, fbId){
 window.hapusSemuaSetoran = function(){
   if(!dataSetoran.length){ showToast('Sudah kosong','warning'); return; }
   if(!confirm(`Hapus ${dataSetoran.length} riwayat setoran? Ini akan menghapus dari server juga!`)) return;
-  // Delete all from Firestore (chunked to stay within 500-op batch limit)
-  const fbIds = dataSetoran.map(s => s.fbId).filter(Boolean);
-  if (fbIds.length) {
-    (async () => {
-      try {
-        for (let i = 0; i < fbIds.length; i += 400) {
-          const b = fbDb.batch();
-          fbIds.slice(i, i + 400).forEach(fid => b.delete(schoolCol('setoran').doc(fid)));
-          await b.commit();
-        }
-        showToast('Semua riwayat dihapus dari server', 'success');
-      } catch(err) { showToast('Error: ' + err.message, 'error'); }
-    })();
-  }
+  // Delete all from Firestore
+  const batch = fbDb.batch();
+  dataSetoran.forEach(s => { if(s.fbId) batch.delete(schoolCol('setoran').doc(s.fbId)); });
+  batch.commit().then(() => {
+    showToast('Semua riwayat dihapus dari server', 'success');
+  }).catch(err => showToast('Error: ' + err.message, 'error'));
   dataSetoran = [];
   ls.set('db_setoran', JSON.stringify(dataSetoran));
   renderTblSetoran();
@@ -9243,30 +8673,27 @@ async function bukaDetailAbsensi(key){
         nama, kelas: v.kelas || 'Umum', status: v.status || 'Hadir', waktu: v.waktu || '-'
       })).sort((a, b) => a.nama.localeCompare(b.nama, 'id'));
     }
-    tabelEl.innerHTML = `<div class="detail-grid">
-      ${siswa.map((s,i)=>{
+    tabelEl.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:var(--fmd);">
+      <thead>
+        <tr style="background:var(--g8);color:#fff;">
+          <th style="padding:7px 8px;text-align:left;">Nama</th>
+          <th style="padding:7px 6px;text-align:left;">Kelas</th>
+          <th style="padding:7px 6px;text-align:center;">Status</th>
+          <th style="padding:7px 6px;text-align:center;">Waktu</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${siswa.map((s,i)=>{
           const warna = s.status==='Hadir'?'var(--g6)':s.status==='Ijin'?'#c07f00':s.status==='Sakit'?'var(--tel)':'var(--red)';
-          const warnaBg = s.status==='Hadir'?'#e6f5f0':s.status==='Ijin'?'#fef8e0':s.status==='Sakit'?'#e0f7fa':'#fff0f0';
-          const ikon = s.status==='Hadir'?'✓':s.status==='Ijin'?'📋':s.status==='Sakit'?'🤒':'✕';
-          return `<div class="detail-card" style="background:${warnaBg};border:1.5px solid ${warna};">
-            <div class="detail-card-header">
-              <div style="flex:1;min-width:0;">
-                <div class="detail-card-title">${s.nama}</div>
-                <div class="detail-card-subtitle">${s.kelas||'Umum'}</div>
-              </div>
-              <div style="flex-shrink:0;font-size:20px;line-height:1;opacity:0.7;">${ikon}</div>
-            </div>
-            <div class="detail-card-section">
-              <div class="detail-card-label">✓ Status</div>
-              <div style="font-weight:700;color:${warna};font-size:var(--fmd);">${s.status}</div>
-            </div>
-            ${s.waktu && s.waktu !== '-' ? `<div class="detail-card-section">
-              <div class="detail-card-label">⏰ Waktu</div>
-              <div class="detail-card-value">${s.waktu}</div>
-            </div>` : ''}
-          </div>`;
+          return `<tr style="border-bottom:1px solid var(--brd);background:${i%2===0?'#fff':'var(--surf2)'}">
+            <td style="padding:7px 8px;font-weight:600;">${s.nama}</td>
+            <td style="padding:7px 6px;color:var(--mut);">${s.kelas||'Umum'}</td>
+            <td style="padding:7px 6px;text-align:center;"><span style="font-weight:700;color:${warna};">${s.status}</span></td>
+            <td style="padding:7px 6px;text-align:center;color:var(--mut);">${s.waktu||'-'}</td>
+          </tr>`;
         }).join('')}
-    </div>`;
+      </tbody>
+    </table>`;
   } catch(err){
     tabelEl.innerHTML = `<div style="padding:20px;text-align:center;color:var(--red);">Gagal: ${err.message}</div>`;
   }
@@ -9291,15 +8718,7 @@ function exportDetailAbsensiExcel(){
     ['Hadir', d.hadir||0], ['Ijin', d.ijin||0], ['Sakit', d.sakit||0], ['Alpha', d.alpha||0],
     [],
     ['No', 'Nama', 'Kelas', 'Status', 'Waktu'],
-    ...((() => {
-      let siswa = d.siswa || [];
-      if (!siswa.length && d.data && typeof d.data === 'object') {
-        siswa = Object.entries(d.data).map(([nama, v]) => ({
-          nama, kelas: v.kelas || 'Umum', status: v.status || 'Hadir', waktu: v.waktu || '-'
-        })).sort((a, b) => a.nama.localeCompare(b.nama, 'id'));
-      }
-      return siswa.map((s, i) => [i + 1, s.nama, s.kelas || 'Umum', s.status, s.waktu || '-']);
-    })())
+    ...(d.siswa||[]).map((s,i) => [i+1, s.nama, s.kelas||'Umum', s.status, s.waktu||'-'])
   ];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'Absensi');
