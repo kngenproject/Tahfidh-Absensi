@@ -2616,6 +2616,10 @@ span > .fai, div > .fai { vertical-align: middle; }
 #syncStatus.error { background: var(--red); color: #fff; }
 #syncStatus.show { display: block; }
 
+/* notifBanner */
+#notifBanner { display: none; }
+#notifBanner.show { display: flex; }
+
 
 
 
@@ -2653,7 +2657,7 @@ span > .fai, div > .fai { vertical-align: middle; }
   display: flex; align-items: flex-start; gap: 10px;
   padding: 11px 0; border-bottom: 1px solid var(--brd);
 }
-.guru-avatar-sm {
+.guru-avatar-sm, .guru-item-ava {
   width: 34px; height: 34px; border-radius: 50%; background: var(--g4);
   display: flex; align-items: center; justify-content: center;
   font-size:var(--fmd); font-weight: 800; color: #fff; flex-shrink: 0;
@@ -10453,7 +10457,33 @@ function _generateKode() {
 }
 
 // ── Buat Sekolah Baru ──
-async function ssBuatSekolah() {
+async function sinkronisasiUlang() {
+  if (!currentSchoolId) { showToast('Belum login ke sekolah', 'warning'); return; }
+  showToast('🔄 Menyinkronisasi...', 'info', 2000);
+  try {
+    await fetchAllData();
+    renderDdSiswa && renderDdSiswa();
+    updateStrip && updateStrip();
+    renderSiswaCards && renderSiswaCards();
+    updateDashboard && updateDashboard();
+    showToast('✅ Sinkronisasi selesai', 'success');
+  } catch(e) {
+    showToast('Gagal sinkronisasi: ' + e.message, 'error');
+  }
+}
+
+function bersihkanCacheLokal() {
+  if (!confirm('Bersihkan cache lokal? Data akan dimuat ulang dari server.')) return;
+  try {
+    const prefix = currentUser ? currentUser.uid + ':' : 'guest:';
+    Object.keys(localStorage).filter(k => k.startsWith(prefix)).forEach(k => localStorage.removeItem(k));
+    showToast('Cache lokal dibersihkan. Memuat ulang...', 'success', 2000);
+    setTimeout(() => location.reload(), 1500);
+  } catch(e) {
+    showToast('Gagal: ' + e.message, 'error');
+  }
+}
+
   const nama      = document.getElementById('ssNamaSekolah')?.value.trim();
   const namaAdmin = document.getElementById('ssNamaAdmin')?.value.trim();
   const tahun     = document.getElementById('ssTahunAjaran')?.value.trim();
@@ -10932,7 +10962,14 @@ async function ssGabungSekolah() {
   </div>
 </div>
 
-<!-- ════════ SCHOOL SETUP OVERLAY ════════ -->
+<!-- Notification Permission Banner -->
+<div id="notifBanner" style="display:none;position:fixed;bottom:calc(var(--NAV) + env(safe-area-inset-bottom,0px) + 10px);left:50%;transform:translateX(-50%);background:var(--g8);color:#fff;padding:10px 16px;border-radius:20px;font-size:var(--fsm);font-weight:700;z-index:800;align-items:center;gap:10px;box-shadow:0 4px 16px rgba(0,0,0,.2);max-width:90vw;">
+  <span>🔔 Aktifkan notifikasi?</span>
+  <button onclick="requestNotification();document.getElementById('notifBanner').classList.remove('show');" style="background:var(--gold);color:#2a1800;border:none;border-radius:15px;padding:4px 12px;font-size:var(--fsm);font-weight:700;cursor:pointer;">Aktifkan</button>
+  <button onclick="document.getElementById('notifBanner').classList.remove('show');" style="background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:15px;padding:4px 10px;font-size:var(--fsm);cursor:pointer;">✕</button>
+</div>
+
+
 <div id="schoolSetupOverlay">
   <div class="ss-card">
     <div class="ss-logo">🕌</div>
