@@ -4271,12 +4271,12 @@ span > .fai, div > .fai { vertical-align: middle; }
    FIREBASE INIT & AUTH
 ============================== */
 const firebaseConfig = {
-  apiKey: "AIzaSyDiklgFPfIY3cmPgP3l2mCXb9To9XluT4M",
-  authDomain: "tahfidh-dan-absensi.firebaseapp.com",
-  projectId: "tahfidh-dan-absensi",
-  storageBucket: "tahfidh-dan-absensi.firebasestorage.app",
-  messagingSenderId: "602276018828",
-  appId: "1:602276018828:web:7ba0db5549a3f58cbe59a9"
+  apiKey: "${{ secrets.FIREBASE_API_KEY }}" // Ganti via GitHub Secrets,
+  authDomain: "${{ secrets.FIREBASE_AUTH_DOMAIN }}",
+  projectId: "${{ secrets.FIREBASE_PROJECT_ID }}",
+  storageBucket: "${{ secrets.FIREBASE_STORAGE_BUCKET }}",
+  messagingSenderId: "${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}",
+  appId: "${{ secrets.FIREBASE_APP_ID }}"
 };
 
 firebase.initializeApp(firebaseConfig);
